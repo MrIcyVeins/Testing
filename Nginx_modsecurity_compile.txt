@@ -1,0 +1,303 @@
+###  CentOS 7
+Nginx + ModSecurity - compile
+source : https://www.vultr.com/docs/how-to-install-modsecurity-for-nginx-on-centos-7-debian-8-and-ubuntu-16-04/#Step_5__Test_ModSecurity
+
+
+
+1) Update the system
+
+    sudo yum update &&
+    sudo yum upgrade
+
+2) Install dependencies
+
+    yum groupinstall -y "Development Tools"
+    yum install -y httpd httpd-devel pcre pcre-devel libxml2 libxml2-devel curl curl-devel openssl openssl-devel
+    shutdown -r now
+
+ 3) Compile ModSecurity
+
+    cd /usr/src
+    git clone -b nginx_refactoring https://github.com/SpiderLabs/ModSecurity.git
+    cd ModSecurity
+    sed -i '/AC_PROG_CC/a\AM_PROG_CC_C_O' configure.ac
+    sed -i '1 i\AUTOMAKE_OPTIONS = subdir-objects' Makefile.am
+    ./autogen.sh
+    ./configure --enable-standalone-module --disable-mlogc
+    make
+
+# Note: the two sed commands above are used to prevent warning messages when using newer
+
+4) Compile Nginx (latest stable release)
+
+    cd /usr/src
+
+    ###wget https://nginx.org/download/nginx-[nginx version].tar.gz
+
+    wget https://nginx.org/download/nginx-1.22.1.tar.gz
+    tar -zxvf nginx-1.22.1.tar.gz 
+    rm -f nginx-1.22.1.tar.gz
+
+
+# create nginx user and groupad
+
+    groupadd -r nginx
+    useradd -r -g nginx -s /sbin/nologin -M nginx
+
+# compile nginx + enable ModSecurity and SSL modules
+
+     cd nginx-1.22.1/
+    ./configure --user=nginx --group=nginx --add-module=/usr/src/ModSecurity/nginx/modsecurity --with-http_ssl_module
+    make
+    make install
+
+# modify default user of nginx
+
+    sed -i "s/#user  nobody;/user nginx nginx;/" /usr/local/nginx/conf/nginx.conf
+
+######### test installation with ##########
+
+    /usr/local/nginx/sbin/nginx -t
+
+    #successful output = 
+    #nginx: the configuration file /usr/local/nginx/conf/nginx.conf syntax is ok
+    #nginx: configuration file /usr/local/nginx/conf/nginx.conf test is successful
+
+5) Create nginx.service file
+
+   sudo vi /lib/systemd/system/nginx.service
+
+    #Content of the file : 
+
+[Service]
+
+Type=forking
+
+ExecStartPre=/usr/local/nginx/sbin/nginx -t -c /usr/local/nginx/conf/nginx.conf
+
+ExecStart=/usr/local/nginx/sbin/nginx -c /usr/local/nginx/conf/nginx.conf
+
+ExecReload=/usr/local/nginx/sbin/nginx -s reload
+
+#KillStop=/usr/local/nginx/sbin/nginx -s stop
+
+
+
+#KillMode=process
+
+Restart=on-failure
+
+RestartSec=42s
+
+
+
+PrivateTmp=true
+
+LimitNOFILE=200000
+
+
+
+[Install]
+
+WantedBy=multi-user.target
+
+
+6) Configure ModSecurity and Nginx
+
+sudo vi /usr/local/nginx/conf/nginx.conf
+
+
+# Find the following segment within the http {} segment:
+-------------------------------------------------------
+location / {
+
+    root   html;
+
+    index  index.html index.htm;
+
+}
+
+
+# Insert the below lines into the location / {} segment:
+-------------------------------------------------------
+ModSecurityEnabled on;
+
+ModSecurityConfig modsec_includes.conf;
+
+#proxy_pass http://localhost:8011;
+
+#proxy_read_timeout 180s;
+
+
+#Final result should be :
+--------------------------------------------------------
+location / {
+
+    ModSecurityEnabled on;
+
+    ModSecurityConfig modsec_includes.conf;
+
+    #proxy_pass http://localhost:8011;
+
+    #proxy_read_timeout 180s;
+
+    root   html;
+
+    index  index.html index.htm;
+
+}
+
+
+7)  Create config file for OWASP ModSecurity Core Rules (this will apply all the owasp modsecurity core rules)
+
+   sudo vi /usr/local/nginx/conf/modsec_includes.conf
+
+#Content of the file :
+
+include modsecurity.conf
+
+include owasp-modsecurity-crs/crs-setup.conf
+
+include owasp-modsecurity-crs/rules/*.conf
+
+
+#### !!! for individual rules remove ""include owasp-modsecurity-crs/rules/*.conf"" and add the rules that you want / Ex : include owasp-modsecurity-crs/rules/REQUEST-900-EXCLUSION-RULES-BEFORE-CRS.conf 
+
+
+8) Import ModSecurity configuration files
+
+    sudo cp /usr/src/ModSecurity/modsecurity.conf-recommended /usr/local/nginx/conf/modsecurity.conf
+    sudo cp /usr/src/ModSecurity/unicode.mapping /usr/local/nginx/conf/
+
+8.1) Modify modsecurity.conf file
+
+    sed -i "s/SecRuleEngine DetectionOnly/SecRuleEngine On/" /usr/local/nginx/conf/modsecurity.conf
+
+
+9) Add OWASP ModSecurity CRS (Core Rule Set) files :
+
+
+    cd /usr/local/nginx/conf
+    git clone https://github.com/SpiderLabs/owasp-modsecurity-crs.git
+
+    cd owasp-modsecurity-crs
+    mv crs-setup.conf.example crs-setup.conf 
+
+    cd rules
+    mv REQUEST-900-EXCLUSION-RULES-BEFORE-CRS.conf.example REQUEST-900-EXCLUSION-RULES-BEFORE-CRS.conf  
+    mv RESPONSE-999-EXCLUSION-RULES-AFTER-CRS.conf.example RESPONSE-999-EXCLUSION-RULES-AFTER-CRS.conf   
+
+    ##### ^^^ remove the .example to "activate" the rules and conf ^^^ #####
+
+
+10) Test ModSecurity
+
+# Start nginx : 
+
+    sudo systemctl start nginx.service
+    sudo systemctl enable nginx.service
+    sudo systemctl status nginx
+
+    #Output :
+    ● nginx.service
+   Loaded: loaded (/usr/lib/systemd/system/nginx.service; enabled; vendor preset: disabled)
+   Active: active (running) since Tue 2022-12-06 04:36:38 EST; 1min 27s ago
+ Main PID: 10915 (nginx)
+   CGroup: /system.slice/nginx.service
+           ├─10915 nginx: master process /usr/local/nginx/sbin/nginx -c /usr/local/nginx/conf/nginx.conf
+           └─10916 nginx: worker process
+
+Dec 06 04:36:38 argwafext01c systemd[1]: Starting nginx.service...
+Dec 06 04:36:38 argwafext01c nginx[10912]: nginx: the configuration file /usr/local/nginx/conf/nginx.conf syntax is ok
+Dec 06 04:36:38 argwafext01c nginx[10912]: nginx: configuration file /usr/local/nginx/conf/nginx.conf test is successful
+Dec 06 04:36:38 argwafext01c systemd[1]: Started nginx.service.
+
+
+
+# Open port 80 in order to allow outside access
+
+    sudo firewall-cmd --zone=public --permanent --add-service=http
+    sudo firewall-cmd --reload
+
+# Point your web browser to:
+
+    http://[machine IP]/?param="><script>alert(1);</script>
+
+    Ex: http://10.220.75.163/?param="><script>alert(1);</script>
+
+#Note for IP use
+
+    ip a
+
+
+# Use grep to fetch error message
+
+    grep error /usr/local/nginx/logs/error.log
+
+# OUTPUT : 2017/02/15 14:07:54 [error] 10776#0: [client 104.20.23.240] ModSecurity: Warning. detected XSS using libinjection. [file "/usr/local/nginx/conf/owasp-modsecurity-crs/rules/REQUEST-941-APPLICATION-ATTACK-XSS.conf"] [line "56"] [id "941100"] [rev "2"] [msg "XSS Attack Detected via libinjection"] [data "Matched Data:  found within ARGS:param: \x22><script>alert(1);</script>"] [severity "CRITICAL"] [ver "OWASP_CRS/3.0.0"] [maturity "1"] [accuracy "9"] [tag "application-multi"] [tag "language-multi"] [tag "platform-multi"] [tag "attack-xss"] [tag "OWASP_CRS/WEB_ATTACK/XSS"] [tag "WASCTC/WASC-8"] [tag "WASCTC/WASC-22"] [tag "OWASP_TOP_10/A3"] [tag "OWASP_AppSensor/IE1"] [tag "CAPEC-242"] [hostname ""] [uri "/index.html"] [unique_id "ATAcAcAkucAchGAcPLAcAcAY"]
+
+    tail -f /usr/local/nginx/logs/error.log | grep libinjection
+
+# OUTPUT : 2022/12/06 04:47:24 [error] 10916#0: [client 10.220.186.242] ModSecurity: Warning. detected XSS using libinjection. [file "/usr/local/nginx/conf/owasp-modsecurity-crs/rules/REQUEST-941-APPLICATION-ATTACK-XSS.conf"]
+
+    tail -f /usr/local/nginx/logs/error.log |grep error  | grep ModSecurity | grep libinjection
+
+    ### XSS using libinjection example ###
+
+
+Custom settings can be done by editing:
+
+/usr/local/nginx/conf/modsecurity.conf 
+/usr/local/nginx/conf/owasp-modsecurity-crs/crs-setup.conf files.
+
+
+    ~~~~~~~~~~~~~~~~[ Points of interest ]~~~~~~~~~~~~~~~~~~~
+
+[FILE LOCATIONS]
+
+nginx path prefix: "/usr/local/nginx"
+
+nginx binary file: "/usr/local/nginx/sbin/nginx"
+
+nginx modules path: "/usr/local/nginx/modules"
+
+nginx configuration prefix: "/usr/local/nginx/conf"
+
+nginx configuration file: "/usr/local/nginx/conf/nginx.conf"
+
+nginx pid file: "/usr/local/nginx/logs/nginx.pid"
+
+nginx error log file: "/usr/local/nginx/logs/error.log"
+
+nginx http access log file: "/usr/local/nginx/logs/access.log"
+
+nginx http client request body temporary files: "client_body_temp"
+
+nginx http proxy temporary files: "proxy_temp"
+
+nginx http fastcgi temporary files: "fastcgi_temp"
+
+nginx http uwsgi temporary files: "uwsgi_temp"
+
+nginx http scgi temporary files: "scgi_temp"
+
+
+[ Starting / Stopping / Restarting NGINX ]
+
+
+sudo systemctl daemon-reload
+
+systemctl start nginx.service
+
+systemctl enable nginx.service
+
+systemctl stop nginx.service
+
+systemctl restart nginx.service
+
+---------------------------------------
+https://www.feistyduck.com/library/modsecurity-handbook-free/online/index.html
+
+https://www.netnea.com/cms/nginx-tutorial-6_embedding-modsecurity/
+
+https://www.vultr.com/docs/how-to-install-modsecurity-for-nginx-on-centos-7-debian-8-and-ubuntu-16-04/#Step_5__Test_ModSecurity
