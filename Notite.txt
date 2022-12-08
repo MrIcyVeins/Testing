@@ -1,0 +1,138 @@
+Nginx_modsecurity_OWASPCRS
+on CentOS7
+
+
+    ### Prereq: Nginx installed (/etc/nginx)
+    sudo yum install epel-release
+    sudo yum install nginx
+
+1) Compile and install ModSecurity
+
+yum groupinstall 'Development Tools' -y
+yum install gcc-c++ flex bison yajl yajl-devel curl-devel curl GeoIP-devel doxygen zlib-devel
+yum install lmdb lmdb-devel libxml2 libxml2-devel ssdeep ssdeep-devel lua lua-devel pcre-devel
+cd /usr/src/
+git clone --depth 1 -b v3/master --single-branch https://github.com/SpiderLabs/ModSecurity
+cd ModSecurity/
+git submodule init
+git submodule update
+./build.sh
+./configure
+make
+make install
+
+    #ModSecurity will be installed in /usr/local/modsecurity
+
+2) Compile and install Nginx-ModSecurity (#not nginx standalone)
+
+ cd /usr/src
+ git clone --depth 1 https://github.com/SpiderLabs/ModSecurity-nginx.git
+
+    # Check nginx version in order to download the right nginx source
+    # nginx -V (ex 1.20.1)
+
+cd /usr/src
+wget http://nginx.org/download/nginx-1.20.1.tar.gz
+tar zxvf nginx-1.20.1.tar.gz
+cd nginx-1.20.1
+./configure --with-compat --add-dynamic-module=../ModSecurity-nginx
+make modules
+cp objs/ngx_http_modsecurity_module.so /etc/nginx/modules
+cp /usr/src/ModSecurity/modsecurity.conf-recommended /etc/nginx/modsecurity.conf
+cp /usr/src/ModSecurity/unicode.mapping /etc/nginx/unicode.mapping
+
+    #copy nginx module from nginx source folder --to-- nginx installation folder
+    #copy modsecurity.conf(recommended) from SpiderLabs ModSecurity folder --to-- nginx installation folder
+    #copy unicode.mapping from SpiderLabs ModSecurity folder --to-- nginx installation folder
+----------
+3) Enable SecRuleEngine, edit /etc/nginx/modsecurity.conf and change
+
+SecRuleEngine DetectionOnly
+to
+SecRuleEngine On
+
+4) Configure Nginx to use ModSecurity module
+
+    #To load ModSecurity on Nginx, edit /etc/nginx/nginx.conf and add this code in top of configuration.
+
+#error_log  /var/log/nginx/error.log warn;
+#pid        /var/run/nginx.pid;
+
+load_module modules/ngx_http_modsecurity_module.so;
+
+5) And on your server block add this code:
+
+server {
+	.......
+	.......
+	modsecurity on;
+	modsecurity_rules_file /etc/nginx/modsec_includes.conf;
+	.......
+	.......
+}
+
+6) Get OWASP ModSecurity Core Rule Set (CRS) from https://coreruleset.org or https://www.owasp.org/index.php/Category:OWASP_ModSecurity_Core_Rule_Set_Project
+
+Ex: https://github.com/coreruleset/coreruleset/archive/refs/tags/v3.3.4.zip
+
+cd /etc/nginx
+sudo wget https://github.com/coreruleset/coreruleset/archive/refs/tags/v3.3.4.zip
+sudo unzip v3.3.4.zip
+sudo mv coreruleset-3.3.4/ owasp-modsecurity-crs
+sudo cp owasp-modsecurity-crs/crs-setup.conf.example owasp-modsecurity-crs/crs-setup.conf
+
+###### Or from SpiderLabs ######### 
+
+wget https://github.com/SpiderLabs/owasp-modsecurity-crs/archive/v3.2.0.zip
+unzip v3.2.0.zip
+mv owasp-modsecurity-crs-3.2.0 owasp-modsecurity-crs
+cp owasp-modsecurity-crs/crs-setup.conf.example owasp-modsecurity-crs/crs-setup.conf
+
+7) Create /etc/nginx/modsec_includes.conf and add code below
+
+include modsecurity.conf
+include /etc/nginx/owasp-modsecurity-crs/crs-setup.conf
+include /etc/nginx/owasp-modsecurity-crs/rules/*.conf
+
+# Additional custom rules here
+SecRule REQUEST_URI "@beginsWith /rss/" "phase:1,t:none,pass,id:'26091902',nolog,ctl:ruleRemoveById=200002"
+
+# FOR CRS other than SpiderLabs rename .conf.example with .conf
+sudo mv  REQUEST-900-EXCLUSION-RULES-BEFORE-CRS.conf.example REQUEST-900-EXCLUSION-RULES-BEFORE-CRS.conf
+and
+sudo mv RESPONSE-999-EXCLUSION-RULES-AFTER-CRS.conf.example RESPONSE-999-EXCLUSION-RULES-AFTER-CRS.conf
+
+
+8) Check your Nginx configuration with
+
+nginx -t
+
+nginx: the configuration file /etc/nginx/nginx.conf syntax is ok
+nginx: configuration file /etc/nginx/nginx.conf test is successful
+
+#If no problem, restart nginx
+
+systemctl restart nginx
+
+9) Testing Nginx ModSecurity
+
+curl -I -H "User-Agent: floodgate" https://serverdiary.com
+
+#Response should be: 
+HTTP/1.1 403 Forbidden
+Date: Wed, 07 Dec 2022 15:16:58 GMT
+Content-Type: text/html
+Content-Length: 153
+Connection: keep-alive
+Vary: Accept-Encoding
+
+
+sudo firewall-cmd --zone=public --permanent --add-service=http
+sudo firewall-cmd --reload
+
+_____________POI____________
+
+modsec will be installed in /usr/local/modsecurity
+
+https://coreruleset.org/installation/
+https://serverdiary.com/linux/how-to-install-and-configure-nginx-modsecurity-on-centos-7/
