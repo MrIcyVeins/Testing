@@ -1,0 +1,196 @@
+https://coreruleset.org/docs/concepts/paranoia_levels/
+https://www.netnea.com/cms/apache-tutorials/
+https://www.netnea.com/cms/nginx-tutorial-2_minimal-nginx-configuration/
+https://www.netnea.com/cms/nginx-tutorial-7_including-owasp-modsecurity-core-rule-set/
+https://www.liquidweb.com/kb/whitelisting-in-modsec/
+https://samhobbs.co.uk/2015/09/example-whitelisting-rules-apache-modsecurity-and-owasp-core-rule-set
+https://coreruleset.org/docs/rules/creating/ ---- rule making
+https://github.com/SpiderLabs/ModSecurity/wiki/Reference-Manual-(v2.x) ---- rule making
+
+######### CRS (add rules in modsec_includes.conf) ######## 
+
+SecRule VARIABLES "OPERATOR" "TRANSFORMATIONS,ACTIONS"
+
+1)Rule Exclusions:
+
+#FOR Entire rules:
+_______________________________
+
+- ON STARTUP TIME
+SecRuleRemoveById
+SecRuleRemoveByTag
+
+
+SecRuleRemoveById [rule ID]
+EX: 
+SecRuleRemoveById 920350 
+
+#where 920350 is the rule ID  --- this will disable entire rule 
+
+- ON RUN TIME:
+ctl:ruleRemoveById
+ctl:ruleRemoveTargetByTag
+
+#ex: ctl:ruleRemoveById [rule ID]
+
+#FOR Parameter in rules
+______________________________________
+- ON STARTUP TIME
+SecRuleUpdateTargetById
+SecRuleUpdateTargetByTag
+
+- ON RUN TIME
+ctl:ruleRemoveTargetById
+ctl:ruleRemoveTargetByTag
+
+# ModSec Rule Exclusion: Rules tagged with "attack-rce"
+SecRuleRemoveByTag 'attack-rce'
+
+2) Modsecurity phases:
+________________________
+Phase 1 - request headers
+Phase 2 - request body
+Phase 3 - response headers
+Phase 4 - response body
+
+
+WHITELIST: 
+
+SecRule REMOTE_ADDR "@ipMatch 192.168.1.148" \
+  "id:'000001', \
+  phase:1, \
+  t:none, \
+  ctl:ruleEngine=Off, \
+  nolog, \
+  pass"
+
+  SecRule REMOTE_ADDR "^192\.168\.1\.148" "phase:1,nolog,allow,ctl:ruleEngine=off,id:920351"
+
+  SecRule REMOTE_ADDR "^xx\.xx\.xxx\.x" "phase:1,nolog,allow,ctl:ruleEngine=off,id:20000221"  - ip whitelisting
+
+---------------------------
+@beginsWith whitelists
+
+  SecRule REQUEST_URI "@beginsWith /" \
+  "id:'000005', \
+  phase:2, \
+  t:none, \
+  ctl:ruleRemoveById=960015, \
+  nolog, \
+  pass"
+
+SecRule REQUEST_URI "@beginsWith /index.php" \
+    "id:1001,\
+    phase:1,\
+    pass,\
+    nolog,\
+    ctl:ruleRemoveTargetById=942100;ARGS:password"
+
+SecRule REQUEST_URI "@beginsWith /index.html" \
+    "id:1001,\
+    phase:1,\
+    pass,\
+    nolog,\
+    ctl:ruleRemoveTargetById=920350
+
+#SecRule REQUEST_URI "@beginsWith /index.html/" "phase:1,t:none,pass,id:'26091902',nolog,ctl:ruleRemoveById=200002"
+
+
+#Allow any GET & HEAD requests, where no parameters passed, for static content file types
+SecRule REQUEST_METHOD "^(GET|HEAD)$" "phase:1,id:'1000',chain,allow,nolog"
+  SecRule &ARGS "@eq 0" "chain"
+  SecRule REQUEST_FILENAME ".*\.(css|eot|gif|htm|html|jpeg|jpg|js|pdf|png|svg|ttf|woff|woff2)$" "t:lowercase,ctl:ruleEngine=On"
+
+#Allow any GET & HEAD requests, where no parameters passed, for default index files (e.g. /somepage/)
+#except for dynamic content urls (which start with api or application):
+SecRule REQUEST_METHOD "^(GET|HEAD)$" "phase:1,id:'1001',chain,allow,nolog"
+  SecRule &ARGS "@eq 0" "chain"
+  SecRule REQUEST_URI "/$" "chain"
+  SecRule REQUEST_URI "!^/(api|application)" "t:lowercase,ctl:ruleEngine=On"
+
+
+# === ModSec Core Rules: Runtime Exclusion Rules (ids: 10000-49999)
+
+# ModSec Exclusion Rule: 932160 Remote Command Execution: Unix Shell Code Found
+SecRule REQUEST_FILENAME "@streq /login/Login.do" \
+    "phase:1,nolog,pass,id:15000,ctl:ruleRemoveById=932160"
+
+# ModSec Exclusion Rule: 932160 Remote Command Execution: Unix Shell Code Found
+SecRuleUpdateTargetById 932160 !ARGS:password
+
+or by tag
+
+# ModSec Exclusion Rule: Rules tagged with "attack-rce"
+SecRuleUpdateTargetByTag "attack-rce" !ARGS:password
+
+
+or for specific password condition 
+
+
+SecRule REQUEST_HEADERS:Referer "@streq http://localhost/login/displayLogin.do" \
+    "phase:1,nolog,pass,id:15000,ctl:ruleRemoveTargetById=932160;ARGS:password"
+
+or by tag
+
+
+SecRule REQUEST_HEADERS:Referer "@streq http://localhost/login/displayLogin.do" \
+    "phase:1,nolog,pass,id:15000,ctl:ruleRemoveTargetByTag=attack-rce;ARGS:password"
+
+
+
+EXAMPLE RULE EXCLUSION ON PARANOIA LVL 4  (modsec_includes.conf)
+
+
+# === ModSec Core Rule Set: Runtime Exclusion Rules (ids: 10000-49999)
+
+# ModSec Rule Exclusion: 942431 : Restricted SQL Character Anomaly Detection (args): …
+SecRule REQUEST_URI "@beginsWith /drupal/index.php/contextual/render" \
+    "phase:1,nolog,pass,id:10000,ctl:ruleRemoveTargetById=942431;ARGS:ids[]"
+SecRule REQUEST_URI "@beginsWith /drupal/index.php/quickedit/attachments" \
+    "phase:1,nolog,pass,id:10001,ctl:ruleRemoveTargetById=942431;ARGS:ajax_page_state[libraries]"
+
+# ModSec Rule Exclusion: All SQLi rules for parameter keys on search form via tag attack-sqli
+SecRule REQUEST_URI "@beginsWith /drupal/index.php/search/node" \
+    "phase:1,nolog,pass,id:10002,ctl:ruleRemoveTargetByTag=attack-sqli;ARGS:keys"
+
+
+# === ModSecurity Core Rule Set Inclusion
+
+Include    /apache/conf/crs/rules/*.conf
+
+
+# === ModSec Core Rule Set: Startup Time Rules Exclusions
+
+# ModSec Rule Exclusion: 920273 : Invalid character in request (outside of very strict set)
+SecRuleRemoveById 920273
+
+# ModSec Rule Exclusion: 942432 : Restricted SQL Character Anomaly Detection (args): 
+# number of special characters exceeded (2)
+SecRuleRemoveById 942432
+
+# ModSec Rule Exclusion: 942450 : SQL Hex Encoding Identified (severity: 5 CRITICAL)
+SecRuleUpdateTargetById 942450 "!REQUEST_COOKIES"
+SecRuleUpdateTargetById 942450 "!REQUEST_COOKIES_NAMES"
+
+# ModSec Rule Exclusion: 921180 : HTTP Parameter Pollution
+SecRuleRemoveById 921180
+
+# ModSec Rule Exclusion: 930000 - 944999 : All application rules for password parameters
+SecRuleUpdateTargetById 930000-944999 "!ARGS:account[pass][pass1]"
+SecRuleUpdateTargetById 930000-944999 "!ARGS:account[pass][pass2]"
+SecRuleUpdateTargetById 930000-944999 "!ARGS:pass"
+
+__________________________________________
+
+https://www.netnea.com/cms/apache-tutorial-5_extending-access-log/
+
+grep 167065107659.197164 logs/error.log | grep 949110 | meltags (alias)
+
+application-multi
+language-shell
+platform-unix
+attack-rce
+OWASP_CRS/WEB_ATTACK/COMMAND_INJECTION
+WASCTC/WASC-31
+OWASP_TOP_10/A1
+PCI/6.5.2
