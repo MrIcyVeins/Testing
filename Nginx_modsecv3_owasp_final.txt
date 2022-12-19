@@ -1,0 +1,241 @@
+Nginx_modsecurity-v3_OWASP-CRS
+on CentOS7
+
+# update packages and install Nginx
+
+sudo yum install epel-release wget
+sudo yum update
+sudo yum install nginx    
+
+###nginx will be installed in /etc/nginx
+
+1) Compile and install ModSecurity v3
+
+sudo yum groupinstall 'Development Tools' -y
+sudo yum install gcc-c++ flex bison yajl yajl-devel curl-devel curl GeoIP-devel doxygen zlib-devel
+sudo yum install lmdb lmdb-devel libxml2 libxml2-devel ssdeep ssdeep-devel lua lua-devel pcre-devel
+cd /usr/src/
+sudo git clone --depth 1 -b v3/master --single-branch https://github.com/SpiderLabs/ModSecurity
+cd ModSecurity/
+sudo git submodule init
+sudo git submodule update
+sudo ./build.sh
+sudo ./configure
+sudo make
+sudo make install
+
+#ModSecurity will be installed in /usr/local/modsecurity
+
+2) Install and copy (to nginx installation folder) Nginx+ModSecurity (module and config)
+
+ cd /usr/src
+ sudo git clone --depth 1 https://github.com/SpiderLabs/ModSecurity-nginx.git
+
+ # Check nginx version in order to download the right nginx source
+ # nginx -V (ex 1.20.1)
+
+cd /usr/src
+sudo wget http://nginx.org/download/nginx-1.20.1.tar.gz
+sudo tar zxvf nginx-1.20.1.tar.gz
+cd nginx-1.20.1
+sudo ./configure --with-compat --add-dynamic-module=../ModSecurity-nginx
+sudo make modules
+sudo cp objs/ngx_http_modsecurity_module.so /etc/nginx/modules
+sudo cp /usr/src/ModSecurity/modsecurity.conf-recommended /etc/nginx/modsecurity.conf
+sudo cp /usr/src/ModSecurity/unicode.mapping /etc/nginx/unicode.mapping
+sudo cp /usr/src/nginx-1.20.1/objs/ngx_http_modsecurity_module.so /usr/share/nginx/modules/ngx_http_modsecurity_module.so
+
+#copy nginx module from nginx source folder --to-- nginx installation folder
+#copy modsecurity.conf(recommended) from SpiderLabs ModSecurity folder --to-- nginx installation folder
+#copy unicode.mapping from SpiderLabs ModSecurity folder --to-- nginx installation folder
+----------
+
+3) Enable SecRuleEngine, edit /etc/nginx/modsecurity.conf and change
+
+sudo vi /etc/nginx/modsecurity.conf
+
+SecRuleEngine DetectionOnly
+to
+SecRuleEngine On
+
+4) Configure Nginx (nginx.conf) to use ModSecurity module
+ 
+#To load ModSecurity on Nginx, edit /etc/nginx/nginx.conf and add this code in top of configuration.
+
+#error_log  /var/log/nginx/error.log warn;
+#pid        /var/run/nginx.pid;
+
+load_module modules/ngx_http_modsecurity_module.so;
+
+5) And on your server block add this code:
+
+server {
+	.......
+	.......
+	modsecurity on;
+	modsecurity_rules_file /etc/nginx/modsec_includes.conf;
+	.......
+	.......
+}
+
+6) Get OWASP ModSecurity Core Rule Set (CRS) from https://coreruleset.org  OR 
+https://www.owasp.org/index.php/Category:OWASP_ModSecurity_Core_Rule_Set_Project
+
+Ex: https://github.com/coreruleset/coreruleset/archive/refs/tags/v3.3.4.zip
+
+cd /etc/nginx
+sudo wget https://github.com/coreruleset/coreruleset/archive/refs/tags/v3.3.4.zip
+sudo unzip v3.3.4.zip
+sudo mv coreruleset-3.3.4/ owasp-modsecurity-crs
+sudo cp owasp-modsecurity-crs/crs-setup.conf.example owasp-modsecurity-crs/crs-setup.conf
+
+cd /etc/nginx/owasp-modsecurity-crs/rules/
+sudo mv REQUEST-900-EXCLUSION-RULES-BEFORE-CRS.conf.example REQUEST-900-EXCLUSION-RULES-BEFORE-CRS.conf
+sudo mv RESPONSE-999-EXCLUSION-RULES-AFTER-CRS.conf.example RESPONSE-999-EXCLUSION-RULES-AFTER-CRS.conf
+
+###### Or from SpiderLabs ######### 
+##wget https://github.com/SpiderLabs/owasp-modsecurity-crs/archive/v3.2.0.zip
+
+
+7) Create /etc/nginx/modsec_includes.conf and add:
+sudo vi modsec_includes.conf
+
+include modsecurity.conf
+include /etc/nginx/owasp-modsecurity-crs/crs-setup.conf
+include /etc/nginx/owasp-modsecurity-crs/rules/*.conf
+
+# Additional custom rules here
+
+# SecRule REMOTE_ADDR "^192\.168\.1\.148" "phase:1,nolog,allow,ctl:ruleEngine=off,id:920351"
+# SecRule REMOTE_ADDR "^xx\.xx\.xxx\.x" "phase:1,nolog,allow,ctl:ruleEngine=off,id:20000221"  - ip whitelisting
+-------------------------------------------------------------
+8) Check your Nginx configuration with
+
+sudo systemctl start nginx
+sudo nginx -t
+
+#Output should look like this:
+nginx: the configuration file /etc/nginx/nginx.conf syntax is ok
+nginx: configuration file /etc/nginx/nginx.conf test is successful
+
+sudo firewall-cmd --zone=public --permanent --add-service=http
+sudo firewall-cmd --reload
+
+#If no problem, restart nginx
+sudo systemctl restart nginx
+
+9) Configure rule detection and execution behaviour (crs-setup.conf) /etc/nginx/owasp-modsecurity-crs/crs-setup.conf
+
+###Setting Paranoia Levels to 4 (very high security) -- default 1
+#For detection paranoia
+
+SecAction \
+
+  "id:900000,\
+
+   phase:1,\
+
+   nolog,\
+
+   pass,\
+
+   t:none,\
+
+   setvar:tx.paranoia_level=4"  ---------------------- default 1 
+
+#For rule execution paranoia
+
+SecAction \
+
+  "id:900001,\
+
+   phase:1,\
+
+   nolog,\
+
+   pass,\
+
+   t:none,\
+
+   setvar:tx.executing_paranoia_level=4"  ------------------ default 1
+
+### Setting Anomaly Mode Blocking Threshold levels to 2 for inbound and 1 for outbound --- default 5 and 4
+
+SecAction \
+
+ "id:900110,\
+
+  phase:1,\
+
+  nolog,\
+
+  pass,\
+
+  t:none,\
+
+  setvar:tx.inbound_anomaly_score_threshold=2,\       --------- default 5
+
+  setvar:tx.outbound_anomaly_score_threshold=1"       --------- default 4
+
+###sudo systemctl restart nginx
+
+10) Testing Nginx ModSecurity v3
+
+#tail the logs
+sudo tail -f /var/log/nginx/error.log  ----------------ModSecurity error log 
+sudo tail -f /var/log/nginx/access.log ----------------Access log
+
+curl http://192.168.1.162
+curl http://127.0.0.1
+curl http://127.0.0.1/index.html
+
+<html>
+<head><title>403 Forbidden</title></head>
+<body>
+<center><h1>403 Forbidden</h1></center>
+<hr><center>nginx/1.20.1</center>
+</body>
+</html>
+
+____________
+Other tests:
+-------------------------------------------
+XSS test - /?q="><script>alert(1)</script>'
+SQL injection - /?id=1 and 'c'='c'
+
+ex : http://127.0.0.1/?id=1 and 'c'='c'
+
+#Restricted command protection for a restricted file = /index.php?f=/etc/passwd   and  
+#Directory Traversal protection = /index.php?f=/../../../../../etc/passwd
+http://127.0.0.1/index.php?f=/etc/passwd
+
+http://127.0.0.1/index.php?f=/../../../../../etc/passwd
+
+http://localhost/index.html?test=/etc/passwd
+
+------------------------------------------
+
+
+
+
+ModSecurity installation dir ----------- /usr/local/modsecurity
+Nginx installation dir ----------------- /etc/nginx
+Nginx config file ---------------------- /etc/nginx/nginx.conf
+modsec_includes.conf ------------------- /etc/nginx/modsec_includes.conf  ######## include core rules(by default) + whitelist / blacklist rules
+crs-setup.conf ------------------------- /etc/nginx/owasp-modsecurity-crs/crs-setup.conf ########## CORE Rule behaviour configuration file
+modsecurity.conf ----------------------- /etc/nginx/modsecurity.conf #### turn on 
+
+/usr/local/nginx/logs/error.log ---------- error log
+/usr/local/nginx/logs/access.log --------- access log
+
+
+
+
+
+
+
+
+
+
+
+
