@@ -1,0 +1,22 @@
+## Get CA chain of url and split it in files
+getCAChain (){
+	if [[ -z "$1" || -z "$2" ]]
+	  then
+		echo "Please provide the hostname or ip address of the server and port"
+		echo "Example usage: getCAChain hostname port"
+		return 1
+	fi
+	URL=$1
+	PORT=$2
+	openssl s_client -connect ${URL}:${PORT} -servername ${URL} -prexit -showcerts -verify 5 < /dev/null | awk '/BEGIN CERTIFICATE/,/END CERTIFICATE/{ if(/BEGIN CERTIFICATE/){a++}; out="cert"a".pem"; print >out}'
+	for cert in *.pem; do 
+			newname=$(openssl x509 -noout -subject -in $cert | sed -nE 's/.*CN ?= ?(.*)/\1/; s/[ ,.*]/_/g; s/=/_/g; s/\"/_/g; s/__/_/g; s/__/_/g; s/_-_/-/; s/^_//g;p' | tr '[:upper:]' '[:lower:]').crt
+			echo "${newname}"; mv "${cert}" "${newname}" 
+	done
+}
+
+# results only one file
+openssl s_client -host ${HOST} -port 443 -prexit -showcerts -servername ${HOST} -verify 5 < /dev/null | awk '/BEGIN CERTIFICATE/,/END CERTIFICATE/' > file.pem
+
+openssl s_client -showcerts -servername ${HOST} -connect ${HOST}:443 </dev/null | sed -n -e '/-.BEGIN/,/-.END/ p'
+
