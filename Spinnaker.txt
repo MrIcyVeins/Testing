@@ -1,0 +1,40 @@
+https://spinnaker.io/docs/setup/install/
+https://www.containiq.com/post/using-kubernetes-with-spinnaker
+https://github.com/armory/spinnaker-operator
+
+
+
+sudo curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
+
+
+
+wget -O- https://packages.cloud.google.com/apt/doc/apt-key.gpg |
+    gpg --dearmor |
+    sudo tee /etc/apt/keyrings/apt-key.gpg > /dev/null
+
+echo "deb [signed-by=/etc/apt/keyrings/apt-key.gpg] http://apt.kubernetes.io/ kubernetes-xenial main" |
+    sudo tee /etc/apt/sources.list.d/kubernetes.list
+
+sudo apt-get update && sudo apt-get install -y kubelet kubeadm kubectl docker.io
+
+sudo kubeadm init --apiserver-advertise-address 192.168.1.149 --pod-network-cidr=172.16.0.0/16
+
+kubeadm init --apiserver-advertise-address 192.168.1.206 --pod-network-cidr=172.16.0.0/16
+
+
+kubeadm join 192.168.1.206:6443 --token z4k7hl.8gwy6yqm3wvjk4dt \
+        --discovery-token-ca-cert-hash sha256:cc7e19a5a42a8c4f06118a44efe84f5257e00b5124eb9921b625eeffa317f394  --
+-------------------------
+
+mkdir -p $HOME/.kube
+sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+sudo chown $(id -u):$(id -g) $HOME/.kube/config
+
+OR
+
+export KUBECONFIG=/etc/kubernetes/admin.conf
+
+git log --all --decorate --oneline --graph
+
+
+
