@@ -1,0 +1,105 @@
+https://spinnaker.io/docs/setup/install/
+https://www.containiq.com/post/using-kubernetes-with-spinnaker
+https://github.com/armory/spinnaker-operator
+
+
+
+
+# Join kubernetes worker to master plane
+
+kubeadm join .....
+
+
+wget -O- https://packages.cloud.google.com/apt/doc/apt-key.gpg |
+    gpg --dearmor |
+    sudo tee /etc/apt/keyrings/apt-key.gpg > /dev/null
+
+echo "deb [signed-by=/etc/apt/keyrings/apt-key.gpg] http://apt.kubernetes.io/ kubernetes-xenial main" |
+    sudo tee /etc/apt/sources.list.d/kubernetes.list
+
+sudo apt-get update && sudo apt-get install -y kubelet kubeadm kubectl docker.io
+
+sudo kubeadm init --apiserver-advertise-address 192.168.1.149 --pod-network-cidr=172.16.0.0/16
+
+sudo kubeadm init --apiserver-advertise-address 192.168.1.149 --pod-network-cidr=172.16.0.0/16 --cri-socket unix:///var/run/cri-dockerd.sock
+kubeadm init --apiserver-advertise-address 192.168.1.206 --pod-network-cidr=172.16.0.0/16
+
+
+kubeadm join ....
+
+-------------------------
+
+mkdir -p $HOME/.kube 
+sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config 
+sudo chown $(id -u):$(id -g) $HOME/.kube/config
+
+OR
+
+export KUBECONFIG=/etc/kubernetes/admin.conf
+
+git log --all --decorate --oneline --graph
+
+
+# INSTALL kubernetes and docker
+
+curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add - && \
+  echo "deb http://apt.kubernetes.io/ kubernetes-xenial main" | sudo tee /etc/apt/sources.list.d/kubernetes.list && \
+  sudo apt-get update -q && \
+  sudo apt-get install -qy kubelet=1.20.15-00 kubectl=1.20.15-00 kubeadm=1.20.15-00 docker.io
+
+# initialize kubernetes master plane
+
+sudo kubeadm init --apiserver-advertise-address 192.168.1.149 --pod-network-cidr=172.16.0.0/16
+
+
+# Admin rights
+
+sudo mkdir ~/.kube
+sudo cp /etc/kubernetes/admin.conf ~/.kube/
+
+cd ~/.kube
+
+sudo mv admin.conf config
+sudo service kubelet restart
+
+
+#### mv /etc/kubernetes/kubelet.conf /etc/kubernetes/admin.conf
+
+
+
+# Install Calico
+
+#kubectl create -f https://raw.githubusercontent.com/projectcalico/calico/v3.25.0/manifests/tigera-operator.yaml
+#kubectl create -f https://raw.githubusercontent.com/projectcalico/calico/v3.25.0/manifests/custom-resources.yaml
+
+
+curl https://raw.githubusercontent.com/projectcalico/calico/v3.25.0/manifests/calico.yaml -O
+vi calico.yaml
+kubectl apply -f calico.yaml
+
+
+###https://github.com/armory/spinnaker-operator
+
+# Pick a release from https://github.com/armory/spinnaker-operator/releases (or clone the repo and use the master branch for the latest development work)
+$ mkdir -p spinnaker-operator && cd spinnaker-operator
+$ bash -c 'curl -L https://github.com/armory/spinnaker-operator/releases/latest/download/manifests.tgz | tar -xz'
+ 
+# Install or update CRDs cluster wide
+$ kubectl apply -f deploy/crds/
+
+# Install operator in namespace spinnaker-operator, see below if you want a different namespace
+$ kubectl create ns spinnaker-operator
+$ kubectl -n spinnaker-operator apply -f deploy/operator/cluster
+
+# Update deploy/spinnaker/basic/spinnakerservice.yml to change Spinnaker's persistence bucket name to a unique name (persistentStorage.s3.bucket value)
+
+# Install Spinnaker in "spinnaker" namespace
+$ kubectl create ns spinnaker
+$ kubectl -n spinnaker apply -f deploy/spinnaker/basic
+
+# Watch the install progress, check out the pods being created too!
+$ kubectl -n spinnaker get spinsvc spinnaker -w
+
+
+
+kubectl -n spinnaker-operator describe pod spinnaker-operator-69544556d-fdzdv
