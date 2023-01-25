@@ -52,6 +52,12 @@ curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add
 sudo kubeadm init --apiserver-advertise-address 192.168.1.149 --pod-network-cidr=172.16.0.0/16
 
 
+
+kubeadm token create --print-join-command
+
+
+
+
 # Admin rights
 
 sudo mkdir ~/.kube
