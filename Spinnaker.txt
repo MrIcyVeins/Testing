@@ -5,6 +5,12 @@ https://github.com/armory/spinnaker-operator
 
 
 
+
+
+
+swapoff -a
+
+
 # Join kubernetes worker to master plane
 
 kubeadm join .....
@@ -49,13 +55,11 @@ curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add
 
 # initialize kubernetes master plane
 
-sudo kubeadm init --apiserver-advertise-address 192.168.1.149 --pod-network-cidr=172.16.0.0/16
+sudo kubeadm init --apiserver-advertise-address 192.168.1.149 --pod-network-cidr=172.16.0.0/16 --cri-socket unix:///var/run/cri-dockerd.sock
 
 
 
 kubeadm token create --print-join-command
-
-
 
 
 # Admin rights
@@ -109,3 +113,5 @@ $ kubectl -n spinnaker get spinsvc spinnaker -w
 
 
 kubectl -n spinnaker-operator describe pod spinnaker-operator-69544556d-fdzdv
+
+https://www.ibm.com/docs/en/control-desk/7.6.1.x?topic=kubernetes-creating-cluster-master-worker-nodes
