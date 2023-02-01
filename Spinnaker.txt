@@ -1,15 +1,13 @@
 https://spinnaker.io/docs/setup/install/
 https://www.containiq.com/post/using-kubernetes-with-spinnaker
 https://github.com/armory/spinnaker-operator
-
-
-
-
-
+https://forum.linuxfoundation.org/discussion/862825/kubeadm-init-error-cri-v1-runtime-api-is-not-implemented
 
 
 swapoff -a
 
+kubeadm join 192.168.1.149:6443 --token an4a93.d1gl1ta08tamy2en \
+        --discovery-token-ca-cert-hash sha256:b51d3ccdeb8a4eea7e298a667d0fc366f3a35b201b2773e6480b5761e469da06
 
 # Join kubernetes worker to master plane
 
@@ -25,10 +23,8 @@ echo "deb [signed-by=/etc/apt/keyrings/apt-key.gpg] http://apt.kubernetes.io/ ku
 
 sudo apt-get update && sudo apt-get install -y kubelet kubeadm kubectl docker.io
 
-sudo kubeadm init --apiserver-advertise-address 192.168.1.149 --pod-network-cidr=172.16.0.0/16
-
 sudo kubeadm init --apiserver-advertise-address 192.168.1.149 --pod-network-cidr=172.16.0.0/16 --cri-socket unix:///var/run/cri-dockerd.sock
-kubeadm init --apiserver-advertise-address 192.168.1.206 --pod-network-cidr=172.16.0.0/16
+
 
 
 kubeadm join ....
@@ -88,6 +84,7 @@ vi calico.yaml
 kubectl apply -f calico.yaml
 
 
+
 ###https://github.com/armory/spinnaker-operator
 
 # Pick a release from https://github.com/armory/spinnaker-operator/releases (or clone the repo and use the master branch for the latest development work)
@@ -115,3 +112,18 @@ $ kubectl -n spinnaker get spinsvc spinnaker -w
 kubectl -n spinnaker-operator describe pod spinnaker-operator-69544556d-fdzdv
 
 https://www.ibm.com/docs/en/control-desk/7.6.1.x?topic=kubernetes-creating-cluster-master-worker-nodes
+
+
+
+
+
+
+sudo apt-get update && sudo apt-get install -y apt-transport-https gnupg2
+curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
+echo "deb https://apt.kubernetes.io/ kubernetes-xenial main" | sudo tee -a /etc/apt/sources.list.d/kubernetes.list
+
+
+
+
+
+
