@@ -6,9 +6,6 @@ https://forum.linuxfoundation.org/discussion/862825/kubeadm-init-error-cri-v1-ru
 
 swapoff -a
 
-kubeadm join 192.168.1.149:6443 --token an4a93.d1gl1ta08tamy2en \
-        --discovery-token-ca-cert-hash sha256:b51d3ccdeb8a4eea7e298a667d0fc366f3a35b201b2773e6480b5761e469da06
-
 # Join kubernetes worker to master plane
 
 kubeadm join .....
