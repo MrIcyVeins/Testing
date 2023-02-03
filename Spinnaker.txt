@@ -123,4 +123,63 @@ echo "deb https://apt.kubernetes.io/ kubernetes-xenial main" | sudo tee -a /etc/
 
 
 
+## Deploy spinnaker POC on CICD cluster
+
+### Deploy halyard and minio
+
+1. Deploy halyard by using halyard.yaml file 
+
+`kubectl apply -f halyard.yaml`
+
+2. Deploy minio (s3 emulator) as persistent storage for spinnaker
+
+`kubectl apply -f minio.yaml`
+
+3. Setup a service account to be used by halyard
+
+`kubectl apply -f spinnaker-role.yaml`
+
+### Setup access to Kubernetes cluster for halyard
+
+1. Copy the config 
+
+```kubectl cp ~/.kube/halyard-config spinnaker/<halyard-pod-name>:/tmp/kubeconfig```
+
+2.  Connect into halyard pod
+
+```kubectl exec -it <halyard-pod> -- bash
+cd /tmp ```
+
+3. Check configuration
+
+```hal config | more```
+
+4. Configure spinnaker version
+
+```hal config version edit --version <stable-spinnaker-version>```
+
+5. Configure spinnaker storage to use minio
+
+```hal config storage s3 edit --endpoint http://minio-service:9000 --access-key-id testingtest --secret-access-key -bucket lftestbucket
+hal config storage s3 edit -path-style-access=true
+hal config storage edit --type s3```
+
+6. Disable versioning since it is not supported by minio
+
+```mkdir -p ~/.hal/default/profiles && echo "spinnaker.s3.versioning: false" > ~/.hal/default/profiles/front50-local.yml```
+
+7. Configure the target cloud provider, i.e Kubernetes, and enable
+
+```hal config provider kubernetes enable
+hal config deploy edit --type Distributed --account-name k8s-v2-spin -location spinnaker```
+
+8. Deploy Spinnaker
+
+`hal deploy apply`
+
+9. It doesn't deploy an ingress and it doesn't provides authentication by default so we are forwarding ports for this POC
+
+```kubectl port-forward spin-deck 9000:9000
+kubectl port-forward spin-gate 8084:8084```
+
 
