@@ -1,8 +1,6 @@
 https://devopscube.com/setup-kubernetes-cluster-kubeadm/
 https://dev.to/stack-labs/how-to-switch-container-runtime-in-a-kubernetes-cluster-1628
 
-
-
 cat <<EOF | sudo tee /etc/modules-load.d/k8s.conf
 overlay
 br_netfilter
@@ -19,14 +17,8 @@ EOF
 
 sudo sysctl --system
 
-
 sudo swapoff -a
 (crontab -l 2>/dev/null; echo "@reboot /sbin/swapoff -a") | crontab - || true
-
-
-sudo modprobe overlay
-sudo modprobe br_netfilter
-
 
 OS="xUbuntu_20.04"
 
