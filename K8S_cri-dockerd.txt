@@ -1,4 +1,5 @@
 https://gist.github.com/saiyam1814/801db1288c690a969e7174eca89c65b2
+https://www.bluematador.com/learn/kubectl-cheatsheet
 -------------------------------------------------------------
 
 sudo apt-get update / sudo yum update
