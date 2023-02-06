@@ -196,6 +196,8 @@ OWASP_TOP_10/A1
 PCI/6.5.2
 
 
+https://stackoverflow.com/questions/40045400/mod-security-block-get-request-to-uri-path
+
 SecRule \
   REQUEST_URI \
   "^/secure/test/bla/bla/.*" \
@@ -203,3 +205,14 @@ SecRule \
  SecRule \
     REQUEST_METHOD \
     "GET"
+
+SecRule \
+  REQUEST_URI \
+  "^/secure/test/bla/bla/.*" \
+  "id:4564,deny"
+
+
+SecRule \
+  VARIABLE_TO_CHECK \
+  VALUE_TO_CHECK_FOR \
+  ACTION_TO_TAKE_IF_MATCHED \
