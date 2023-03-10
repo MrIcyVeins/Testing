@@ -6,6 +6,7 @@ on:
 jobs:
   build:
     runs-on: [ ubuntu-latest ]
+      steps:
         - name: Build container image
             id: docker_build-push
             uses: docker/build-push-action@v2
