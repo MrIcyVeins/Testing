@@ -16,4 +16,3 @@ jobs:
       - run: npm install -g bats
       - run: bats -v
       - run: sudo apt-get update
-      - run: sudo apt-get install yq
