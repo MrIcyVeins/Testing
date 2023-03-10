@@ -2,17 +2,11 @@ on:
   push:
     branches:
     - master
-
-name: learn-github-actions
-run-name: ${{ github.actor }} is learning GitHub Actions
-jobs:
-  check-bats-version:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
-        with:
-          node-version: '14'
-      - run: npm install -g bats
-      - run: bats -v
-      - run: sudo apt-get update
+Test1:
+  - name: Build container image
+    id: docker_build-push
+    uses: docker/build-push-action@v2
+    with:
+      file: ./Dockerfile
+      context: .
+      push: true
