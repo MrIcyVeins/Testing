@@ -1,7 +1,8 @@
 name: Smoke tests
-on: push
-  paths:
-    - '.github/workflows/**'
+on:
+  push:
+    paths:
+      - '.github/workflows/**'
 
 jobs:
  test:
