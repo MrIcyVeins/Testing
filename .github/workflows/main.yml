@@ -3,13 +3,15 @@ on:
   push:
     paths:
       - '.github/workflows/**'
+       if: "!contains(github.event.head_commit.message, 'ci skip')"
+
 
 jobs:
  test:
    runs-on: [ ubuntu-latest ]
    steps:
      - name: Run smoke tests
-       if: contains(github.event.head_commit.message, 'smoke_test')
+      #  if: contains(github.event.head_commit.message, 'smoke_test')
        run: |
          echo 'Running smoke tests!'
 
