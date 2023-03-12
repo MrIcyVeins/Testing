@@ -1,8 +1,8 @@
 name: Smoke tests
 on:
   push:
-    branches:
-    - master
+    paths:
+      - '.github/workflows/**'
 
 env:
   REGISTRY: ghcr.io
@@ -12,8 +12,8 @@ jobs:
  test:
    runs-on: [ ubuntu-latest ]
    permissions:
-   contents: read
-   packages: write
+    contents: read
+    packages: write
 
    steps:
      - name: Run smoke tests
