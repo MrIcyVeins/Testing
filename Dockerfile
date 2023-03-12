@@ -1,5 +1,5 @@
 FROM ubuntu:latest
 
-RUN echo "this is a test"
+RUN echo "This is the second test"
 
 
