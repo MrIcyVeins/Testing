@@ -21,5 +21,3 @@ z392fKwb2RoDnAku
 
 argocd login <ARGOCD_SERVER> --port-forward-namespace argocd   OR  ARGOCD_OPTS      export ARGOCD_OPTS='--port-forward-namespace argocd'
 
-
-
