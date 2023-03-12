@@ -3,7 +3,7 @@ on:
   push:
     paths:
       - '.github/workflows/**'
-       if: "!contains(github.event.head_commit.message, 'ci skip')"
+
 
 
 jobs:
@@ -12,6 +12,7 @@ jobs:
    steps:
      - name: Run smoke tests
       #  if: contains(github.event.head_commit.message, 'smoke_test')
+      if: "!contains(github.event.head_commit.message, 'ci skip')"
        run: |
          echo 'Running smoke tests!'
 
