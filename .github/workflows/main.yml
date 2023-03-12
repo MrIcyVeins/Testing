@@ -1,7 +1,7 @@
 name: Smoke tests
 on: push
   paths:
-    - '**.yml'
+    - '.github/workflows/**'
 
 jobs:
  test:
