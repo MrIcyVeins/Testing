@@ -1,5 +1,5 @@
 FROM ubuntu:latest
 
-RUN sudo apt-get update
+RUN lsb_release -a 
 
 
