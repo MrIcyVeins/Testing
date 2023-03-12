@@ -6,3 +6,5 @@ chmod a+x kustomize_kustomize.v3.2.3_linux_amd64 && \
 sudo mv kustomize_kustomize.v3.2.3_linux_amd64 /usr/local/bin/kustomize && \
 sudo wget -qO /usr/local/bin/yq https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 && \
 sudo chmod a+x /usr/local/bin/yq
+
+
