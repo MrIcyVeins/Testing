@@ -1,5 +1,7 @@
 name: Smoke tests
 on: push
+  paths:
+    - 'main.yml'
 
 jobs:
  test:
