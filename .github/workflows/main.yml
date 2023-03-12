@@ -2,10 +2,14 @@ name: Smoke tests
 on: push
 
 jobs:
- test:
-   runs-on: [ ubuntu-latest ]
-   steps:
-     - name: Run smoke tests
-       if: contains(github.event.head_commit.message, 'smoke_test')
-       run: |
-         echo 'Running smoke tests!'
+  check-bats-version:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '14'
+      - run: npm install -g bats
+      - run: bats -v
+      - run: sudo apt-get update
+      - run: sudo apt-get install yq
