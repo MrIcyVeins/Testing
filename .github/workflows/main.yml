@@ -11,6 +11,7 @@ env:
 
 jobs:
  test:
+   if: "!contains(github.event.head_commit.message, '[ci skip]')"
    runs-on: [ ubuntu-latest ]
    permissions:
     contents: read
@@ -19,7 +20,7 @@ jobs:
    steps:
      - name: Run smoke tests
       #  if: contains(github.event.head_commit.message, 'smoke_test')
-       if: "!contains(github.event.head_commit.message, 'ci skip')"
+      #  if: "!contains(github.event.head_commit.message, 'ci skip')"
        run: |
          echo 'Running smoke tests!'
      - name: Run Bat
