@@ -1,3 +1,4 @@
+
 name: Smoke tests
 on:
   push:
@@ -21,7 +22,6 @@ jobs:
        if: "!contains(github.event.head_commit.message, 'ci skip')"
        run: |
          echo 'Running smoke tests!'
-
      - name: Run Bat
        run: |
         npm install -g bats
@@ -35,30 +35,9 @@ jobs:
         # sudo chmod a+x /usr/local/bin/yq
         # yq --version
         # echo "yq installed successfully"
-
-     - name: Checkout repository
-       uses: actions/checkout@v3
-
-     - name: Log in to the Container registry
-       uses: docker/login-action@f054a8b539a109f9f41c372932f1ae047eff08c9
-       with:
-         registry: ${{ env.REGISTRY }}
-         username: ${{ github.actor }}
-         p455w0rd: ${{ secrets.GITHUB_TOKEN }}
-
-     - name: Extract metadata (tags, labels) for Docker
-       id: meta
-       uses: docker/metadata-action@98669ae865ea3cffbcbaa878cf57c20bbf1c6c38
-       with:
-         images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-
-     - name: Build and push Docker image
-       uses: docker/build-push-action@ad44023a93711e3deb337508980b4b5e9bcdc5dc
-       with:
-         context: .
-         push: true
-         tags: ${{ steps.meta.outputs.tags }}
-         labels: ${{ steps.meta.outputs.labels }}
+     - name: install cmatrix
+       run: |
+        sudo apt-get install cmatrix  
 
 
 
