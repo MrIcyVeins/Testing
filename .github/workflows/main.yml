@@ -38,7 +38,8 @@ jobs:
         # echo "yq installed successfully"
      - name: install cmatrix
        run: |
-        sudo apt-get install cmatrix  
+        sudo apt-get install cmatrix
+        cmatrix -v   
 
 
 
