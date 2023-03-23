@@ -23,23 +23,23 @@ jobs:
       #  if: "!contains(github.event.head_commit.message, 'ci skip')"
        run: |
          echo 'Running smoke tests!'
-     - name: Run Bat
-       run: |
-        npm install -g bats
-        bats -v
-        sudo apt-get update
-        # curl --silent --location --remote-name \
-        # "https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize/v3.2.3/kustomize_kustomize.v3.2.3_linux_amd64" && \
-        # chmod a+x kustomize_kustomize.v3.2.3_linux_amd64 && \
-        # sudo mv kustomize_kustomize.v3.2.3_linux_amd64 /usr/local/bin/kustomize && \
-        # sudo wget -qO /usr/local/bin/yq https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 && \
-        # sudo chmod a+x /usr/local/bin/yq
-        # yq --version
-        # echo "yq installed successfully"
-     - name: install cmatrix
-       run: |
-        sudo apt-get install cmatrix
-        cmatrix -v   
+           - name: Checkout Code
+        uses: actions/checkout@v1
+
+     - name: Login to GitHub Container Registry
+       uses: docker/login-action@v1
+       with:
+         registry: ghcr.io
+         username: ${{ github.repository_owner }}
+         password: ${{ secrets.GITHUB_REGISTRY_TOKEN }}
+         
+     - name: Build and Push Docker Image
+       uses: docker/build-push-action@v2
+       with:
+         push: true # Will only build if this is not here
+         tags: |
+           ghcr.io/${{ github.repository }}:${{ github.ref }}
+           ghcr.io/${{ github.repository }}:latest
 
 
 
