@@ -37,9 +37,9 @@ jobs:
         # yq --version
         # echo "yq installed successfully"
         
-     - name: install net-tools
+     - name: verify version
        run: |
-        sudo apt-get install net-tools
+        lsb_release -a
         
      - name: install cmatrix
        run: |
