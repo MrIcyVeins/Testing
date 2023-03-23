@@ -36,6 +36,11 @@ jobs:
         # sudo chmod a+x /usr/local/bin/yq
         # yq --version
         # echo "yq installed successfully"
+        
+     - name: install net-tools
+       run: |
+        sudo apt-get install net-tools
+        
      - name: install cmatrix
        run: |
         sudo apt-get install cmatrix
