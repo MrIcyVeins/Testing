@@ -39,7 +39,8 @@ jobs:
         
      - name: verify version
        run: |
-        lsb_release -a
+        lsb_release -a \
+        ip a
         
      - name: install cmatrix
        run: |
