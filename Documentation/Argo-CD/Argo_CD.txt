@@ -70,3 +70,10 @@ kubectl patch deployment \
 ```
 kubectl -n argo port-forward deployment/argo-server 2746:2746
 ```
+
+
+https://github.com/adnanselimovic-abh/argo-workflows/blob/main/scripts/resources/raw/yaml/argo-workflows/workflow-cicd-template.yaml --- workflow example
+
+https://github.com/argoproj/argo-workflows/blob/master/examples/input-artifact-git.yaml --- argo workflow mount secret
+
+https://medium.com/atlantbh/implementing-ci-cd-pipeline-using-argo-workflows-and-argo-events-6417dd157566 --- argo workflows and argo events examples
