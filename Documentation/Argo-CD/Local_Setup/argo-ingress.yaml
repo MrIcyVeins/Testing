@@ -1,0 +1,26 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/backend-protocol: HTTP
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/rewrite-target: /$1
+  name: argo-server
+  namespace: argo
+spec:
+  rules:
+  - host: <host>
+    http:
+      paths:
+      - backend:
+          service:
+            name: argo-server
+            port:
+              name: web
+        path: /argo/(.*)
+        pathType: Prefix
+status:
+  loadBalancer:
+    ingress:
+    - ip: 10.0.0.10

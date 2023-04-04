@@ -1,0 +1,29 @@
+    
+
+# For both ArgoCD and ArgoWorkflow
+# Add path for ingress in deployment/argo-server (env BASE_HREF) 
+& 
+- --secure=false in container.args 
+
+    app: argo-server
+    spec:
+      containers:
+      - args:
+        - server
+        - namespaced
+        - --auth-mode=server
+        - --secure=false
+        env:
+        - name: BASE_HREF
+          value: /<path>/
+        image: quay.io/argoproj/argocli:v3.4.6
+        imagePullPolicy: IfNotPresent
+
+# Add rootpath for ArgoCD in deployment/argo-server (- --rootpath=/argocd)
+
+      containers:
+      - command:
+        - argocd-server
+        - --rootpath=/argocd
+        env:
+
