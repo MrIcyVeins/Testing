@@ -1,0 +1,36 @@
+cat .docker/config.json  --- docker credentials 
+
+docker run -d swarm /bin/bash tail -f /dev/null
+
+https://www.sanderh.dev/parsing-YAML-files-using-yq/ --- yq cheatsheet
+
+https://dev.to/selllami/how-to-run-mobaxterm-on-ubuntu-linux-with-wine-ohf --- mobaxterm on linux
+
+
+-------- VNC work ---------
+
+session=gnome
+geometry=1920x1200
+localhost
+alwaysshared
+
+
+#!/bin/bash
+xrdb $HOME/.Xresources
+startxfce4 &
+
+#!/bin/sh
+# Start Gnome 3 Desktop
+[ -x /etc/vnc/xstartup ] && exec /etc/vnc/xstartup
+[ -r $HOME/.Xresources ] && xrdb $HOME/.Xresources
+vncconfig -iconic &
+dbus-launch --exit-with-session gnome-session &
+~
+
+
+vncserver -kill :1
+
+
+-------------------
+
+https://craignewtondev.medium.com/how-to-fix-kubernetes-namespace-deleting-stuck-in-terminating-state-5ed75792647e -- remove terminating ns

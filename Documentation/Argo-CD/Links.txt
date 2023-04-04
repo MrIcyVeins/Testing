@@ -1,0 +1,10 @@
+https://codefresh.io/learn/argo-workflows/ --- About Argo Workflows
+
+https://github.com/UrielCohen456/argocd-executor-plugin  --- An Executor Plugin for Argo Workflows that lets you interact with ArgoCD servers
+
+https://argocd-image-updater.readthedocs.io/en/stable/configuration/registries/ --- ArgoCD Registry support
+
+https://pipekit.io/blog/top-10-argo-workflows-examples --- Argo Workflows Examples
+
+
+
