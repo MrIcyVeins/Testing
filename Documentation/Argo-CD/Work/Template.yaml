@@ -1,0 +1,121 @@
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowTemplate
+metadata:
+  generateName: template-app-
+spec:
+  entrypoint: template-app-workflow
+  arguments:
+    parameters:
+    - name: TAG 
+      value: $(date +%Y%m%d%H%M%S)
+  imagePullSecrets:
+  - name: k8s-docker-secret
+  volumeClaimTemplates:                 # define volume, same syntax as k8s Pod spec
+  - metadata:
+      name: workdir                     # name of volume claim
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+        requests:
+          storage: 1Gi                  # Gi => 1024 * 1024 * 1024
+
+  templates:
+  - name: template-app-workflow
+    steps:
+    - - name: build
+        template: build-push-image
+    - - name: git
+        template: push-git
+
+
+  - name: build-push-image
+    container:
+      image: <container.repo.url>
+      command: [sh, -c]
+      args: 
+      - cd /mnt/git/<folder> && ls -lha && pwd;
+        echo -e '#! /bin/sh \nexport TAG=$(date +%Y%m%d%H%M%S)\necho $TAG\n' > script.sh;
+        cat script.sh;
+        source ./script.sh;
+        env;
+        until docker ps; do sleep 3; done; echo 'hello';
+        echo ${{ workflow.parameters.TAG }};
+        git clone https://$GITHUB_USER:$GITHUB_PASSWORD@<github.app.repo>;
+        cd flask-app;
+        docker build -t <APPIMAGENAME> .;
+        echo 'going to tag';
+        docker tag <APPIMAGENAME> <REPOURL>/<APPIMAGENAME>:$TAG;
+        echo 'going to push';
+        docker push <REPOURL>/<APPIMAGENAME>:$TAG;
+        echo 'done build-push-image';
+        echo 'START CHANGE VALUE IMAGE --------------------------';
+        git clone https://$GITHUB_USER:$GITHUB_PASSWORD@<github.manifests.repo>;
+        cd <repo.folder>;
+        ls -lha;
+        cat <repo.folder>/values.yaml | egrep tag;
+        yq e ".image.tag = "\"$TAG"\"" -i <repo.folder>/values.yaml;
+        cat <repo.folder>/values.yaml | egrep tag;
+        cd manifests/staging;
+        ls -lha && pwd;
+        kustomize edit set image https://$GITHUB_USER:$GITHUB_PASSWORD@<github.manifests.repo>=https://$GITHUB_USER:$GITHUB_PASSWORD@<github.manifests.repo>:$TAG;
+        echo done changetag;
+      env:
+      - name: DOCKER_HOST
+        value: 127.0.0.1
+      - name: GITHUB_USER
+        valueFrom:
+          secretKeyRef:
+            name: k8s-secret-name
+            key: username
+      - name: GITHUB_PASSWORD
+        valueFrom:
+          secretKeyRef:
+            name: k8s-secret-name
+            key: password
+
+      #  container 1
+              
+      volumeMounts:                     # same syntax as k8s Pod spec
+      - name: workdir
+        mountPath: /mnt/git/<folder>
+    
+    sidecars:
+    - name: dind
+      image: <dockerdind.image.url>
+      env:
+        - name: DOCKER_TLS_CERTDIR
+          value: ""
+      securityContext:
+        privileged: true
+      mirrorVolumeMounts: true
+
+  - name: push-git
+    container:
+      image: <repo.image.url>    
+      command: [sh, -c]
+      args:
+      - cd git/repo/path;
+        ls -lha && pwd;
+        git config user.name "user";
+        git config user.email "email";
+        git commit -a -m "updated version ${{ workflow.parameters.TAG }}";
+        git status;
+        git push;
+        echo done push-git;
+      env:
+      - name: GITHUB_USER
+        valueFrom:
+          secretKeyRef:
+            name: k8s-secret-name
+            key: username
+      - name: GITHUB_PASSWORD
+        valueFrom:
+          secretKeyRef:
+            name: k8s-secret-name
+            key: password
+
+      volumeMounts:                     # same syntax as k8s Pod spec
+      - name: workdir
+        mountPath: /mnt/git/<folder>  
+
+
