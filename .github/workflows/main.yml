@@ -4,7 +4,7 @@ on:
   push:
     paths:
       - '.github/workflows/**'
-      
+
 jobs:
  test:
    if: "!contains(github.event.head_commit.message, '[ci skip]')"
@@ -18,7 +18,11 @@ jobs:
    steps:
 
      - name: Check for dockerenv file
-       run: ls
+       run: |
+        ls
+        echo "hello" > hello.txt
+        cat hello.txt
+
 
 
 
