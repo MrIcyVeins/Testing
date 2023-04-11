@@ -19,9 +19,9 @@ jobs:
 
      - name: Check for dockerenv file
        run: |
-        ls
         echo "hello" > hello.txt
         cat hello.txt
+        ls -lha
 
 
 
