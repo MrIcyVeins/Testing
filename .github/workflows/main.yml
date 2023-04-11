@@ -4,11 +4,7 @@ on:
   push:
     paths:
       - '.github/workflows/**'
-
-env:
-  # REGISTRY: ghcr.io
-  # IMAGE_NAME: ${{ github.repository }}
-
+      
 jobs:
  test:
    if: "!contains(github.event.head_commit.message, '[ci skip]')"
