@@ -6,32 +6,23 @@ on:
       - '.github/workflows/**'
 
 env:
-  REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}
+  # REGISTRY: ghcr.io
+  # IMAGE_NAME: ${{ github.repository }}
 
 jobs:
  test:
    if: "!contains(github.event.head_commit.message, '[ci skip]')"
    runs-on: [ ubuntu-latest ]
+   container:
+    image: node:14.16
    permissions:
     contents: read
     packages: write
 
    steps:
 
-     - name: Login to GitHub Container Registry
-       uses: docker/login-action@v1
-       with:
-         registry: ghcr.io
-         username: ${{ github.repository_owner }}
-         password: ${{ secrets.REGISTRY_TOKEN }}
-         
-     - name: Build and Push Docker Image
-       uses: docker/build-push-action@v2
-       with:
-         push: true # Will only build if this is not here
-         tags: |
-           ghcr.io/container:latest
+     - name: Check for dockerenv file
+       run: ls
 
 
 
