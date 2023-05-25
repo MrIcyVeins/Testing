@@ -1,0 +1,33 @@
+    curl -k -u "{{ jenkins_user }}":"{{ jenkins_api_token }}" \
+     -X POST "{{ create_credential_url }}" -d 'json={
+            "": "0",
+            "credentials": {
+              "scope": "GLOBAL",
+              "id": "{{ id }}",
+              "username": "{{ user }}",
+              "password": "{{ new_pass }}",
+              "description": "cmsichef {{ place }} credentials",
+              "$class": "com.cloudbees.plugins.credentials.impl.UsernamePasswordCredentialsImpl"
+            }
+          }'
+         
+         
+create_credential_url: 'https://cmsvjenkins.rtp.raleigh.ibm.com:8443/credentials/store/system/domain/_/createCredentials'
+id: "{% if place|string() == 'CMS_TEST' %}cmsichefpassword_test{% elif place|string() == 'CMS_STAGING' -%}cmsichefpassword_staging{% elif place|string() == 'CMS_PROD' -%}cmsichefpassword_prod {% endif -%}"
+delete_credential_url: "https://cmsvjenkins.rtp.raleigh.ibm.com:8443/credentials/store/system/domain/_/credential/{{id}}/config.xml"
+
+
+
+- name: Delete old password in Jenkins credentials
+  uri:
+    url: "{{ delete_credential_url }}"
+    user: "{{ jenkins_user }}"
+    password: "{{ jenkins_api_token }}"
+    method: DELETE
+    force_basic_auth: yes
+    status_code: 200, 404
+    validate_certs: no
+  run_once: true
+  delegate_to: localhost
+          
+       
