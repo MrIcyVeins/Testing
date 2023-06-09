@@ -1,20 +1,9 @@
 
 name: Smoke tests
 on:
-  push:
-    # paths:
-    #   - '.github/workflows/**'
-    branches:
-      - 2ndbranch
-
-  pull_request_target:
-    types:
-      - opened
-      - reopened
-    branches:
-      - 'main/**'
-      - '2nbranch/**'
-
+ push:
+   branches:
+    - feature-branch
 
 jobs:
 #  test:
@@ -36,7 +25,7 @@ jobs:
         if: github.ref == 'refs/heads/2ndbranch' || github.event.pull_request.base.ref == '2ndbranch'
         run: echo "Hello develop"
       - name: step 2
-        if: github.event.pull_request.base.ref == 'master'
+        if: github.event.pull_request.base.ref == 'main'
         run: echo "Hello master" 
 
   #  steps:
