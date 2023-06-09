@@ -3,8 +3,7 @@ name: Smoke tests
 on:
  push:
    branches:
-    - 2ndbranch/*
-    - feature-branch/*
+    - 'feature-branch/*'
 
 jobs:
 #  test:
