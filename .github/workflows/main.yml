@@ -6,9 +6,9 @@ on:
       - opened
       - reopened
     branches:
-      - 'main/**'
-      - '2nbranch/**'
-      - 'feature-branch/**'
+      - main
+      - 2nbranch
+      - feature-branch
 
   push:
     branches:
