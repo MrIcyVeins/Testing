@@ -3,6 +3,8 @@ name: Smoke tests
 on:
  push:
    branches:
+    - 2ndbranch
+    - Nginx-modsecv3-owasp
     - '*'
     - '!main'
 #  pull_request:
