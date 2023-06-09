@@ -9,8 +9,6 @@ on:
     - main
     - 2ndbranch
  push:
-   branches:
-    - 2ndbranch
 
 jobs:
 #  test:
