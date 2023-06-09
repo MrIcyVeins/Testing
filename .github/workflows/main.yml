@@ -7,7 +7,7 @@ on:
     - reopened
    branches:
     - main
-    - 2nbranch
+    - 2ndbranch
  push:
    branches:
     - 2ndbranch
