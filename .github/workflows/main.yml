@@ -2,15 +2,15 @@
 name: Smoke tests
 on:
  push:
-   branches:
-    - '*'
- pull_request:
-   types:
-    - opened
-    - reopened
-   branches:
-    - main
-    - 2ndbranch
+#    branches:
+#     - '*'
+#  pull_request:
+#    types:
+#     - opened
+#     - reopened
+#    branches:
+#     - main
+#     - 2ndbranch
 
 
 jobs:
@@ -28,7 +28,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: checkout repo
-        uses: actions/checkout@v1
+        uses: actions/checkout@v3
       - name: step 1
         if: github.ref == 'refs/heads/2ndbranch' || github.event.pull_request.base.ref == '2ndbranch'
         run: echo "Hello develop"
