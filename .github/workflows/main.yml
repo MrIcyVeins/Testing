@@ -8,12 +8,12 @@ on:
       - 2ndbranch
 
   pull_request_target:
-  types:
-    - opened
-  branches:
-    - 'main/**'
-    - '2nbranch/**'
-  
+    types:
+      - opened
+    branches:
+      - 'main/**'
+      - '2nbranch/**'
+
 
 jobs:
 #  test:
