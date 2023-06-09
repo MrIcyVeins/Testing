@@ -9,11 +9,9 @@ on:
       - 'main/**'
       - '2nbranch/**'
       - 'feature-branch/**'
-  push:
-    # paths:
-    #   - '.github/workflows/**'
-    branches:
-      - 2ndbranch
+  # push:
+  #   branches:
+  #     - 2ndbranch
 
 jobs:
 #  test:
@@ -35,7 +33,7 @@ jobs:
         if: github.ref == 'refs/heads/2ndbranch' || github.event.pull_request.base.ref == '2ndbranch'
         run: echo "Hello develop"
       - name: step 2
-        if: github.event.pull_request.base.ref == 'master'
+        if: github.event.pull_request.base.ref == 'main'
         run: echo "Hello master" 
 
   #  steps:
