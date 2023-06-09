@@ -1,9 +1,7 @@
 
 name: Smoke tests
 on:
- push:
-  branches:
-    - 2ndbranch
+ push: [*]
  pull_request:
    types:
     - opened
