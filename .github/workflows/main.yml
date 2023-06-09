@@ -9,11 +9,10 @@ on:
       - main
       - 2nbranch
       - feature-branch
-
   push:
     branches:
-      - 2ndbranch
-      - feature-branch
+      - 2ndbranch/*
+      - feature-branch/*
 
 jobs:
 #  test:
