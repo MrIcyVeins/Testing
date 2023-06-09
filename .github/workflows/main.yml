@@ -3,7 +3,16 @@ name: Smoke tests
 on:
  push:
    branches:
-    - feature-branch
+    - 2ndbranch
+
+ pull_request:
+   types:
+    - opened
+    - reopened
+   branches:
+    - main
+    - 2nbranch
+
 
 jobs:
 #  test:
