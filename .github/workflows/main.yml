@@ -1,7 +1,7 @@
 
 name: Smoke tests
 on:
-  pull_request_target:
+  pull_request:
     types:
       - opened
       - reopened
@@ -9,9 +9,11 @@ on:
       - 'main/**'
       - '2nbranch/**'
       - 'feature-branch/**'
-  # push:
-  #   branches:
-  #     - 2ndbranch
+
+  push:
+    branches:
+      - 2ndbranch
+      - feature-branch
 
 jobs:
 #  test:
