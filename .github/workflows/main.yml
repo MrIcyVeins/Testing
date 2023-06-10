@@ -1,7 +1,0 @@
-
-name: Smoke tests
-on:
- push:
-   branches:
-    - '*'
-    - '!main'
