@@ -1,0 +1,66 @@
+
+name: Smoke tests
+on:
+ push:
+   branches:
+    - '*'
+    - '!main'
+ pull_request:
+   types:
+    - opened
+    - reopened
+   branches:
+    - main
+    - 2ndbranch
+
+
+jobs:
+#  test:
+  #  if: "!contains(github.event.head_commit.message, '[ci skip]')"
+  #  runs-on: [ ubuntu-latest ]
+  #  container:
+  #   image: node:14.16
+  #  permissions:
+  #   contents: read
+  #   packages: write
+
+
+   deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout repo
+        uses: actions/checkout@v3
+      - name: step 1
+        if: github.ref == 'refs/heads/2ndbranch' || github.event.pull_request.base.ref == '2ndbranch'
+        run: echo "Hello develop"
+      - name: step 2
+        if: github.event.pull_request.base.ref == 'main'
+        run: echo "Hello master" 
+
+  #  steps:
+    #  - name: Check for dockerenv file
+    #    run: |
+    #     echo "hello" > hello.txt
+    #     cat hello.txt
+    #     ls -lha
+
+    #  - name: 'Checkout GitHub Action'
+    #    uses: actions/checkout@main
+
+    #  - name: 'Build and push image'
+    #    uses: azure/docker-login@v1
+    #    with:
+    #      login-server: ${{ secrets.REGISTRY_LOGIN_SERVER }}
+    #      username: ${{ secrets.REGISTRY_USERNAME }}
+    #      p455w0rd: ${{ secrets.REGISTRY_PASSWORD }}
+    #  - run: |
+    #      docker build . -t ${{ secrets.REGISTRY_LOGIN_SERVER }}/sampleapp:${{ github.sha }}
+    #      docker push ${{ secrets.REGISTRY_LOGIN_SERVER }}/sampleapp:${{ github.sha }}
+
+
+
+
+
+
+
+
