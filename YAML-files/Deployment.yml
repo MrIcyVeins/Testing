@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+    name: pv-test-pod
+    namespace: default
+    labels:
+        app: pv-test-pod
+        
+spec:
+    replicas: 1
+    selector:
+        matchLabels:
+            app: pv-test-pod
+    template:
+        metadata:
+            labels:
+                app: pv-test-pod
+        spec:
+            # tolerations:
+            #     - key: "node-role.kubernetes.io"
+            #       operator: "Equal"
+            #       value: "control-plane"
+            #       effect: "NoSchedule"
+            volumes:
+                - name: test-pv 
+                  persistentVolumeClaim:
+                    claimName: test-pvc
+            containers:
+                - name: pv-test-pod
+                  image: alpine
+                  resources:
+                    limits:
+                        cpu: 1000m
+                    requests:
+                        cpu: 200m
+                  volumeMounts:
+                  - mountPath: /tmp
+                    name: test-pv
+                  args:
+                  - '/bin/sh'
+                  - '-c'
+                  - sleep 10000
+
