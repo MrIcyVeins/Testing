@@ -52,14 +52,14 @@ jobs:
         run:
           echo ${{ steps.test.outputs.TEST }} 
 
-    test:
-      runs-on: ubuntu-latest
-      steps:
-        - id: whatever
-          env: 
-            test: ${{ needs.deploy.steps.test.outputs.TEST }}
-          run:
-            echo $test 
+   test:
+    runs-on: ubuntu-latest
+    steps:
+      - id: whatever
+        env: 
+          test: ${{ needs.deploy.steps.test.outputs.TEST }}
+        run:
+          echo $test 
         
 
 
