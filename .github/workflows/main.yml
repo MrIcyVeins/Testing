@@ -59,7 +59,7 @@ jobs:
       - id: whatever
         env: 
           test: ${{ needs.deploy.outputs.TEST }}
-        run:
+        run: |
           echo $test 
         
 
