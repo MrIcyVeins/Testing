@@ -1,17 +1,19 @@
 
 name: Smoke tests
+
 on:
+ workflow_dispatch:
  push:
-   branches:
-    - '*'
-    - '!main'
- pull_request:
-   types:
-    - opened
-    - reopened
-   branches:
-    - main
-    - 2ndbranch
+  #  branches:
+  #   - '*'
+  #   - 'main'
+#  pull_request:
+#    types:
+#     - opened
+#     - reopened
+#    branches:
+#     - main
+#     - 2ndbranch
 
 
 jobs:
@@ -24,18 +26,32 @@ jobs:
   #   contents: read
   #   packages: write
 
+  #  test:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - id: whatever
+  #       run:
+  #         echo ${{ steps.test.outputs.TEST}}
+
 
    deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: checkout repo
-        uses: actions/checkout@v3
-      - name: step 1
-        if: github.ref == 'refs/heads/2ndbranch' || github.event.pull_request.base.ref == '2ndbranch'
-        run: echo "Hello develop"
-      - name: step 2
-        if: github.event.pull_request.base.ref == 'main'
-        run: echo "Hello master" 
+      - id: test
+        run: |
+          echo "TEST=test1" >> ${GITHUB_OUTPUT}
+      # - name: checkout repo
+      #   uses: actions/checkout@v3
+      # - name: step 1
+      #   if: github.ref == 'refs/heads/2ndbranch' || github.event.pull_request.base.ref == '2ndbranch'
+      #   run: echo "Hello develop"
+      # - name: step 2
+      #   if: github.event.pull_request.base.ref == 'main'
+      #   run: echo "Hello master"
+      - id: whatever
+        run:
+          echo ${{ steps.test.outputs.TEST }} 
+
 
   #  steps:
     #  - name: Check for dockerenv file
