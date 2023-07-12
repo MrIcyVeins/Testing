@@ -55,7 +55,8 @@ jobs:
    test:
     runs-on: ubuntu-latest
     steps:
-      - id: whatever
+      - uses: actions/checkout@v3
+      - id: test-step
         env: 
           ARG1: ${{ secrets.SECRET_NAME}}
           ARG2: ${{ secrets.ANOTHER_NAME}}
