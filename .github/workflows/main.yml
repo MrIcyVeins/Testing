@@ -61,7 +61,7 @@ jobs:
           ARG1: ${{ secrets.SECRET_NAME}}
           ARG2: ${{ secrets.ANOTHER_NAME}}
         run: |
-          docker-compose config -f compose.yml up -d --build-arg $ARG1 --build-arg $ARG2 --verbose
+          docker-compose -f compose.yml up -d --build-arg $ARG1 --build-arg $ARG2 --verbose
           echo $ARG1
 
         
