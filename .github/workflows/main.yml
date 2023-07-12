@@ -60,7 +60,7 @@ jobs:
           ARG1: ${{ secrets.SECRET_NAME}}
           ARG2: ${{ secrets.ANOTHER_NAME}}
         run: |
-          docker-compose -f ./compose.yml up -d 
+          docker-compose -f compose.yml up -d 
         
 
 
