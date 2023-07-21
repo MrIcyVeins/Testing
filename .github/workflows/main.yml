@@ -4,9 +4,8 @@ name: Smoke tests
 on:
  workflow_dispatch:
  push:
-  #  branches:
-  #   - '*'
-  #   - 'main'
+   branches:
+    - 'main'
 #  pull_request:
 #    types:
 #     - opened
@@ -52,18 +51,16 @@ jobs:
   #       run:
   #         echo ${{ steps.test.outputs.TEST }} 
 
-   test:
+   test-job:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
       - id: test-step
-        env: 
-          ARG1: ${{ secrets.SECRET_NAME}}
-          ARG2: ${{ secrets.ANOTHER_NAME}}
-        run: |
-          docker-compose -f compose.yml up -d --build-arg $ARG1 --build-arg $ARG2 --verbose
-          echo $ARG1
-
+        with:
+          file: ./Dockerfile
+          test: ${{ secrets.SECRET_NAME}}
+          context: .
+          
         
 
 
