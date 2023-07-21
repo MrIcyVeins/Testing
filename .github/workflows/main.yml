@@ -60,7 +60,10 @@ jobs:
           file: ./Dockerfile
           test: ${{ secrets.SECRET_NAME}}
           context: .
-          
+          run: |
+            echo "Running the test"
+
+
         
 
 
