@@ -61,6 +61,8 @@ jobs:
         uses: docker/build-push-action@v3
         with:
           file: ./Dockerfile
+          args: |
+            --build-arg test=${{ secrets.SECRET_NAME}}
           test: ${{ secrets.SECRET_NAME}}
           context: .
 
