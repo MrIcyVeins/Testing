@@ -24,7 +24,7 @@ jobs:
       - name: push-to-wiki
         shell: bash
         run: |
-          if [ -d "wiki-folder" ]; then
+          if [ -d "wiki-folder-test" ]; then
             git config --global user.email "action@github.com"
             git config --global user.name "GitHub Action"
             git clone https://${{ secrets.GH_PAT }}@github.com/MrIcyVeins/Testing.wiki.git
