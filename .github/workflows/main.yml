@@ -22,15 +22,17 @@ jobs:
       - name: Checkout base code
         uses: actions/checkout@v2
       - name: push-to-wiki
+        shell: bash
         run: |
+          if [ -d "wiki-folder-test"]; then
           git config --global user.email "action@github.com"
           git config --global user.name "GitHub Action"
           git clone https://${{ secrets.GH_PAT }}@github.com/MrIcyVeins/Testing.wiki.git
           mv wiki-folder/* Testing.wiki
           cd Testing.wiki
           git add . 
-          git diff-index --quiet HEAD || git commit -m "Add changes" && git push https://${{ secrets.GH_PAT }}@github.com/MrIcyVeins/Testing.wiki.git
-
+          git commit -m "Add changes" && git push https://${{ secrets.GH_PAT }}@github.com/MrIcyVeins/Testing.wiki.git
+          fi 
       # - name: Checkout wiki code
       #   uses: actions/checkout@v2
       #   with:
