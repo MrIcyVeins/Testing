@@ -32,7 +32,6 @@ jobs:
             cd Testing.wiki
             ls -lha
             git add . 
-            git commit -m "Add changes" 
           else
             echo "Wiki folder does not exist"
           fi 
