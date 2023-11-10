@@ -26,8 +26,8 @@ jobs:
       - name: Checkout wiki code
         uses: actions/checkout@v2
         with:
-          repository: ${{github.repository}}
-          path: wiki
+          repository: ${{github.repository}}.wiki
+          path: wiki-folder
       - name: Push to wiki
         run: |
           cd wiki-folder
