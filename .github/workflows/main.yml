@@ -29,8 +29,7 @@ jobs:
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
           git add .
-          git remote add test https://github.com/${{github.repository}}.wiki
-          git diff-index --quiet HEAD || git commit -m "Add changes" && git push https://github.com/${{github.repository}}.wiki
+          git diff-index --quiet HEAD || git commit -m "Add changes" && git push https://${{ secrets.GH_PAT }}@github.com/${{github.repository}}.wiki
 
       # - name: Checkout wiki code
       #   uses: actions/checkout@v2
