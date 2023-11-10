@@ -25,18 +25,23 @@ jobs:
           path: wiki-folder
       - name: testing
         run: |
-          ls -lha 
-      - name: Checkout wiki code
-        uses: actions/checkout@v2
-        with:
-          repository: ${{github.repository}}.wiki
-      - name: Push to wiki
-        run: |
-          ls -lha
+          cd wiki-folder
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
           git add .
-          git diff-index --quiet HEAD || git commit -m "Add changes" && git push
+          git diff-index --quiet HEAD || git commit -m "Add changes" && git push ${{github.repository}}.wiki
+
+      # - name: Checkout wiki code
+      #   uses: actions/checkout@v2
+      #   with:
+      #     repository: ${{github.repository}}.wiki
+      # - name: Push to wiki
+      #   run: |
+      #     ls -lha
+      #     git config --local user.email "action@github.com"
+      #     git config --local user.name "GitHub Action"
+      #     git add .
+      #     git diff-index --quiet HEAD || git commit -m "Add changes" && git push
 
   
 #  test:
