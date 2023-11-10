@@ -26,11 +26,11 @@ jobs:
       - name: push-to-wiki
         run: |
           cd wiki-folder
+          ls -lha
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
           git clone https://${{ secrets.GH_PAT }}@github.com/MrIcyVeins/Testing.wiki.git
           cd Testing.wiki
-          ls -lha 
           git diff-index --quiet HEAD || git commit -m "Add changes" && git push https://${{ secrets.GH_PAT }}@github.com/MrIcyVeins/Testing.wiki.git
 
       # - name: Checkout wiki code
