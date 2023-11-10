@@ -28,7 +28,8 @@ jobs:
           cd wiki-folder
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
-          git add .
+          git clone https://${{ secrets.GH_PAT }}@github.com/MrIcyVeins/Testing.wiki.git
+          ls -lha 
           git diff-index --quiet HEAD || git commit -m "Add changes" && git push https://${{ secrets.GH_PAT }}@github.com/MrIcyVeins/Testing.wiki.git
 
       # - name: Checkout wiki code
