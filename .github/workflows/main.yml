@@ -23,6 +23,7 @@ jobs:
         uses: actions/checkout@v2
         with:
           path: wiki-folder
+      - name: testing
         run: |
           ls -lha 
       - name: Checkout wiki code
