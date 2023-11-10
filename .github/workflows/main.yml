@@ -21,8 +21,6 @@ jobs:
     steps:
       - name: Checkout base code
         uses: actions/checkout@v2
-        with:
-          path: wiki-folder
       - name: push-to-wiki
         run: |
           cd wiki-folder
