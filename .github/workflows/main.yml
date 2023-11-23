@@ -25,7 +25,7 @@ jobs:
         name: Develop branch
         id: develop
         run: |
-          echo "NAMESPACE='${{ vars.TEST }}'" >> "$GITHUB_OUTPUT"
+          echo "NAMESPACE=${{ vars.TEST }}" >> "$GITHUB_OUTPUT"
 
   test-job:
     runs-on: ubuntu-latest
