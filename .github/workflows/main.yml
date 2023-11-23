@@ -16,14 +16,24 @@ on:
 
 
 jobs:
-   test-job:
+  branch:
+   runs-on: ubuntu-latest
+   outputs:
+    NAMESPACE: "${{join(steps.*.outputs.NAMESPACE,'')}}"
+   steps:
+      -
+        name: Develop branch
+        id: develop
+        run: |
+          echo "NAMESPACE='${{ vars.TEST }}'" >> "$GITHUB_OUTPUT"
+
+  test-job:
     runs-on: ubuntu-latest
     steps:
-
       - name: test step
         shell: bash
         run: |
-          echo ${{ vars.TEST }}
+          echo ${{ needs.branch.outputs.NAMESPACE }}
 
 
       # - name: Checkout base code
