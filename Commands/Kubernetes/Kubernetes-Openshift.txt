@@ -1,0 +1,61 @@
+______________________
+KUBERNETES/OPENSHIFT
+______________________
+
+# Delete pods in specific namespace by status (grep)
+    kubectl -n <namespace> delete pod $(kubectl -n <namespace> get pods | grep Error| awk '{print $1}' ) --force --grace-period 0
+
+# Apply same secret in another namespace 
+    k -n <origin-namespace> get <resource> <resource-name> -oyaml | grep -v namespace | kubectl -n <target-namespace> apply -f -
+
+______________________________________________________________________________________________________
+MANUALLY IMPORT IMAGES TO CONTAINERD (CRICTL) > THROUGH CTR  (crictl doesn't have image import command)
+______________________________________________________________________________________________________
+
+1. Download image.tar to node (machine with CRI)
+2. Import image to crictl
+    ctr ns ls (list ctr namespaces/ default: k8s.io --- contains all the containers started from the CRI plugin by kubelet, irrespective of the namespace in Kubernetes)
+    ctr -a /var/run/containerd/containerd.sock --namespace k8s.io image import --base-name <image-name> image.tar
+    crictl images | grep <image-name>
+
+__________________________________________________________
+UPLOAD/DOWNLOAD IMAGES FROM/TO ARTIFACTORY (archive .tar)
+__________________________________________________________
+
+1. UPLOAD IMAGE TO ARTIFACTORY
+
+   curl -sSf -H "X-JFrog-Art-Api:<ARTIFACTORY-API-KEY>" \
+       -X PUT \
+       -T image-name.tar \
+       'https://<artifactory-host>/artifactory/<path/to/image>/<image-name.tar'
+
+2. DOWNLOAD IMAGE FROM ARTIFACTORY
+    
+       curl -sSf -H "X-JFrog-Art-Api:<ARTIFACTORY-API-KEY>" \
+       -O 'https://<artifactory-host>/artifactory/<path/to/image>/<image-name.tar'
+
+______________________________
+YUM OS PATCHING
+______________________________
+
+1. yum check-update --enablerepo=*  --exclude=repo*,repo-name,... --disablerepo=repo*,repo-name,.. 
+2. yum update --enablerepo=*  --exclude=repo*,repo-name,... --disablerepo=repo*,repo-name,.. 
+
+____________________________________
+ADD PROXY TO CONTAINERD / DOCKER CRI
+____________________________________
+
+1. mkdir -p /etc/systemd/system/docker.service.d 
+2. vi /etc/systemd/system/docker.service.d/http-proxy.conf
+3. systemctl daemon-reload
+4. systemctl restart docker
+
+
+> http-proxy.conf 
+
+[Service]
+Environment='HTTP_PROXY=http://proxy-ip:<proxy-port>'
+Environment='HTTPS_PROXY=http://proxy-ip:<proxy-port>'
+Environment='NO_PROXY=...'
+
+
