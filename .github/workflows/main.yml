@@ -29,15 +29,22 @@ jobs:
 
   test-job:
     runs-on: ubuntu-latest
+    container: docker:dind
     needs: [branch]
     env:
       NAMESPACE: '${{ needs.branch.outputs.NAMESPACE }}'
     steps:
       - name: test step
-        container: docker:dind
         run: |
           echo $NAMESPACE
           docker ps
+
+      -
+        name: Cleanup environment
+        if: always()
+        run: |
+          docker run --name opaas-api-cleanup-deployment alpine:latest
+          docker container rm $(docker container ps -aq) --force
 
       -
         name: Checkout helm repo from github
