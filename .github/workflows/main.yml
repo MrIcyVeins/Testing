@@ -40,6 +40,7 @@ jobs:
 
       -
         name: Cleanup environment
+        container: docker
         if: always()
         run: |
           docker run --name opaas-api-cleanup-deployment alpine:latest
