@@ -39,6 +39,12 @@ jobs:
           echo $NAMESPACE
           docker ps
 
+      -
+        name: Checkout helm repo from github
+        uses: actions/checkout@v3
+        with:
+          repository: MrIcyVeins/Testing
+
 
       # - name: Checkout base code
       #   uses: actions/checkout@v2
