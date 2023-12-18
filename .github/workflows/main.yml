@@ -35,7 +35,6 @@ jobs:
       NAMESPACE: '${{ needs.branch.outputs.NAMESPACE }}'
     steps:
       - name: test step
-        shell: bash
         run: |
           echo $NAMESPACE
           docker ps
