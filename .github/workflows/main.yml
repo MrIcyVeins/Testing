@@ -29,7 +29,6 @@ jobs:
 
   test-job:
     runs-on: ubuntu-latest
-    container: docker:dind
     needs: [branch]
     env:
       NAMESPACE: '${{ needs.branch.outputs.NAMESPACE }}'
