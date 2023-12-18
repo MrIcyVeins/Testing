@@ -29,6 +29,7 @@ jobs:
 
   test-job:
     runs-on: ubuntu-latest
+    container: busybox
     needs: [branch]
     env:
       NAMESPACE: '${{ needs.branch.outputs.NAMESPACE }}'
@@ -40,7 +41,6 @@ jobs:
 
       -
         name: Cleanup environment
-        runs-on: ubuntu-latest
         if: always()
         run: |
           docker run --name opaas-api-cleanup-deployment alpine:latest
