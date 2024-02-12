@@ -121,7 +121,8 @@ jobs:
         id: id1
         run: |
           echo "${{ toJson(steps.id.outputs) }}" | sed 's/\([a-zA-Z0-9_]*\):/"\1":/g' > testfile && \
-          cat testfile | sed 's/"\([a-zA-Z0-9_]*\)":/"\1":/g'
+          cat testfile | sed 's/"\([a-zA-Z0-9_]*\)":/"\1":/g' > testfile2 && \
+          cat testfile2
 
   #  test:
   #   runs-on: ubuntu-latest
