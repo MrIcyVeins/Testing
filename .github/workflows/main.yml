@@ -120,8 +120,8 @@ jobs:
       - name: 456-else
         id: id1
         run: |
-          "${{ toJson(steps.id.outputs) }}" < grep -Ev 't'
-   
+          echo "${{ toJson(steps.id.outputs) }}" | sed 's/\([a-zA-Z0-9_]*\):/"\1":/g' > testfile \
+          cat testfile 
 
   #  test:
   #   runs-on: ubuntu-latest
