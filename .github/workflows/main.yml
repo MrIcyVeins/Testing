@@ -120,7 +120,7 @@ jobs:
       - name: 456-else
         id: id1
         run: |
-          echo "${{ toJson(steps.id.outputs) }}" | sed 's/\("[a-zA-Z0-9_]*"\): \([^,}]*\)/\1: "\2"/g'
+          echo "${{ toJson(steps.id.outputs) }}" | sed 's/\([a-zA-Z0-9_]*\):/"\1":/g' | sed 's/\("[a-zA-Z0-9_]*"\): \([^,}]*\)/\1: "\2"/g'
 
   #  test:
   #   runs-on: ubuntu-latest
@@ -131,7 +131,7 @@ jobs:
   #         test: ${{ needs.deploy.outputs.TEST }}
   #       run: |
   #         echo $test
-        # | sed 's/\([a-zA-Z0-9_]*\):/"\1":/g'
+        # 
 
 
   #  steps:
