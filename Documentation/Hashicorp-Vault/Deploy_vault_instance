@@ -1,0 +1,96 @@
+# Deploy Vault Instance on local cluster / cloud
+
+Notes
+
+Install Vault:
+
+1) Install Vault CLI
+# For CentOS
+
+```
+yum install -y yum-utils
+yum-config-manager --add-repo https://rpm.releases.hashicorp.com/RHEL/hashicorp.repo
+yum -y install vault
+vault
+```
+
+# ! Enable TLS (for dev mode-unsealed) --dev-tls
+
+2) Start Vault server (in dev mode)
+
+```
+vault server --dev
+```
+
+3) Copy and run the export VAULT_ADDR ... command from the terminal output. This will configure the Vault client to talk to the dev server.
+
+ export VAULT_ADDR='http://127.0.0.1:8200'
+
+Vault CLI determines which Vault servers to send requests using the VAULT_ADDR environment variable.
+
+export VAULT_TOKEN="hvs.N44tsCrEr1Fm5fTwTBLzBy5F"
+
+# Setting env VAULT_ADDR && VAULT_TOKEN skips the "vault login" 
+
+
+# Adding secret (unsafe - viewd in CLI history)
+
+vault kv put --mount=secret (default dev KV v2 engine mount path) <secret-name> <key=value> 
+--- adds secret to /secret/data/secret-name
+
+### Safely add secret (from newline / from file)
+### From newline
+vault kv put --mount=secret <secret-name> key=-
+*insert secret*
+CTRL+d
+
+### From file
+tee secret.json << EOF
+{
+    "key": "value"
+}
+>>
+
+vault kv put --mount=secret <secret-name> @secret.json 
+
+### Disable vault command history
+export HISTIGNORE="&:vault*"
+
+# Setting multiple values in a secret 
+> via CLI
+
+vault kv put kv-v1/dev/config/mongodb \
+        url=foo.example.com:35533 \
+        db_name=users \
+        username=admin p455w0rd=passw0rd
+
+> via file
+
+tee mongodb.json <<EOF
+{
+    "url": "foo.example.com:35533",
+    "db_name": "users",
+    "username": "admin",
+    "p455w0rd": "pa$$w0rd"
+}
+EOF
+
+
+vault kv delete --mount=secret <secret-name> <key=value> 
+--- deletes secret from /secret/data/secret-name
+
+vault kv undelete --mount=secret --versions=<version-of-deleted-secret> <key-name>
+--- restores deleted secret data
+
+vault kv metadata delete --mount=secret <secret-name> 
+--- fully deletes secret and it's metadata (name)
+
+
+
+# CLEANUP ENV
+
+unset VAULT_TOKEN
+unset VAULT_ADDR
+unset VAULT_NAMESPACE
+pgrep -f vault | xargs kill
+rm payload.json payload-cert.json payload-policy.json cert.pem apps-policy.hcl

@@ -1,0 +1,23 @@
+_______________________________
+1. ADD CONFIGMAP TO KUBERNETES ( this is will be squid-proxy configuration mounted on the squid-pod )
+                               ( this configuration example uses 2 proxies in failover mode )
+_______________________________
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: squid-cm
+data:
+  squid.conf: |
+      http_port 3128
+
+      acl all_hosts src all
+      acl CONNECT method CONNECT 
+      http_access allow all_hosts
+
+      cache_peer <proxy-ip> parent <proxy-port (usually 3128)> 0 no-query default connect-timeout=10 weight=1
+      cache_peer <proxy-ip> parent <proxy-port (usually 3128)> 0 no-query default connect-timeout=10 weight=2
+     
+
+      never_direct allow all 
+      cache_dir ufs /var/spool/squid 100 16 256
