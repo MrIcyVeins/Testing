@@ -120,9 +120,9 @@ jobs:
       - name: 456-else
         id: id1
         run: |
-          echo "${{ toJson(steps.id.outputs) }}" > testfile
+          echo "${{ toJson(steps.id.outputs | sed 's/\([a-zA-Z0-9_]*\):/"\1":/g') }}" > testfile
           cat testfile
-
+          
   #  test:
   #   runs-on: ubuntu-latest
   #   needs: deploy
