@@ -1,12 +1,11 @@
 
-name: Smoke tests
+name: Test wiki
 
 on:
  workflow_dispatch:
  push:
-  #  branches:
-  #   - '*'
-  #   - 'main'
+   branches:
+    - 'main'
 #  pull_request:
 #    types:
 #     - opened
@@ -17,6 +16,74 @@ on:
 
 
 jobs:
+  branch:
+   runs-on: ubuntu-latest
+   outputs:
+    NAMESPACE: "${{join(steps.*.outputs.NAMESPACE,'')}}"
+   steps:
+      -
+        name: Develop branch
+        id: develop
+        run: |
+          echo "NAMESPACE='${{ vars.TEST }}'" >> "$GITHUB_OUTPUT"
+
+  test-job:
+    runs-on: ubuntu-latest
+    container: busybox
+    needs: [branch]
+    env:
+      NAMESPACE: '${{ needs.branch.outputs.NAMESPACE }}'
+    steps:
+      - name: test step
+        run: |
+          echo $NAMESPACE
+          docker ps
+
+      -
+        name: Cleanup environment
+        if: always()
+        run: |
+          docker run --name opaas-api-cleanup-deployment alpine:latest
+          docker container rm $(docker container ps -aq) --force
+
+      -
+        name: Checkout helm repo from github
+        uses: actions/checkout@v3
+        with:
+          repository: MrIcyVeins/Testing
+
+
+      # - name: Checkout base code
+      #   uses: actions/checkout@v2
+      # - name: push-to-wiki
+      #   shell: bash
+      #   run: |
+      #     if [ -d "wiki-folder" ]; then
+      #       git config --global user.email "action@github.com"
+      #       git config --global user.name "GitHub Action"
+      #       git clone https://${{ secrets.GH_PAT }}@github.com/MrIcyVeins/Testing.wiki.git
+      #       mv wiki-folder/* Testing.wiki
+      #       cd Testing.wiki
+      #       git add . 
+      #       git commit --allow-empty -m "Add changes"  
+      #       git push https://${{ secrets.GH_PAT }}@github.com/MrIcyVeins/Testing.wiki.git
+      #     else
+      #       echo "Wiki folder does not exist"
+      #     fi 
+
+      # - name: Checkout wiki code
+      #   uses: actions/checkout@v2
+      #   with:
+      #     repository: ${{github.repository}}.wiki
+      # - name: Push to wiki
+      #   run: |
+      #     ls -lha
+      #     git config --local user.email "action@github.com"
+      #     git config --local user.name "GitHub Action"
+      #     git add .
+      #     git diff-index --quiet HEAD || git commit -m "Add changes" && git push
+
+  
 #  test:
   #  if: "!contains(github.event.head_commit.message, '[ci skip]')"
   #  runs-on: [ ubuntu-latest ]
