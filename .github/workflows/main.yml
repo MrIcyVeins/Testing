@@ -16,41 +16,41 @@ on:
 
 
 jobs:
-  branch:
-   runs-on: ubuntu-latest
-   outputs:
-    NAMESPACE: "${{join(steps.*.outputs.NAMESPACE,'')}}"
-   steps:
-      -
-        name: Develop branch
-        id: develop
-        run: |
-          echo "NAMESPACE='${{ vars.TEST }}'" >> "$GITHUB_OUTPUT"
+  # branch:
+  #  runs-on: ubuntu-latest
+  #  outputs:
+  #   NAMESPACE: "${{join(steps.*.outputs.NAMESPACE,'')}}"
+  #  steps:
+  #     -
+  #       name: Develop branch
+  #       id: develop
+  #       run: |
+  #         echo "NAMESPACE='${{ vars.TEST }}'" >> "$GITHUB_OUTPUT"
 
-  test-job:
-    runs-on: ubuntu-latest
-    container: busybox
-    needs: [branch]
-    env:
-      NAMESPACE: '${{ needs.branch.outputs.NAMESPACE }}'
-    steps:
-      - name: test step
-        run: |
-          echo $NAMESPACE
-          docker ps
+  # test-job:
+  #   runs-on: ubuntu-latest
+  #   container: busybox
+  #   needs: [branch]
+  #   env:
+  #     NAMESPACE: '${{ needs.branch.outputs.NAMESPACE }}'
+  #   steps:
+  #     - name: test step
+  #       run: |
+  #         echo $NAMESPACE
+  #         docker ps
 
-      -
-        name: Cleanup environment
-        if: always()
-        run: |
-          docker run --name opaas-api-cleanup-deployment alpine:latest
-          docker container rm $(docker container ps -aq) --force
+      # -
+      #   name: Cleanup environment
+      #   if: always()
+      #   run: |
+      #     docker run --name opaas-api-cleanup-deployment alpine:latest
+      #     docker container rm $(docker container ps -aq) --force
 
-      -
-        name: Checkout helm repo from github
-        uses: actions/checkout@v3
-        with:
-          repository: MrIcyVeins/Testing
+      # -
+      #   name: Checkout helm repo from github
+      #   uses: actions/checkout@v3
+      #   with:
+      #     repository: MrIcyVeins/Testing
 
 
       # - name: Checkout base code
