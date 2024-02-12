@@ -120,7 +120,7 @@ jobs:
       - name: 456-else
         id: id1
         run: |
-          echo "${{ toJson(steps.id.outputs.* }}" > testfile
+          echo "${{ toJson(steps.id.outputs.*) }}" > testfile
           cat testfile
 
   #  test:
