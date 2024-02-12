@@ -120,7 +120,7 @@ jobs:
       - name: 456-else
         id: id1
         run: |
-          echo "${{ toJson(steps.id.outputs) }}" | sed 's/"/\\"/g' | paste -sd ','
+          echo "${{ toJson(steps.id.outputs) }}" | sed 's/"/\\"/g' | awk -F: '{gsub(/^[ \t]+|,|"/, "", $1); gsub(/^[ \t]+|,|"/, "", $2); print "\"" $1 "\": \"" $2 "\""}' | paste -sd ',\n'
 
   #  test:
   #   runs-on: ubuntu-latest
