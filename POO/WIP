@@ -1,0 +1,220 @@
+#include <iostream>
+
+class MySet {
+private:
+    unsigned int size_; // numarul elementelor reprezentat de variabila size_ (cu valoarea "unsigned int" = poate stoca doar valoare pozitiva si zero)
+    int* elements_; // vector (pointer la un intreg) care va contine elementele ( zona de memorie unde sunt stocate elementele ) 
+
+public:
+    // Constructor
+    // Constructorul "MySet()" va fi apelat atunci cand se creaza o instanta (obiect) a clasei MySet
+    // Initializarea variabilelor membre (size_ si elements_) se face in felul urmator: size_ va lua valoarea "0" si elements_va lua valoarea  "nullptr" ( nu pointeaza catre nici o zona de memorie // este un pointer null )
+    MySet() : size_(0), elements_(nullptr) {} 
+
+//    // Destructor
+//   ~MySet() {
+//        delete[] elements_;
+//    }
+
+    // Adaugare element in set (supraincarcarea operatorului "<<")
+    //
+    MySet& operator<<(int value) {
+        if (!contains(value)) {
+            int* newElements = new int[size_ + 1];
+            for (unsigned int i = 0; i < size_; ++i) {
+                newElements[i] = elements_[i];
+            }
+            newElements[size_] = value;
+            delete[] elements_;
+            elements_ = newElements;
+            ++size_;
+        }
+        return *this;
+    }
+
+MySet& operator>>(int value) {
+    if (contains(value)) {
+        int* newElements = new int[size_ - 1];
+        unsigned int j = 0;
+        for (unsigned int i = 0; i < size_; ++i) {
+            if (elements_[i] != value) {
+                newElements[j] = elements_[i];
+                ++j;
+            }
+        }
+        delete[] elements_;
+        elements_ = newElements;
+        --size_;
+    }
+    return *this;
+}
+
+    // Verificarea daca elementul exista deja in set sau nu 
+    bool contains(int value) const {
+        for (unsigned int i = 0; i < size_; ++i) {
+            if (elements_[i] == value) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    // Reuniunea a doua seturi (supraincarcarea operatorului "+")
+    MySet operator+(const MySet& other) const {
+        MySet result;
+        for (unsigned int i = 0; i < size_; ++i) {
+            result << elements_[i];
+        }
+        for (unsigned int i = 0; i < other.size_; ++i) {
+            if (!result.contains(other.elements_[i])) {
+                result << other.elements_[i];
+            }
+        }
+        result.sort();
+        return result;
+    }
+    void sort() {
+        for (unsigned int i = 0; i < size_ - 1; ++i) {
+            for (unsigned int j = 0; j < size_ - i - 1; ++j) {
+                if (elements_[j] > elements_[j + 1]) {
+                    int temp = elements_[j];
+                    elements_[j] = elements_[j + 1];
+                    elements_[j + 1] = temp;
+                }
+            }
+        }
+    }
+
+    // MySet operator+(const MySet& other) const {
+    //     MySet result = other;
+    //     for (unsigned int i = 0; i < size_; ++i) {
+    //         result << elements_[i];
+    //     }
+    //     return result;
+    // }
+
+    // Intersectia a doua seturi (supraincarcarea operatorului "*")
+    MySet operator*(const MySet& other) const {
+        MySet result;
+        for (unsigned int i = 0; i < size_; ++i) {
+            if (other.contains(elements_[i])) {
+                result << elements_[i];
+            }
+        }
+        result.sort();
+        return result;
+    }
+
+    // Diferenta dintre doua seturi (supraincarcarea operatorului "-")
+//     MySet operator-(const MySet& other) const {
+//         MySet result = *this;
+//         for (unsigned int i = 0; i < other.size_; ++i) {
+//             if (result.contains(other.elements_[i])) {
+//                 result.remove(other.elements_[i]);
+//             }
+//         }
+// 	if (result.size_ == 0) {
+//              std::cout << "Nu exista diferenta.\n";
+// 	}
+//         return result;
+// }
+
+    MySet operator-(const MySet& other) const {
+        MySet result; // Creaza un nou obiect MySet pentru rezultat
+        for (unsigned int i = 0; i < size_; ++i) {
+            bool is_other_contains = false;
+            for (unsigned int j = 0; j < other.size_; ++j) {
+                if (elements_[i] == other.elements_[j]) {
+                    is_other_contains = true;
+                    break;
+                }
+            }
+            if (!is_other_contains) {
+                result << elements_[i];
+            }
+        }
+        result.sort();
+        return result;
+    }
+
+    // Printeaza elementele
+    // void print() const {
+    //     for (unsigned int i = 0; i < size_; ++i) {
+    //         std::cout << elements_[i] << " ";
+    //     }
+    //     std::cout << std::endl;
+    // }
+    
+    void print() const {
+        // Sorteaza elementele inainte de printare
+        for (unsigned int i = 0; i < size_ - 1; ++i) {
+            for (unsigned int j = 0; j < size_ - i - 1; ++j) {
+                if (elements_[j] > elements_[j + 1]) {
+                    int temp = elements_[j];
+                    elements_[j] = elements_[j + 1];
+                    elements_[j + 1] = temp;
+                }
+            }
+        }
+
+    // Printeaza elementele
+    for (unsigned int i = 0; i < size_; ++i) {
+        std::cout << elements_[i] << " ";
+    }
+    std::cout << std::endl;
+}
+
+
+private:
+    // Scoate un element din set
+    void remove(int value) {
+        for (unsigned int i = 0; i < size_; ++i) {
+            if (elements_[i] == value) {
+                for (unsigned int j = i; j < size_ - 1; ++j) {
+                    elements_[j] = elements_[j + 1];
+                }
+                --size_;
+                break;
+            }
+        }
+    }
+};
+
+int main() {
+    MySet set1;
+    set1  << 0 << 3 << 2 << 244 << 3 << 10 << 1 << 255 << -4 << -8; // Adaugarea elementelor in set1
+    std::cout << "Set1: ";
+    set1.print(); // Printeaza set1
+
+    MySet set2;
+    set2 << 0 << -7 << 1 << 244 << 256 << 3; // Adaugarea elementelor in set2 ( operatorul "<<" )
+    set2 >> -7; // Eliminarea elementelor din set2 ( operatorul ">>" )
+    std::cout << "Set2: ";
+    set2.print(); // Printeaza set2
+
+    MySet union1Set = set1 + set2; // Reuniune
+    std::cout << "Reuniune: "; 
+    union1Set.print();
+
+    MySet unionSet = set2 + set1; // Reuniune
+    std::cout << "Reuniune2: "; 
+    unionSet.print();
+
+    MySet intersectionSet = set1 * set2; // Intersectie
+    std::cout << "Intersectie: ";
+    intersectionSet.print();
+
+    MySet intersectieSet = set2 * set1; // Intersectie
+    std::cout << "Intersectie2: ";
+    intersectionSet.print();
+
+    MySet differenceSet = set1 - set2; // Diferenta
+    std::cout << "Diferenta: ";
+    differenceSet.print();
+
+    MySet diferentaSet = set2 - set1; // Diferenta
+    std::cout << "Diferenta2: ";
+    diferentaSet.print();
+
+    return 0;
+}
