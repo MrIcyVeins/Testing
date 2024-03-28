@@ -1,0 +1,84 @@
+
+
+/* # - se foloseste pentru id // . se foloseste pentru clasa */
+#grid-pagina {
+    display: grid;
+    grid-gap: 10px;
+    grid-template-areas: "welcome welcome welcome"
+                         "promotii promotii orar"
+                         "fig1 produse produse"
+                         "fig2 produse produse"
+                         "fig3 produse produse"
+                         "anunturi anunturi index-intrebari";
+} 
+#grid-pagina>*{
+    outline: 2px solid var(--culoare1)
+}
+
+#welcome{
+    grid-area: welcome;
+}
+#promotii{
+    grid-area: promotii;
+}
+#anunturi{
+    grid-area: anunturi;
+}
+#orar{
+    grid-area: orar;
+}
+ 
+#fig1{
+    grid-area: fig1;
+}
+#fig2{
+    grid-area: fig2;
+}
+#fig3{
+    grid-area: fig3;
+}
+#produse{
+    grid-area: produse;
+}
+#index-intrebari{
+    grid-area: index-intrebari;
+}
+
+#fig1, #fig2, #fig3{
+    margin: 0;
+}
+
+@media screen and (max-width:1200px) {
+    html{
+        font-size: 15px;
+        
+    }
+    body {
+        --dim-spatiere:100px;
+    }
+
+}
+
+    #grid-pagina {
+        display: grid;
+        grid-gap: 10px;
+        grid-template-areas: "welcome welcome "
+                             "promotii promotii"
+                             "fig1 orar"
+                             "fig2 produse"
+                             "fig3 produse"
+                             "anunturi index-intrebari";
+    } 
+
+@media screen and (max-width:800px) {
+    html{
+        font-size: 12px;
+        
+    }
+    body {
+        --dim-spatiere:50px;
+    }
+    #grid-pagina{
+        display: block;
+    }
+}

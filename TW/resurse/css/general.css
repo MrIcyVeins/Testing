@@ -1,0 +1,161 @@
+body {
+    --culoare1: skyblue;
+    --culoare-inchisa: rgb(183, 37, 136);
+    --culoare-deschisa: rgb(194, 103, 196);
+    --dim-spatiere: 200px;
+    padding-left: var(--dim-spatiere);
+    padding-right: var(--dim-spatiere);
+}
+
+
+#tab-orar th, #tab-orar td{
+    border: 1px solid black;
+    padding: 10px;
+    transition: all 1.5s linear;
+}
+
+#tab-orar {
+    border-spacing: 0px;
+    border-collapse: collapse;
+}
+
+#tab-orar thead th:nth-child(2n){ /* :nth-of-type(2n) */
+    background-color: aquamarine;
+}
+
+#tab-orar td:hover{
+    background-color: cornflowerblue;
+}
+
+#tab-orar td[rowspan]:hover{
+    background-color: red;
+}
+
+/* #link-top{
+    position:fixed;
+    bottom:0.7em;
+    opacity:0.5;
+    left:0.3em;
+    width:3rem;
+    box-sizing: border-box;
+    height:3rem;
+    line-height:3rem;
+    text-align:center;
+    border:5px solid grey;
+        border-style: dashed;
+    border-radius:50%;
+    background: rgb(220,220,220);
+}
+#link-top:hover{
+    opacity:1;
+} */
+
+/* #triunghi{
+    height:15px;
+    width:0;
+    display:inline-block;
+    border-bottom:1.5rem solid grey;
+    border-left:1rem solid transparent;
+    border-right:1rem solid transparent;
+    vertical-align: top;
+    transform: translateY(-30%); scale(0.7,0.7);
+    transition: all 1s linear;
+} */
+
+/* #triunghi {
+    box-sizing: border-box;
+    position: relative;
+    display: inline-block;
+    transform: scale(var(--ggs,1));
+    width: 0px;
+    height: 18px
+} */
+
+/* #triunghi::after,
+#triunghi::before {
+    content: "";
+    display: inline-block;
+    box-sizing: border-box;
+    position: absolute;
+    top: -1px
+} */
+/* capul */
+/* #triunghi::after {   
+    width: 15px;
+    height: 15px;
+    border-top: 3px solid;
+    border-left: 3px solid;
+    transform: rotate(45deg);
+    left: -7.5px
+} */
+/* codita */
+/* #triunghi::before {  
+    width: 2.5px;
+    height: 20px;
+    left: -1.25px;
+    background: currentColor
+} */
+
+/* #link-top:hover #triunghi{
+    transform: translateY(-15%);
+} */
+
+
+#link-top {
+    position: fixed;
+    bottom: 0.7em;
+    opacity: 0.5;
+    left: 0.3em;
+    width: 3rem;
+    height: 3rem;
+    line-height: 3rem;
+    text-align: center;
+    border: 5px solid grey;
+    border-style: dashed;
+    border-radius: 50%;
+    background: rgb(220,220,220);
+    transition: all 1s linear;
+}
+
+#link-top:hover {
+    opacity: 1;
+    transform: rotate(180deg);
+}
+
+#link-top:hover #triunghi {
+    transform: rotate(-180deg);
+    /* transform: translateY(-5px); */
+}
+
+#triunghi {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    width: 1rem;
+    height: 1rem;
+    margin-right: 0.2rem;
+    border-left: 2px solid white;
+    border-bottom: 2px solid white;
+    transform: rotate(45deg);
+    position: fixed;
+    /* left: 50%;
+    top: 50%; */
+    transform-origin: center;
+    transition: transform 0.4s linear;
+}
+
+#label {
+    display: block;
+    margin-top: 0.2rem;
+    font-size: 0.6rem;
+    text-transform: uppercase;
+}
+
+main img{
+    width: 80%;
+}
+
+#orar{
+    position: relative;
+    overflow-x: scroll;
+}

@@ -1,0 +1,49 @@
+html{
+    font-size: 17px;
+    transition: all 0.5s linear;
+}
+
+
+p {
+   color:white;
+   background-color: var(--culoare1);
+}
+
+
+ /* p.intro  Selecteaza toti parametrii din clasa intro */
+
+li {
+    color: var(--culoare1);
+}
+
+h2 {
+    border: 2px solid var(--culoare1);
+}
+
+.container-iframe{
+    display: flex;
+    flex-direction: row;    
+}
+.container-iframe>*{
+    border: 1px solid blueviolet;
+}
+
+.taburi-iframe{
+    width: 700px;
+    display: table-column;
+    justify-content: center;
+}
+.taburi-iframe>a{
+    display: block;
+    border: 1px solid green;
+    width: 170px;
+    height: 30px;
+    text-align: center;
+    border-radius: 10px;
+    line-height: 30px;
+    box-shadow: 0px 0px 5px 5px blue inset;
+}
+
+.container-iframe iframe, .taburi-iframe{
+    width: 100%;
+}
