@@ -31,76 +31,6 @@ body {
     background-color: red;
 }
 
-/* #link-top{
-    position:fixed;
-    bottom:0.7em;
-    opacity:0.5;
-    left:0.3em;
-    width:3rem;
-    box-sizing: border-box;
-    height:3rem;
-    line-height:3rem;
-    text-align:center;
-    border:5px solid grey;
-        border-style: dashed;
-    border-radius:50%;
-    background: rgb(220,220,220);
-}
-#link-top:hover{
-    opacity:1;
-} */
-
-/* #triunghi{
-    height:15px;
-    width:0;
-    display:inline-block;
-    border-bottom:1.5rem solid grey;
-    border-left:1rem solid transparent;
-    border-right:1rem solid transparent;
-    vertical-align: top;
-    transform: translateY(-30%); scale(0.7,0.7);
-    transition: all 1s linear;
-} */
-
-/* #triunghi {
-    box-sizing: border-box;
-    position: relative;
-    display: inline-block;
-    transform: scale(var(--ggs,1));
-    width: 0px;
-    height: 18px
-} */
-
-/* #triunghi::after,
-#triunghi::before {
-    content: "";
-    display: inline-block;
-    box-sizing: border-box;
-    position: absolute;
-    top: -1px
-} */
-/* capul */
-/* #triunghi::after {   
-    width: 15px;
-    height: 15px;
-    border-top: 3px solid;
-    border-left: 3px solid;
-    transform: rotate(45deg);
-    left: -7.5px
-} */
-/* codita */
-/* #triunghi::before {  
-    width: 2.5px;
-    height: 20px;
-    left: -1.25px;
-    background: currentColor
-} */
-
-/* #link-top:hover #triunghi{
-    transform: translateY(-15%);
-} */
-
-
 #link-top {
     position: fixed;
     bottom: 0.7em;
@@ -114,36 +44,115 @@ body {
     border-style: dashed;
     border-radius: 50%;
     background: rgb(220,220,220);
-    transition: all 1s linear;
+    transition: all 0.5s linear;
 }
 
-#link-top:hover {
-    opacity: 1;
+#container:hover #link-top {
     transform: rotate(180deg);
 }
 
-#link-top:hover #triunghi {
-    transform: rotate(-180deg);
-    /* transform: translateY(-5px); */
+#container:hover #triunghi {
+    transform: rotate(-135deg) translate(5px, 5px);
 }
 
 #triunghi {
+    opacity: 0.5;
     display: inline-flex;
     justify-content: center;
     align-items: center;
+/*     top: 430px; */
+    bottom: 2em;
+    left: 1.64em;
+    width: 3rem;
+/*     height: 100%; */
+/*     line-height: 3rem; */
     width: 1rem;
     height: 1rem;
-    margin-right: 0.2rem;
-    border-left: 2px solid white;
-    border-bottom: 2px solid white;
-    transform: rotate(45deg);
+/*     margin-right: 0.2rem; */
+/*     border-left: 2px solid green; */
+/*     border-bottom: 2.4px solid grey; */
+/*     border-top: 2px solid green; */
+/*     border-right: 2.5px solid grey; */
+    transform: rotate(-135deg);
     position: fixed;
     /* left: 50%;
     top: 50%; */
     transform-origin: center;
-    transition: transform 0.4s linear;
+    transition: transform 0.5s linear;
+/*     transform: skewY(-11deg); */
+    border-radius: -2px;
+    pointer-events: none;
 }
 
+#triunghi::before {
+    content: "";
+    position: fixed;
+    top: -5px;
+    left: -2.26px;
+    width: 175%;
+    height: 100%;
+    border-top: 3px solid grey; /* Adjust color and thickness as needed */
+    transform: rotate(45deg); /* Rotate to create the diagonal */
+    transform-origin: 0% 0%;
+    pointer-events: none;
+}
+
+#container > * {
+    margin: 20px; /* Add some spacing between the child elements and the border */
+}
+
+#triunghi-curve-right {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    position: fixed;
+    top: 17.8px;
+    bottom: -2rem;
+/*     opacity: 0.5; */
+    left: -0.5rem;
+    width: 1.65rem;
+    height: 4rem;
+    border-top: 2px solid grey;
+/*     background-color: white; */
+    border-radius: 20% 0%  0;
+    transform: rotate(-5deg);
+    transform-origin: 0% 0%;
+    pointer-events: none;
+  }
+
+#triunghi-curve-left {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    position: fixed;
+    top: -9px;
+    bottom: -2rem;
+/*     opacity: 0.5; */
+    left: 1.15rem;
+    width: 1.65rem;
+    height: 4rem;
+    border-top: 2px solid grey;
+/*     background-color: white; */
+    border-radius: 20% 0%  0;
+    transform: rotate(275deg) scaleX(-1);
+    transform-origin: 0% 0%;
+    pointer-events: none;
+  }
+
+/* #triunghi-curve-right {
+    position: fixed;
+    bottom: 0.7em;
+    opacity: 0.5;
+    left: 0.3em;
+    width: 4rem;
+    height: 3rem;
+    border-left: 3px solid grey;
+    background-color: white;
+    border-radius: 0 50% 50% 0;
+    transform: rotate(-45deg);
+    transform-origin: 100% 0%;
+    pointer-events
+} */
 #label {
     display: block;
     margin-top: 0.2rem;
