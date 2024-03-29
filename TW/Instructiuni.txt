@@ -1,0 +1,208 @@
+Taskuri etapa 0 (0.3)
+Alegerea temei
+Descrierea succintă a temei (google docs, 1/2-1 pagina). Va contine următoarele informații:
+(0.02) Impartirea informatiilor, serviciilor etc. pe categorii si subcategorii. 
+(0.03) Identificarea efectiva a paginilor (încercați să fie doar 4-5) și partial a legaturilor dintre ele (ce informatii vor avea pagini separate si care informații vor fi subsecțiuni în aceeași pagină
+(0.05) Stabilirea cuvintelor/sintagmelor cheie (o lista cu cuvintele cheie ale site-ului cât și cate o lista pentru fiecare pagină în parte)
+(0.2) Căutarea unor site-uri similare (4-5 site-uri) ca tema pentru a observa modul de organizare a informației. Veti observa pentru ficare site cum au impartit informatiile si cum au facut designul. Veti nota pentru fiecare site ideile demne de implementat, dar și neajunsurile acelor site-uri (pentru fiecare site minim 2 lucruri pro si 2 contra). Veți pune linkuri către ele în fișier.
+
+
+Taskuri etapa 1 (punctaj recomandat 0.5)
+Creați prima pagină a site-ului (doar prima pagină; fără stilizare încă, fiindcă veți primi taskuri legate de acest aspect). Puteți pune în această pagină text care va fi mutat în alte pagini, mai târziu, dar nu faceți încă mai multe pagini fiindcă le vom genera prin Node! La prezentare vă rog să aveți pentru fiecare task notată linia din program la care l-ați rezolvat ca să nu dureze prezentarea mai mult de 3-4 
+
+Creați un folder al proiectului care va cuprinde toate fisierele necesare site-ului vostru. Creați în el un fisier  numit index.html. Deschideți acest fișier cu un editor de text care marchează sintaxa. Adăugați în fișier doctype și setați limba documentului în tagul html
+Adaugati un title corespunzător conținutului textului. Folosiți 4 taguri meta relevante pentru a specifica: charset-ul, autorul, cuvintele cheie, descrierea.
+Creați un folder (de exemplu numit "resurse") care va conține toate fișierele folosite de site, dar care nu sunt pagini html (de exemplu imagini, fisiere de stilizare etc). In el creati un folder numit ico. Adaugati un favicon relevant pentru temă. Folosiți https://realfavicongenerator.net pentru a genera toate dimensiunile necesare de favicon și codul compatibil pentru diversele browsere și sisteme de operare. Pentru favicon transparent, trebuie sa setati si o culoare a tile-ului (de background), care trebuie specificata și în tagul meta: <meta name="msapplication-TileColor" content="...culoarea aleasa de voi...">
+Împărțiți body-ul în header, main, footer.
+Folosiți minim un tag dintre: section, article, aside. Trebuie să existe măcar un caz de taguri de secționare imbricate (secțiune în secțiune). Puneți headingul cu nivelul corespunzător nivelului imbricării. Atenție, nu folosim headinguri decât ca titluri pentru tagurile de secționare. Observație: nivelul headingului trebuie să corespundă nivelului de imbricare a secțiunii (de exemplu un tag de secționare aflat direct în body  are titlul scris cu h2, dar un tag de sectionare aflat intr-un tag de secționare care la rândul lui se află în body, va avea titlul scris cu h3
+În header faceți un sistem de navigare ca în curs (nav cu listă neordonată de linkuri), cu opțiuni  principale (care vor reprezenta paginile site-ului) și secundare (pentru opțiunea "Acasă", adică pagina principală, subopțiunile vor cuprinde linkuri către secțiunile paginii, care vor avea id-uri relevante). Folosiți în header h1 pentru titlul site-ului. 
+În cadrul secțiunilor folosiți minim 2 taguri dintre următoare taguri de grupare: p, ol, ul, blockquote, dl
+Adăugați în pagină o imagine cu descriere, folosind figure și figcaption. Pe ecran mic (mobil) trebuie să se încarce o variantă mai redusă în dimensiune (bytes) a imaginii, pe tabletă o variantă medie, iar pe ecran mare varianta cea mai mare a imaginii. Folosiți un editor grafic pentru cropping și redimensionare pentru a obține cele 3 variante de imagini.
+Textul trebuie să conțină toate cuvintele cheie identificate pentru pagina curentă. Puteți găsi mai multe sintagme cheie pe care le puteți folosi, cu https://www.wordtracker.com/  sau https://app.neilpatel.com/en/ubersuggest/keyword_ideas
+Acestea trebuie să apară de mai multe ori în pagină, în taguri relevante.
+În cadrul textului îndepliniți 3 dintre cerințele de mai jos, la alegere:
+marcați cuvintele și sintagmele cheie cu ajutorul tagului b
+marcați textul idiomatic (termeni științifici, în altă limbă, termeni tehnici, de jargon, etc) cu tagul i
+marcați textul de atenționare cu strong
+marcați textul accentuat cu em
+marcați textul șters (corectat sau care nu mai e relevant) cu tagul s și textul inserat în loc cu tagul ins
+marcați o abreviere cu abbr și cu atributul title specificați sintagma abreviată
+marcați un termen definit cu dfn
+marcați un citat cu tagul q
+Creați următoarele linkuri speciale: 
+un link extern (va fi in continutul paginii, nu in meniu, va face referire la alt site si se va deschide in fereastră nouă)
+un link în footer către începutul paginii,
+minim două linkuri care se deschid într-un iframe (se poate face ca în exemplul de curs, linkuri care deschid videoclipuri relevante de pe youtube în iframe). Atentie nu e vorba de src-ul iframe-ului ce de taguri <a> care la click se deschid in iframe. Iframe-ul va contine in mod default una dintre resursele specificate in linkuri
+Un link de tip download
+Creați în pagină mai multe zone de details și summary. Pot fi întrebări frecvente, pot fi niște oferte pentru care afișăm titlul și utilizatorul le deschide pe cele care îl interesează, pot fi secțiuni explicative etc.
+În footer se vor adăuga cu ajutorul tagului address informații de contact:
+telefon fictiv, marcat cu tagul <a> si URI Scheme-ul corespunzător
+adresă fictivă care la click deschide o locatie pe Google Maps (locatia in mod normal ar corespunde cu adresa dar voi veti pune drept locatie in maps, Facultatea de Matematica si Informatica)
+e-mail fictiv, marcat cu tagul <a> si URI Scheme-ul corespunzător în href
+Link care deschide o aplicatie de comunicare precum skype sau whatsapp pentru chat
+În footer se va adăuga informație de copyright, folosind tagul small, simbolul specific de copyright cu codul html necesar (forma &cod;) și data creării paginii scrisă în limba română și pusă în tagul time cu atributul datetime corespunzător. 
+Pagina trebuie sa fie valida din punct de vedere sintactic. Deci verificati cu validatorul html. Validatorul va fi pregătit într-un tab, la prezentare, și pagina se va valida pe loc.
+Se poate da bonus pentru o temă bine făcută sau pentru folosirea mai multor taguri decât minimul specificat (dar studentul trebuie să anunțe la prezentare că le-a folosit)
+Evitați pentru moment să adăugați alte taguri fiindcă vor apărea în taskurile următoare.
+Bonus (0.05) Folosirea unei formule scrise în MathML - formula trebuie să aibă sens în contextul site-ului.
+
+Taskuri etapa 2 (punctaj recomandat: 0.4)
+Atentie - unele cerinte au enunt diferit pentru fiecare student (si sunt marcate printr-un link). Trebuie sa va inregistrati pe site pentru a le vedea.
+Daca stilizarea dintr-o cerinta nu va place, puteti sa imi cereti o alta varianta (imi scrieti pe chat). Culorile din imaginile si videoclipurile date ca exemplu nu trebuie respectate (folositi culorile din schema cromatică aleasă de voi).
+(0.025) Task schema cromatica: (cerință individuală)
+(0.15) Task layout:    (cerință individuală)
+(0.05) Task design rudimentar:
+Folosind variabile css, să se adauge o spațiere în stânga și dreapta paginii, comprimând un pic conținutul, dar aerisind pagina. Spațierea trebuie să fie identică în cele două direcții. Spațierea va fi mai mică pe ecran mediu și de valoare minimă pe ecran mic.
+Folosiți grid-gap pentru a realiza o spațiere între celulele gridului paginii. Spațierea trebuie să descrească pe ecran mediu și mic.
+Izolați vizual zonele paginii: header, footer, și zonele gridului folosind minim 3 dintre următoarele efecte css: background  de culoare (aleasă din schema cromatică) diferită pe zone diferite, border, colțuri rotunjite ale box-ului, box-shadow
+Folosiți padding pentru a distanța textul din zone de granițele zonelor. Padding-ul ar trebui să fie egal pentru toate zonele de text. Folosiți variabile CSS în cazul în care nu puteți asigura acest lucru prin simplii selectori.
+Elementele media (imagini, videoclipuri etc.) care vin cu o lățime presetată vor primi lățimea în procentaje, setând, totuși, o lățime maximă si minimă pentru ele, pentru a nu avea efecte vizuale nedorite. Aceste valori pot să difere în funcție de dimensiunea ecranului
+(0.025) Task iconuri și font extern. Folosiți in prima pagină a site-ului un font extern prin Google API.  Folosiți în pagină, într-un loc relevant un icon static și unul animat (diferite de iconurile cerute în eventuale alte taskuri) din colecția Font Awesome (fie folosind kit - recomandat - fie folosind linkul CDN ca in exemplu: https://replit.com/@IrinaCiocan/curs4-exemple#fontawesome.html)
+(0.05) Task tabel: (cerință individuală)
+Indicații de rezolvare:
+1. Porniți de la slide-ul cu tabelul din cursul 1 de HTML și schimbați conținutul ca să fie conform temei voastre.
+2. Pentru taskul cu valori alternate folosiți pseudoclasele :nth-child(odd), :nth-child(even) cu elementele cerute (td pentru celule(coloane) și tr pentru rânduri)
+3. Proprietățile de care aveți nevoie sunt în special la CSS Styling Tables (w3schools.com)
+4. Bara de scroll se poate realiza cu ajutorul proprietății overflow.
+
+(0.05) Task taburi iframe: (cerință individuală)
+Indicatii de rezolvare:
+1. Creati un container în care puneti linkurile care se deschid in iframe (cel care are clasa "taburi-iframe" in exemplul de mai jos). De asemenea grupați containerul linkuri și iframe-ul într-un alt container (cel cu clasa container-iframe din exemplul de mai jos)
+            <div class="container-iframe">
+                <div class="taburi-iframe">
+                <a href="https://www.youtube.com/embed/qtlhdIfojmc" target="ifr-video">Reteta tort vanilie</a>
+                <a href="https://www.youtube.com/embed/dsJtgmAhFF4" target="ifr-video" >Reteta tort ciocolata</a>
+                <a href="https://www.youtube.com/embed/Wtxbt-CpA2s" target="ifr-video" >Reteta tort căpșuni</a><br/>
+                </div>         
+                <iframe name="ifr-video" width="560" height="315" src="https://www.youtube.com/embed/qtlhdIfojmc" 
+                frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+            </div>
+2. Stilizati tagurile <a> sub forma de butoane (width si height setat, background, border)
+
+
+3. Aplicati display:flex pe containerul care trebuie sa contina coloane (fie container-iframe, fie taburi-iframe in functie de cerinta)
+
+(0.05) Link top: (cerință individuală) 
+Indicatie de rezolvare: Porniti de la exemplul: exemplu_layout-1 - Replit - cautati in html elementul cu id-ul "link-top", si fiul lui care e un div cu id-ul "triunghi". Preluati codul css pentru ele si il modificati pentru a obtine rezolvarea la acest task.
+-
+-
+Bonusuri:
+(0.05) Resetarea css-ului cu redefinirea spațierilor, dimensiunilor, culorilor, stilurilor bol si italic, eventual a bulleturilor și indicilor de listă, a stilului tabelelor). In afară de body și html care vor primi dimensiuni în unități fixe, toate celelalte elemente vor folosi unități relative. Se vor folosi variabile pentru valori care se repetă și depind logic unele de altele. Puteti folosi de exemplu: https://meyerweb.com/eric/tools/css/reset/
+(0.05)Stilizarea unei formule scrise în MathML.(părți diferite din formulă trebuie să aibă stil diferit, de exemplu culori diferite sau font italic/bold vs text normal).
+
+
+Taskuri etapa 3 (punctaj recomandat: 0.4)
+Atentie - unele cerinte au enunt diferit pentru fiecare student (si sunt marcate printr-un link). Trebuie sa va inregistrati pe site pentru a le vedea.
+
+
+(0.25) Task meniu: (cerință individuală)
+(0.15)  Stil printare  (cerință individuală)
+
+Bonusuri:
+(0.05) Icon-ul meniului "hamburger" să fie creat cu 3 divuri (eventual puse într-un div container în locul unei imagini), cele 3 divuri vor primi background, width și height pentru a simula dreptunghiuri și vor fi pozitionate absolut în interiorul containerului.
+(0.05) Cand se trece pe ecran mic și apare iconul pentru meniu, apariția să fie făcută printr-o animație asupra divurilor care să implice schimbarea tuturor următoarelor proprietăți: culoarea celor 3 bare, o transformare geometrică, opacitate. Puteți schimba și alte proprietăți dacă doriți. Animația trebuie să aibă minim 3 cadre cheie.
+(0.05) Pentru bonusul anterior, fiecare bară din hamburger-menu să aibă asociată o animație, însă animațiile să înceapă succesiv cu o diferența de t milisecunde (de exemplu t=300). Delayurile diferite în cadrul animației se vor genera cu o instrucțiune for scrisă în sass.
+Se vor mai adauga.
+
+
+Taskuri etapa 4 (punctaj recomandat 0.6)
+(0.5)Trecerea site-ului pe node și crearea de fișiere EJS conform  cerințelor:
+În folderul proiectului dați comanda "npm init" și setatți numele, autorul, descrierea și cuvintele cheie pentru proiectul vostru. Instalați express și ejs.
+Se va crea în rădăcina proiectului un fișier index.js. În el se va crea un obiect server express care va asculta pe portul 8080. (sau alt port daca aveti deja folosit 8080)
+Să se afișeze calea folderului în care se găsește fișierul index.js (__dirname), calea fișierului (__filename) și folderul curent de lucru (process.cwd()). Sunt __dirname și process.cwd() același lucru întotdeauna?
+Se va folosi EJS pentru generarea (randarea) paginilor. Se va face un folder numit views în rădăcina proiectului. În el veți face un folder numit pagini (care conține paginile întregi) și altul numit fragmente (care conține părți de pagini (bucățele de cod html) ce pot fi refolosite pe mai multe pagini). Instalați în Visual Studio Code extensia EJS language support.
+Din index (care va fi redenumit index.ejs) se vor decupa headerul și footerul și se vor pune în ejs-uri separate. De asemenea se va decupa partea de head care conține codul care nu se schimbă în funcție de pagină (de exemplu, tagul meta cu encodingul sau autorul, includerea faviconului, fișierelor css generale (nu specifice paginii) a scripturilor generale etc). Se va folosi funcția include() în fișierele ejs, pentru a include toate aceste fragmente în pagini
+Se va realiza (dacă nu l-ați făcut deja) un folder special cu toate resursele site-ului (în stilul exemplului de la curs în care am pus toate fișierele statice, precum imagini, fișiere de stil, videoclipuri etc în folderul "resurse"). Numele folderului îl decideți voi, însă va trebui să fie structurat, de asemenea, în subfoldere în funcție de tipul și modul de utilizarea al fișierelor. Se va defini în program acest folder ca fiind static
+Se vor schimba căile fișierelor-resursă folosite în pagini, astfel încât să nu mai fie relative ci stil cerere către server (de exemplu, /resurse/stiluri/ceva.css în loc de, de exemplu, ../resurse/stiluri/ceva.css)
+Prima pagină (index) trebuie să se poată accesa atât cu localhost:8080 cât și cu localhost:8080/index,  localhost:8080/home. Realizați acest lucru folosinf un vector în apelul app.get() care transmite pagina principală
+Veți declara un app.get() general pentru calea "/*", care tratează orice cerere de forma /pagina randând fișierul pagina.ejs (unde "pagina" e un nume generic și trebuie să funcționeze pentru orice string). Atenție, acest app.get() trebuie să fie ultimul în lista de app.get()-uri.  Dacă pagina cerută nu există, se va randa o pagină specială de eroare 404 (în modul descris mai jos). 
+Se va da ca argument în funcția render o funcție callback function(eroare, rezultatRandare) care, în cazul în care mesajul erorii începe cu "Failed to lookup view" va afișa pagina pentru eroarea 404 (vezi mai jos). în cazul în care e altă eroare va afișa pagina de eroare generică (vezi mai jos), iar dacă nu sunt erori va trimite către client rezultatul randării.
+Pentru randarea erorilor, veți folosi un fișier json, numit erori.json. Acesta va avea următoarele proprietăți:
+cale_baza: calea la care se găsesc imaginile corespunzătoare erorilor
+eroare_default: va fi un obiect JSON cu proprietățile: titlu (titlul paginii de eroare), text, imagine
+info_erori: un vector de obiecte. fiecare obiect descrie o eraore și are proprietățile: identificator (un cod numeric; pentru erorile http, precum 403, 404 e chiar codul http), status (boolean prin care indicăm dacă trebuie alt cod status decât 200 pentru răspuns), titlu (titlul erorii, pus in heading), text (descrierea erorii),  imagine(o imagine descriptiva pentru eroare; se va da calea relativa la cale_baza). Se vor adăuga în proiect în calea specificată în cale_baza imagini pentru erorile definite.
+Se va crea un template (eroare.ejs) cu ajutorul căruia să se afișeze erorile. Acesta va avea, preluate din locals, titlul, textul imaginea erorii.
+Se va crea o variabila globala numita obGlobal de tip obiect. Aceasta va avea o proprietate numita obErori, implicit cu valoare null. Se va crea o funcție, numita initErori, fară parametri, care citește JSON-ul cu erorile și creează un obiect corespunător lui cu toate datele erorilor (pentru a le avea încărcate în memorie), acest obiect va fi salvat in proprietatea obErori a variabilei obGlobal. Pentru fiecare eroare, se va seta calea absoluta in proprietatea imagine (folosind proprietatea cale_baza)
+Se va crea o funcție de afișare a erorilor, numita afisareEroare() care va primi un obiect de tip Response identificatorul, titulul, textul și imaginea erorii. În cazul în care există o eroare cu acel identificator, și titlul, textul și imaginea nu sunt precizate, se preiau datele încărcate din JSON pentru afișarea erorii. Dacă una dintre cele 3 proprietăți ale erorii e dată ca argument în funcție, are rpioritate asupra datelor din JSON și se va afișa în pagină (de exemplu dacă titlul e dat ca argument, se afișează argumentul nu titlul citit din JSON). În cazul în care identificatorul nu se specifică, se afișează o pagină de eroare cu datele din eroare_default, însă totcu posibilitatea de a afișa titlul, textul și imaginea din argumente, dacă sunt precizate.
+Veți mai face încă o pagină (cu puțin text sau imagini, ca să aibă conținut), de exemplu o pagină cu descrierea site-ului sau istoricul său, al firmei virtuale pentru care este făcut etc. Această pagină trebuie să poată fi accesată prin meniu (linkul să fie corect și să transmită o cerere de tip get). Nu faceti încă pagina de produse, findcă pe acelea le preluăm din baza de date. Nici paginile de înregistrare sau login, fiindca le tratăm separat.
+În zona din layout de date despre utilizator vom afișa ip-ul utilizatorului (prin program). Deocamdată, site-ul fiind local, veți vedea mereu ip-ul de localhost (adică ::1). Ip-ul real se va vedea când adăugați site-ul pe Internet.
+La o cerere către o cale din /resurse(de exemplu,localhost:8080/resurse/css/ ) fără fișier specificat (către folderul care ar conține fișierul) se va returna eroarea 403 Forbidden. Pagina de 403 va avea format similar cu cea de 404, folosind același template (eroare.ejs), dar textul și imaginea schimbate corespunzător, preluate din JSON 
+Să se adauge un app.get() pentru "/favicon.ico". Uneori browserele cer favicon pentru diverse răspunsuri primite de la server (nu neapărat fisiere html, unde putem specifica faviconul prin taguri link). Pentru această cerere vom trimite un favicon cu metoda sendFile().
+La cererea oricărui fișier cu extensia ejs se va transmite o eroare de tip 400 Bad Request. Pagina de 400 va folosi același template (eroare.ejs), dar textul și imaginea schimbate corespunzător, preluate din JSON
+Proiectul nostru va folosi niște foldere în care generează fișiere. Scrieți un vector cu numele folderelor de creat (vectorul va conține doar stringul "temp", deși pentru testare puteți pune și "temp1" pe care apoi îl ștergeți). Se va itera prin vector și se va testa dacă folderele există. Dacă un folder nu există, este creat. Peste tot unde aveți concatenare de căi folosiți path.join().
+(0.05) Task video (cerință individuală)
+
+(0.05) Task linkuri  (cerință individuală)
+
+
+
+Task video:
+
+
+Atentie! acest exercitiu necesita prezentare!
+Identificator: variante-meniu
+Se va implementa un meniu derulant al site-ului care va fi prezent pe fiecare pagină și va lega toate paginile între ele. Nu e obligatoriu să folosiți aceleași culori, fonturi, dimensiuni ca în enunț și imagini/videoclipuri.
+
+Cerinte HTML. Meniul va fi implementat cu ajutorul tagului <nav> care contine o lista neordonata cu linkuri.
+
+Meniul va prezenta minim două submeniuri dintre care:
+
+unul conține linkuri către alte pagini din site(chiar dacă nu există încă). Aceste pagini sunt grupate în meniu sub un nume descriptiv (exemplu: opțiunea galerii cu subopțiunile galerie statică și galerie dinamică).
+Al doilea conține linkuri către secțiuni dintr-una din pagini. Nume opțiunii care deschide submeniul va fi numele acelei pagini.
+Cerințe SASS/CSS. Stilul pentru meniu se va implementa în SASS și va fi compilat în CSS având în vedere următoarele cerințe:
+
+Pentru realizarea selectorilor complecși, se va folosi imbricarea din SASS
+Pentru blocuri de cod similare, în care diferă doar valorile proprietăților, se vor folosi mixins și instrucțiuni repetitive: @for, @while.
+În cazul în care aveți cod css pentru un element, care depinde de al câtelea element e în cadrul containerului, se vor folosi variabile SASS pentru a genera valorile dependente de acest aspect
+De asemenea, se vot folosi variabile SASS sau CSS pentru orice valoare repetitiva.
+Puneți în variabile CSS (declarate în selectorul body) orice informații care ar putea depinde de tema cromatică a site-ului (pentru a o putea schimba ușor).
+Se va realiza meniul pentru ecran mare, cu următoarele cerințe:
+
+Când venim cu cursorul pe o opțiune din meniu, se va realiza tranziția indicată în videoclip:cu ajutorul unui element ::before sau ::after se va genera un dreptunghi transparent suprapus peste buton în mod centrat de o culoare diferită față de buton. Inițial elemntul e invizibil (scalat la 0) și se mărește treptat până acoperă butonul (ca în videoclip).
+Deschiderea submeniului se va face prin următoarea tranziție: se va scala de la 0, din colțul stânga-sus, la lățimea și înălțimea totală (deci scalarea va fi pe verticală și orizontală)
+Când venim cu cursorul pe o opțiune din submeniu culoarea de background dar și culoarea textului opțiunii se vor schimba, adăugăndu-se una sau mai multe umbre pe text (text-shadow) pentru a realiza conturul subtil din jurul lui.
+La redimensionarea paginii, pe ecran mediu, meniul își va schimba afișarea. Textul se va face mai mic, iar în locul butonului pentru pagina principală va apărea icon-ul cu o căsuță din font-awesome.
+
+Pentru ecran mic, se vor ascunde opțiunile afișându-se într-un hamburger menu (sau veggie-burger menu pt vegetarieni 😁). Vedeți exemplul de layout. În afișarea burger submeniul se va deschide ca mai jos, înlocuind opțiunea pentru prima pagină cu un icon-căsuță. La apariția submeniului, acesta va deveni vizibil cu ajutorul proprietății clip-path setată pe un poligon care dă un rezultat asemănator cu o săgeată (așa cum se vede în videoclip). Tranzițiile pe opțiunile meniului rămân.
+
+
+Task printare:
+
+Atentie! acest exercitiu necesita prezentare!
+Identificator: css-printare
+Observație: banner-ul care e menționat în mai multe exerciții/subpuncte este un paragraf (aflat în footer) cu textul "Acesta este un proiect școlar!".
+
+Stilul pentru printare va avea următoarele lucruri implementate:
+
+Bannerul să fie afișat în josul primei pagini, centrat pe orizontală, întins pe 70% din lățimea paginii, într-un border negru inset de 4px
+imaginile, videoclipurile, iframe-urile și alte elemente media împreună cu elemente dependente de ele (de exemplu descrierile imaginilor) vor fi ascunse. Linkul către începutul paginii va fi de asemenea ascuns
+Gridul paginii va fi afișat ca block ca să nu apară celulele secționate în paginile printate.
+toate linkurile din pagină se vor afișa ca text normal (nu colorate sau subliniate)
+Headingul de nivel 1, cu titlu site-ului, va fi pe prima pagină, centrat pe orizontală. sub el se va afișa meniul sub formă de listă neordonată cu elementele unele sub altele (fără a afișa și subopțiunile). După meniu va fi un page break. Inaintea footerului, de asemenea va fi un page break
+Pe fiecare pagină va exista un "watermark" care va conține numele vostru (numele scris pe un rând și prenumele sub el. Acesta va avea lățime de 4cm din lățimea paginii și înalțime de 1cm din înalțimea paginii. Va fi afișat în colțul din dreapta jos al fiecărei pagini. Va avea un border solid de 3px, și colțuri rotunjite; textul din el va fi centrat pe orizontală și cu litere bold. Va avea opacitate de 0.4.
+La printare, paginile din stânga (în print preview) să aibă margine în stânga de 3cm și margine în dreapta de 1cm, iar cele din dreapta să aibă margine în dreapta de 3cm și 1cm în stânga.
+
+
+Task video:
+
+
+Atentie! acest exercitiu necesita prezentare!
+Identificator: video-vtt
+Videoclipul va avea o imagine poster (atributul poster) relevantă pentru conținut. Videoclipul va avea și elementele de control afișate implicit. Videoclipul trebuie să se afișeze frumos pe ecran mic, deci va avea în css lățimea setată în procentaje, cât și o lățime minimă și maximă, ca să nu devină greu de urmărit pe ecrane mici sau foarte mari.
+Videoclipul va avea mai multe trackuri (minim 2), în limbi diferite (de exemplu română și engleză) cu atributele setate conform limbii. Trackul în limba română va fi cel default. Trackurile trebuie să aibă măcar 3 mesaje.
+Videoclipul va avea preîncărcate metainformațiile (preload).
+Videoclipul va avea minim 2 surse: același videoclip dar în formate diferite. Puteți converti online videoclipul în mai multe formate.
+Textul VTT asociat videoclipului va avea background de culoare albă. Textul va fi scris cu o culoare închisă, conform schemei cromatice, și va fi aliniat sus, centrat. Textul va cuprinde într-una din secvențe un cuvânt scris cu italic (restul secvenței de text fiind cu font normal).
+Observație: realizați acest task abia după ce ați trecut site-ul pe node, altfel nu vă vor merge track-urile.
+
+Task linkuri:
+
+Identificator: stilizare-linkuri
+Linkurile din pagini se vor stiliza conform următoarelor cerințe:
+Linkurile vizitate vor avea o culoare diferită de cea implicită, setată printr-o variabilă CSS, la una dintre culorile schemei cromatice alese.
+Linkurile externe vor avea generat cu ajutorul unui pseudoelement ::before cu simbolul ⮳ cu font-size cu 50% mai mare față de dimensiunea fontului linkului (folosiți unități de măsură relative).
+Indicație: putem selecta linkurile externe, selectând tagurile a cu atributul href a cărui valoare începe cu "http".
+La aducerea cursorului pe un link extern, simbolul (generat prin css) își va schimba culoarea
+La aducerea cursorului pe un link din conținutul paginii (linkuri din main, nu din meniu) , o pata de culoare va crește din centru, așa cum se vede în videoclip, și se va micșora la loc când luăm cursorul de pe link. Pata de culoare s-a realizat folosind o imagine de background de tip gradient radial, având (în cadrul gradientului) atăt la 0% cât și la 40% din gradient o culoare c1, iar la 80% și 100% culoarea transparent. Imaginea de background e poziționată centrat (background-position) și de dimensiune 0 (background-size). Când se vine cu cursorul pe link, imaginea de background crește la 100% cu ajutorul unei tranziții.
+La click pe un link din pagină (:active), va apărea un border în jurul lui așa cum se vede în videclip.
+
