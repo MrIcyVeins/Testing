@@ -206,3 +206,51 @@ La aducerea cursorului pe un link extern, simbolul (generat prin css) își va s
 La aducerea cursorului pe un link din conținutul paginii (linkuri din main, nu din meniu) , o pata de culoare va crește din centru, așa cum se vede în videoclip, și se va micșora la loc când luăm cursorul de pe link. Pata de culoare s-a realizat folosind o imagine de background de tip gradient radial, având (în cadrul gradientului) atăt la 0% cât și la 40% din gradient o culoare c1, iar la 80% și 100% culoarea transparent. Imaginea de background e poziționată centrat (background-position) și de dimensiune 0 (background-size). Când se vine cu cursorul pe link, imaginea de background crește la 100% cu ajutorul unei tranziții.
 La click pe un link din pagină (:active), va apărea un border în jurul lui așa cum se vede în videclip.
 
+
+___________________
+
+Atentie! acest exercitiu necesita prezentare!
+Identificator: variante-meniu
+Se va implementa un meniu derulant al site-ului care va fi prezent pe fiecare pagină și va lega toate paginile între ele. Nu e obligatoriu să folosiți aceleași culori, fonturi, dimensiuni ca în enunț și imagini/videoclipuri.
+
+Cerinte HTML. Meniul va fi implementat cu ajutorul tagului <nav> care contine o lista neordonata cu linkuri.
+
+Meniul va prezenta minim două submeniuri dintre care:
+
+unul conține linkuri către alte pagini din site(chiar dacă nu există încă). Aceste pagini sunt grupate în meniu sub un nume descriptiv (exemplu: opțiunea galerii cu subopțiunile galerie statică și galerie dinamică).
+Al doilea conține linkuri către secțiuni dintr-una din pagini. Nume opțiunii care deschide submeniul va fi numele acelei pagini.
+Cerințe SASS/CSS. Stilul pentru meniu se va implementa în SASS și va fi compilat în CSS având în vedere următoarele cerințe:
+
+Pentru realizarea selectorilor complecși, se va folosi imbricarea din SASS
+Pentru blocuri de cod similare, în care diferă doar valorile proprietăților, se vor folosi mixins și instrucțiuni repetitive: @for, @while.
+În cazul în care aveți cod css pentru un element, care depinde de al câtelea element e în cadrul containerului, se vor folosi variabile SASS pentru a genera valorile dependente de acest aspect
+De asemenea, se vot folosi variabile SASS sau CSS pentru orice valoare repetitiva.
+Puneți în variabile CSS (declarate în selectorul body) orice informații care ar putea depinde de tema cromatică a site-ului (pentru a o putea schimba ușor).
+Se va realiza meniul pentru ecran mare, cu următoarele cerințe:
+
+Când venim cu cursorul pe o opțiune din meniu, se va realiza tranziția indicată în videoclip:cu ajutorul unui element ::before sau ::after se va genera un dreptunghi transparent suprapus peste buton în mod centrat de o culoare diferită față de buton. Inițial elemntul e invizibil (scalat la 0) și se mărește treptat până acoperă butonul (ca în videoclip).
+Deschiderea submeniului se va face prin următoarea tranziție: se va scala de la 0, din colțul stânga-sus, la lățimea și înălțimea totală (deci scalarea va fi pe verticală și orizontală)
+Când venim cu cursorul pe o opțiune din submeniu culoarea de background dar și culoarea textului opțiunii se vor schimba, adăugăndu-se una sau mai multe umbre pe text (text-shadow) pentru a realiza conturul subtil din jurul lui.
+
+<vid1>
+
+La redimensionarea paginii, pe ecran mediu, meniul își va schimba afișarea. Textul se va face mai mic, iar în locul butonului pentru pagina principală va apărea icon-ul cu o căsuță din font-awesome.
+
+Pentru ecran mic, se vor ascunde opțiunile afișându-se într-un hamburger menu (sau veggie-burger menu pt vegetarieni 😁). Vedeți exemplul de layout. În afișarea burger submeniul se va deschide ca mai jos, înlocuind opțiunea pentru prima pagină cu un icon-căsuță. La apariția submeniului, acesta va deveni vizibil cu ajutorul proprietății clip-path setată pe un poligon care dă un rezultat asemănator cu o săgeată (așa cum se vede în videoclip). Tranzițiile pe opțiunile meniului rămân.
+
+<vid2>
+
+___________________________________________________________
+Atentie! acest exercitiu necesita prezentare!
+Identificator: css-printare
+Observație: banner-ul care e menționat în mai multe exerciții/subpuncte este un paragraf (aflat în footer) cu textul "Acesta este un proiect școlar!".
+
+Stilul pentru printare va avea următoarele lucruri implementate:
+
+Bannerul să fie afișat în josul primei pagini, centrat pe orizontală, întins pe 70% din lățimea paginii, într-un border negru inset de 4px
+imaginile, videoclipurile, iframe-urile și alte elemente media împreună cu elemente dependente de ele (de exemplu descrierile imaginilor) vor fi ascunse. Linkul către începutul paginii va fi de asemenea ascuns
+Gridul paginii va fi afișat ca block ca să nu apară celulele secționate în paginile printate.
+toate linkurile din pagină se vor afișa ca text normal (nu colorate sau subliniate)
+Headingul de nivel 1, cu titlu site-ului, va fi pe prima pagină, centrat pe orizontală. sub el se va afișa meniul sub formă de listă neordonată cu elementele unele sub altele (fără a afișa și subopțiunile). După meniu va fi un page break. Inaintea footerului, de asemenea va fi un page break
+Pe fiecare pagină va exista un "watermark" care va conține numele vostru (numele scris pe un rând și prenumele sub el. Acesta va avea lățime de 4cm din lățimea paginii și înalțime de 1cm din înalțimea paginii. Va fi afișat în colțul din dreapta jos al fiecărei pagini. Va avea un border solid de 3px, și colțuri rotunjite; textul din el va fi centrat pe orizontală și cu litere bold. Va avea opacitate de 0.4.
+La printare, paginile din stânga (în print preview) să aibă margine în stânga de 3cm și margine în dreapta de 1cm, iar cele din dreapta să aibă margine în dreapta de 3cm și 1cm în stânga.
