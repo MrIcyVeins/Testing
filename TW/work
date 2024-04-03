@@ -1,0 +1,103 @@
+nav{
+    --inaltime-meniu: 2rem;
+    --latime-buton: 100px;
+    --culoare-text-meniu: black;
+    height: var(--inaltime-meniu);
+    background-color: var(--culoare-deschisa);
+    position: sticky;
+    top: 0;
+    margin-left: calc(-1*var(--dim-spatiere));
+    left: 0;
+    width: calc(100vw - 16px);
+    z-index: 100;
+}
+
+@property --p {
+    syntax: '<percentage>';
+    inherits: false;
+    initial-value: 10%;
+  }
+  @property --l {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 10px;
+  }
+  @property --a {
+    syntax: '<angle>';
+    inherits: false;
+    initial-value: 10deg;
+  }
+
+#hamburger, #ch-menu, #acasa-mediu{
+    display: none;
+}
+
+.meniu, .meniu *{
+    margin:0px;
+    padding:0px;
+}
+
+.meniu{
+    display: flex;
+    list-style-type: none;
+}
+
+.meniu li{
+    cursor:pointer;
+    border: 1px solid var(--culoare-inchisa);
+    font-weight: bold;
+    height: var(--inaltime-meniu);
+    width: var(--latime-buton);
+    text-align: center;
+    box-sizing: border-box;
+    transition: --p 1s,--l 1s,--a 1s;
+    list-style-type: none;
+    --p:10%;
+    --l:10px;
+    --a:10deg;
+    background:radial-gradient(var(--culoare-inchisa) var(--p),purple);
+}
+
+.meniu li:hover{
+    --p:100%;
+    --l:80px;
+    --a:180deg;
+}
+
+.meniu li:hover>a, .meniu li:hover>div {
+    color: white;
+}
+
+.meniu a, .meniu div{
+    text-decoration: none;
+    color: var(--culoare-text-meniu);
+    display: block;
+    height: 100%;
+    line-height: var(--inaltime-meniu);
+    cursor: pointer;
+    box-sizing: border-box;
+    transition: all 1s linear;
+}
+
+/* submeniu */
+.meniu ul{
+    display: none;
+    position: absolute;
+    margin: 0px 0px 0px 0;
+}
+
+.meniu>li:hover>ul{
+    display: block;
+    transform: scaleX(0) scaleY(0);
+    opacity: 0;
+    animation: animatie_submeniu 1s linear forwards;
+    animation-iteration-count: 1;
+    transform-origin: top left;
+}
+
+@keyframes animatie_submeniu{
+    100%{
+        transform: scaleY(1);
+        opacity: 1;
+    }
+}
