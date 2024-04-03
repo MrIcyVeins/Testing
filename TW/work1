@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="ro">
+    <head>
+        <title> Gadget Haven - Shopping online </title>
+        <meta charset="UTF-8"><!-- codificarea în memorie a caracterelor-->
+        <meta name="viewport" content="width=device-width, initial-scale=1.0"><!-- va fi explicat când ajungem la CSS -->
+        <meta name="keywords" content="gadget, huse, laptopuri gadget, gadget Romania, tableta, smartphone gadgethaven, laptopuri gaming, periferice, casti, casti wireless, pret redus, high-tech, Bucuresti"><!--cuvintele cheie ale paginii; majoritatea motoarelor de căutare ignoră keywords -->
+        <meta name="description" content="“Descoperă gadgeturile viitorului la GadgetHaven, unde tehnologia se împletește cu pasiunea și inovația prinde viață. De la dispozitive inteligente la accesorii high-tech, suntem puntea către un univers digital fascinant. Bine ai venit în lumea noastră a electronicii!” 🚀🌟."><!-- descrierea paginii, adesea apare sub link când sunt afișate rezultatele căutării -->
+        <meta name="author" content="Magazin GadgetHaven">  <!-- autorul/autoarea paginii-->
+        <link rel="apple-touch-icon" sizes="180x180" href="./resurse/favicon/apple-touch-icon.png">
+        <link rel="icon" type="image/png" sizes="32x32" href="./resurse/favicon/favicon-32x32.png">
+        <link rel="icon" type="image/png" sizes="16x16" href="./resurse/favicon/favicon-16x16.png">
+        <link rel="manifest" href="./resurse/favicon/site.webmanifest">
+        <link rel="mask-icon" href="./resurse/favicon/safari-pinned-tab.svg" color="#5bbad5">
+        <link rel="shortcut icon" href="./resurse/favicon/favicon.ico">
+        <meta name="msapplication-TileColor" content="#18b2cd">
+        <meta name="msapplication-config" content="./resurse/favicon/browserconfig.xml">
+        <meta name="theme-color" content="#ffffff">
+        <link rel="stylesheet" href="resurse/css/general.css" type="text/css" />
+        <link rel="stylesheet" href="resurse/css/layout.css" type="text/css" />
+        <link rel="stylesheet" href="resurse/css/nav.css" type="text/css" />
+        <link rel="stylesheet" href="resurse/css/stil.css" type="text/css" />
+    </head>
+    <body>
+        <header>
+            <!-- <picture>
+                <img src="resurse/favicon/android-chrome-512x512.png" title="descriere tooltip" alt="text" style="width: 10%;"/> 
+            </picture> -->
+            <h1>Bine ai venit la Gadget Haven</h1>
+    <nav>
+        <label id="hamburger" for="ch-menu">
+            <img src="resurse/imagini/Hamburger_icon_alb.png" alt="menu">
+        </label>
+        <ul class="meniu">
+            <li><div id="acasa">Acasa</div><div id="acasa-mediu"><span class="fas fa-regular fa-house"></span></div>
+                <ul>
+                    <li><a href="#welcome">Bine ati venit</a></li>
+                    <li><a href="#subcapitol-1">Trending</a></li>
+                    <li><a href="#subcapitol-2">Reduceri</a></li>
+                    <li><a href="#subcapitol-informatii">Informatii</a></li>
+                    <li><a href="./contact.html">Contact</a></li>
+                    <li><a href="./cos.html">Cos</a></li>
+                    <li><a href="./cont.html">Cont</a></li>
+                    <!-- <li><a href="./resurse/favicon/android-chrome-512x512.png">icon</a></li> -->
+                </ul>
+            </li>
+            <li><a href="#">Inregistrare</a></li>
+            <li><div>Despre</div>
+                <ul>                        
+                    <li><a href="despre.html#prezentare">Prezentare</a></li>
+                    <li><a href="despre.html#istoric">Istoric</a></li>
+                    <li><a href="despre.html#motivatie">Motivatie</a></li>
+                    <li><a href="despre.html#galerie">Galerie</a></li>
+                </ul>
+            </li>
+        </ul>
+    </nav>
+        </header>
+        <main>
+            <div id="grid-pagina">
+                <section id="welcome">
+                    <h2>Bine ai venit la Gadget Haven, destinația ta online pentru cele mai tari gadgeturi! Suntem pasionați de tehnologie și ne-am propus să îți oferim produse de calitate la prețuri accesibile.</h2>
+                    <section id="subcapitol-1">
+                        <h3><b>Trending</b></h3>
+                        <p><span>Lorem ipsum dolor sit amet consectetur adipisicing elit. Eos sint quisquam exercitationem, qui deleniti, libero eligendi perspiciatis cum nemo, unde explicabo animi adipisci quae voluptatibus nihil dolorem numquam possimus veniam.</span></p>
+                        <ol>
+                            <li><em>ceva</em></li>
+                            <li>altceva</li>
+                        </ol>
+                    </section>
+                    <section id="subcapitol-2">
+                        <h3>Reduceri</h3>
+                        <p><span>Lorem ipsum dolor sit amet consectetur adipisicing elit. Eos sint quisquam exercitationem, qui deleniti, libero eligendi perspiciatis cum nemo, unde explicabo animi adipisci quae voluptatibus nihil dolorem numquam possimus veniam.</span></p>
+                    </section>
+                    <h2 title="tooltip informatii"> Informatii </h2>
+                    <figure>  <!-- (8) -->
+                        <picture>
+                            <!-- il ia pe primul care se potriveste cu query-ul din media-->
+                            <!-- <source srcset="resurse/imagini/laptop-acer.png" media="(max-width:100px)"/>
+                            <source srcset="resurse/imagini/laptop-lenovo.png" media="(max-width:1000px)"/> -->
+                            <img src="resurse/imagini/laptop-macbook-pro.png" title="macbookpro tooltip" alt="text" style="width: 30%;"/>   <!-- Alege aceasta imagine by default daca imaginile din source nu se incadreaza in rangeul 100-1000px-->
+                        </picture>
+                        <figcaption>laptop-macbook-pro</figcaption>
+                    </figure>
+                    <!-- <img src="resurse/imagini/laptop-acer.png" alt="acer" style="width: 30%;">
+                    <figcaption>laptop-lenovo</figcaption> -->
+                    <div>
+                        <a href="resurse/imagini/laptop-macbook-pro.png" download> 
+                            Download image
+                        </a>
+                    </div>
+                    <section id="subcapitol-informatii">
+                    <h2>Subcapitol Informatii</h2>
+                    <p><span>Lorem ipsum dolor sit amet consectetur, adipisicing elit. Soluta in non officia corporis. Officia sed asperiores rerum quaerat, dignissimos, debitis temporibus ducimus numquam minima tempora amet ratione officiis at mollitia!</span><span>Quisquam, amet voluptate. Voluptates provident omnis numquam. Earum ex ad facilis, similique quidem aliquid rem ratione cupiditate fuga inventore quod doloribus mollitia, neque itaque. Excepturi atque a corporis non in?</span><span>Sunt placeat, nam cupiditate iste, sapiente voluptatum officia in enim et eaque possimus optio amet suscipit iusto labore aliquam cumque nesciunt doloribus. Veniam est vero atque, doloribus fugiat unde nihil.</span><span>Nostrum doloremque in a minima omnis laudantium veritatis esse. Quidem numquam exercitationem iure architecto facilis. Quaerat tenetur vitae velit, totam amet, quibusdam laborum eius, cumque modi porro commodi dolore! Unde.</span><span>Molestias numquam aut nobis delectus quo atque ducimus rerum nemo fugit cum perspiciatis expedita ut dignissimos repellendus dicta repellat, commodi laudantium unde qui non! Ea officiis aperiam temporibus maiores pariatur?</span><span>Vero, quae alias id aspernatur voluptas ullam quo voluptate quod enim perspiciatis illo consectetur fugit cupiditate reprehenderit est dolores totam debitis voluptatem eius non explicabo? Molestiae impedit dolor nesciunt quos.</span><span>Praesentium ipsa, laboriosam voluptatibus beatae quisquam minus, recusandae porro sit ab odio vero fuga nemo, officia doloremque consectetur? Fugit quos natus nihil cumque? Voluptatem repellendus itaque quaerat dolores esse quis.</span><span>Modi maiores illum neque deleniti! Quidem cum soluta atque ducimus ratione autem alias libero accusamus suscipit porro ipsam recusandae rerum commodi distinctio repellat nostrum dolores, tempora saepe molestias adipisci architecto.</span><span>Nam accusantium facere tenetur corrupti nobis, molestias et aliquam dolor aliquid exercitationem. Illum fuga quas rerum ex deleniti sit obcaecati quos accusantium! Voluptatum ipsam pariatur, reiciendis consequuntur sunt animi aperiam.</span><span>Libero dolores facilis praesentium explicabo nulla vero dolorem, culpa repudiandae consectetur ducimus voluptatem voluptatibus consequuntur laudantium doloribus quas molestiae? Mollitia aspernatur laudantium odio eaque alias, perspiciatis incidunt illum maiores assumenda!</span></p>
+                    <div><strong>Colaboratorii nostri</strong>
+                    <ul>
+                        <li><a target="_blank" href="http://www.pcgarage.ro">PCgarage</a></li>
+                        <li><a target="_blank" href="http://www.altex.ro">Altex</a></li>
+                        <li><a target="_blank" href="http://www.itgalaxy.ro">ITGalaxy</a></li>
+                    </ul>
+                    </div>
+                    <div class="taburi-iframe">
+                        <a href="https://www.youtube.com/embed/0pg_Y41waaE" target="ifr-video" >MacBookPro</a>
+                        <a href="https://www.youtube.com/embed/3jK6zcGCKVA?si=bddUdB-xuYvBAdRP" target="ifr-video" >Lenovo</a>
+                        <a href="https://www.youtube.com/embed/jCZiz_VDxcA?si=AqQ5jbI4XbxOQLuv" target="ifr-video" >Dell</a><br/>
+                    </div>
+                    <iframe name="ifr-video" width="560" height="315" src="https://www.youtube.com/embed/0pg_Y41waaE?si=wHg1WhXQVu_eyAEl" title="YouTube video player" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+                    <details><summary>Se pot returna produsele ?</summary>
+                        <p>Da! Daca produsul nu a fost deteriorat!</p>
+                    </details>
+                    <details><summary>Aveti sediu si in alte orase in afara de Bucuresti ?</summary>
+                        <p>Da! Vezi sectiunea contacte!</p>
+                    </details>
+                    <div>
+                        <p>Ce spun clienții noștri</p>
+                        <blockquote>
+                            <p>“Sunt încântată de acest produs! Depășește cu mult așteptările mele. Prețul este absolut rezonabil, iar performanța este excelentă.” - Mary M.</p>
+                            <p>“Compact și eficient! Nu pot să cred cât de mult mai bune sunt acestea în comparație cu altele pe care le-am încercat. Nu sunt voluminoase ca majoritatea. O îmbunătățire semnificativă!” - Anne L.</p>
+                            <p>“Calitate pe care o poți simți! Aceste produse sunt durabile, iar fiecare detaliu denotă calitate. Au devenit esențiale în rutina mea zilnică!” - Jane K.</p>
+                        </blockquote>
+                    </div>                
+                    </section>
+                </section>
+            </div>
+        </main>
+        <footer>
+            <div class="container" id="container">
+                <a href="#" id="link-top" title="mergi sus"></a>
+                <a href="#" id="triunghi">
+                    <div id="triunghi-curve-right"></div>
+                    <div id="triunghi-curve-left"></div>
+                </a>
+            </div>
+            <address>
+                Strada x, nr 1, Bucuresti, sector 3, Romania <br/>
+                <a href="tel:+40720424123">Telefon</a><br/>
+                <a href="mailto:GadgetHaven@gmail.com">E-mail</a><br/>
+                <a href="https://wa.me/1XXXXXX">Whatsapp</a><br/>
+                <a href="">Skype</a><br/>
+            </address>
+            <small>
+                Copyright &copy; <time datetime="2024-03-10 15:53">duminica, 10 martie 2024</time>
+            </small>
+        </footer>
+    </body>  
+</html>
