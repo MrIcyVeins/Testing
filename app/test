@@ -1,1 +1,3 @@
 password=changed
+String webhook = "variable"
+HELM_JFROG=variable
