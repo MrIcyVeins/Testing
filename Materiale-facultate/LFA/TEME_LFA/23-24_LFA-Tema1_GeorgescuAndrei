@@ -1,0 +1,13 @@
+1. Dati un exemplu si un contraexemplu de alfabet. Justificati
+
+Un alfabet reprezinta orice multime finita, nevida ale carei elemente se numesc simboluri.
+Un exemplu de alfabet valid poate fi: 
+∑tic-tac-toe = {X,O}
+Justificare:
+- Acest alfabet este valid deoarece este format dintr-o multime finita, nevida de elemente (respecta definitia).
+- Este format din elementele X si O si poate forma cuvinte (exemplu: XOO, OXX / contraexemplu: X11 - deoarece alfabetul nu contine elementul 1)
+
+Contraexemplele de alfabete le reprezinta acelea care nu respecta definitia de exemplu:
+∑null = {λ}
+Justificarea:
+- Un alfabet nu poate fi vid
