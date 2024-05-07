@@ -8,6 +8,11 @@ Justificare:
 - Este format din elementele X si O si poate forma cuvinte (exemplu: XOO, OXX / contraexemplu: X11 - deoarece alfabetul nu contine elementul 1)
 
 Contraexemplele de alfabete le reprezinta acelea care nu respecta definitia de exemplu:
-∑null = {λ}
+∑null = {}
 Justificarea:
 - Un alfabet nu poate fi vid
+
+sau 
+∑ℕ = {0,1,2,3, ...}
+Justificare:
+- Un alfabet nu poate fi infinit 
