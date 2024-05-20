@@ -1,0 +1,7 @@
+Fie L2 un limbaj independent de context (la alegere); construiţi gramatica (eventual în FNC) care 
+îl generează.
+
+
+
+
+

@@ -1,0 +1,6 @@
+Fie L3 un limbaj regulat (la alegere); construiti un automat finit determinist care să îl recunoască. 
+
+
+
+
+

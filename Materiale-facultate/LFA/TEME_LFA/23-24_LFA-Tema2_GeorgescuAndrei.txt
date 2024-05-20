@@ -1,0 +1,58 @@
+2. Dati un exemplu de limbaj finit, respectiv infinit; definiti gramatica generativa a fiecaruia.
+
+Definitii:
+Limbajul este o submultime a monoidului generat de alfabet impreuna cu operatia de concatenare ( concatenarea simbolurilor din alfabet = limbaj )
+Gramatica este un sistem de 4 elemente (Vt,Vn,S,P):
+    Vt - multimea simbolurilor terminale (finita, nevida)  = alfabetul terminalelor
+    Vn - multimea simbolurilor neterminale (finita, nevida) = alfabetul neterminalelor
+    S - simbolul de start ( axioma gramaticii )
+    P - multimea productiilor (finita, nevida) 
+
+Exemplu pentru un limbaj finit:
+L = {hello}
+G = (Vt,Vn,S,P), unde:
+    Vt = {h,e,l,o}
+    Vn = {ABCD}
+    S = ABCCE
+    p1: S -> ABCCD
+    P2: A -> h
+    p2: B -> e
+    p3: C -> l
+    p4: D -> o
+
+    S 1-> ABCCD 
+      2-> hBCCD 
+      3-> heCCD 
+      4-> helCD 
+      5-> hellD 
+      6-> hello
+
+Exemplu pentru un limbaj infinit:
+L = {(oy|yo)*^k | k ∈ ℕ}
+G = (Vt,Vn,S,P), unde:
+    Vt = {o,y}
+    Vn = {S}
+    S 
+    p1: S -> oyS
+    P2: S -> yoS
+    p3: S -> ϵ
+
+Pentru n = 1
+   S -> oyS -> oyϵ = oy
+   S -> yoS -> yoϵ = yo
+Pentru n = 2
+   S -> oyS -> oyyoS = oyyoϵ = oyyo
+   S -> oyS -> oyoyS = oyoyϵ = oyoy
+   S -> yoS -> yoyoS = yoyoϵ = yoyo
+   S -> yoS -> yooyS = yooyϵ = yooy
+...
+Pentru n = k / lungimea fiecarui cuvant = 2k
+
+
+
+
+
+
+
+
+

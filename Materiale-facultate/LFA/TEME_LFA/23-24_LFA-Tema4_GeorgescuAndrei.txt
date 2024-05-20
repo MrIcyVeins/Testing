@@ -1,0 +1,6 @@
+Fie AFD3 un automat finit determinist (la alegere); ce limbaj recunoaşte acesta?
+
+
+
+
+

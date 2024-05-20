@@ -1,0 +1,15 @@
+Fie R3 o expresie regulată (la alegere); ce limbaj descrie aceasta?
+
+Fie R3 = (x|y|z)*x(x|y)
+Limbajul descris de R3 este LR3 = { w ∈ {x,y,z}* | w se termina cu "xx" sau "xy" }
+
+Explicatie: 
+(x | y | z)* = orice combinatei de "x","y","z", inclusiv cuvantul vid (ϵ)
+x(x|y|z) = cuvantul trebuie sa se termine cu "xx" sau "xy"
+
+Exemple: 
+Cuvinte acceptate: zyxx, xxyzzxy, yyyxx, zzyxy, zzzzzzzzz..xy
+Cuvinte (ne)acceptate: zzz, xxxz, yyxxzy
+
+
+

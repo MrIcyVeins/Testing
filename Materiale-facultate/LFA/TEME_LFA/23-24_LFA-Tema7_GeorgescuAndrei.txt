@@ -1,0 +1,8 @@
+Fie G independent de context în FNC; sa se demosntreze ca porice cuvant din L(G) de lungime 
+n admite o derivare de lungime 2n-1.
+
+
+
+
+
+
