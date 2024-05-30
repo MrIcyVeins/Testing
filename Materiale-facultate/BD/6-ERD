@@ -1,0 +1,54 @@
+[Clienți] ----< [Comenzi] >---- [Detalii Comenzi] >---- [Produse] ----< [Categorii]
+               |                |                  |
+               |                |                  |
+               |                |                  >---- [Stocuri]
+               |                |
+               |                |
+               |                >---- [Aprovizionări] >---- [Furnizori]
+
+
+https://dbdiagram.io/d
+
+
+1.	Clienți:
+o	ID_Clienți: INTEGER, PRIMARY KEY, AUTO_INCREMENT
+o	Nume: VARCHAR(50), NOT NULL
+o	Prenume: VARCHAR(50), NOT NULL
+o	Email: VARCHAR(100), NOT NULL, UNIQUE
+o	Telefon: VARCHAR(15), NOT NULL
+o	Adresă: VARCHAR(200), NOT NULL
+2.	Produse:
+o	ID_Produse: INTEGER, PRIMARY KEY, AUTO_INCREMENT
+o	Nume: VARCHAR(100), NOT NULL
+o	Descriere: TEXT, NULL
+o	Preț: DECIMAL(10, 2), NOT NULL
+o	ID_Categorie: INTEGER, FOREIGN KEY, NOT NULL
+3.	Categorii:
+o	ID_Categorie: INTEGER, PRIMARY KEY, AUTO_INCREMENT
+o	Nume_Categorie: VARCHAR(50), NOT NULL
+4.	Furnizori:
+o	ID_Furnizori: INTEGER, PRIMARY KEY, AUTO_INCREMENT
+o	Nume_Furnizor: VARCHAR(100), NOT NULL
+o	Contact: VARCHAR(100), NOT NULL
+5.	Stocuri:
+o	ID_Stoc: INTEGER, PRIMARY KEY, AUTO_INCREMENT
+o	ID_Produse: INTEGER, FOREIGN KEY, NOT NULL
+o	Cantitate: INTEGER, NOT NULL
+o	Data_Ultimei_Aprovizionari: DATE, NOT NULL
+6.	Comenzi:
+o	ID_Comenzi: INTEGER, PRIMARY KEY, AUTO_INCREMENT
+o	ID_Clienți: INTEGER, FOREIGN KEY, NOT NULL
+o	Data_Comenzii: DATE, NOT NULL
+o	Total: DECIMAL(10, 2), NOT NULL
+7.	Detalii Comenzi:
+o	ID_Detalii: INTEGER, PRIMARY KEY, AUTO_INCREMENT
+o	ID_Comenzi: INTEGER, FOREIGN KEY, NOT NULL
+o	ID_Produse: INTEGER, FOREIGN KEY, NOT NULL
+o	Cantitate: INTEGER, NOT NULL
+o	Preț_Unitar: DECIMAL(10, 2), NOT NULL
+8.	Aprovizionări:
+o	ID_Aprovizionare: INTEGER, PRIMARY KEY, AUTO_INCREMENT
+o	ID_Produse: INTEGER, FOREIGN KEY, NOT NULL
+o	ID_Furnizori: INTEGER, FOREIGN KEY, NOT NULL
+o	Cantitate: INTEGER, NOT NULL
+o	Data_Aprovizionarii: DATE, NOT NULL
