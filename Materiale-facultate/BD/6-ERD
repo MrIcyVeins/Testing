@@ -6,8 +6,63 @@
                |                |
                |                >---- [Aprovizionări] >---- [Furnizori]
 
-
+https://app.quickdatabasediagrams.com/#/
 https://dbdiagram.io/d
+https://app.diagrams.net/
+https://www.guru99.com/ro/er-diagram-tutorial-dbms.html
+https://www.youtube.com/watch?app=desktop&v=C5rI47kWkUM&ab_channel=DustinOrmond
+https://www.guru99.com/ro/er-diagram-tutorial-dbms.html
+http://telecom.etc.tuiasi.ro/telecom/staff/lscripca/BD1.pdf
+
+1.	Client:
+•	ClientID (PK)
+•	Nume
+•	Prenume
+•	Email
+•	Telefon
+•	Adresă
+2.	Produs:
+•	ProdusID (PK)
+•	Nume
+•	Descriere
+•	Preț
+•	CategorieID (FK)
+•	FurnizorID (FK)
+3.	Comandă:
+•	ComandaID (PK)
+•	ClientID (FK)
+•	DataComenzii
+•	Total
+4.	DetaliiComandă:
+•	DetaliiComandaID (PK)
+•	ComandaID (FK)
+•	ProdusID (FK)
+•	Cantitate
+•	PrețUnitar
+5.	Stoc:
+•	ProdusID (PK, FK)
+•	CantitateDisponibilă
+6.	Categorie:
+•	CategorieID (PK)
+•	NumeCategorie
+7.	Furnizor:
+•	FurnizorID (PK)
+•	NumeFurnizor
+•	ContactFurnizor
+
+1.	Client – Comanda – un client poate avea mai multe comenzi (1)
+2.	Comanda – DetaliiComanda 
+-	o comanda poate avea mai multe detalii de comanda (1)
+-	fiecare detaliu de comanda apartine unei singure comenzi (M:1)
+3.	Produs – DetaliiComanda
+-	Fiecare detaliu de comanda apartine unui singur produs (M:1)
+4.	Produs – Stoc – un produs are un singur stoc (1:1)
+5.	Categorie – Produs 
+-	O categorie poate avea mai multe produse (1)
+-	Fiecare produs apartine unei singure categorii (M:1)
+6.	Furnizor – Produs
+-	Un furnizor poate furniza mai multe produse (1)
+-	Fiecare produs este furnizat de un singur furnizor (M:1)
 
 
 1.	Clienți:
