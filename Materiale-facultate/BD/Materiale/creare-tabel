@@ -1,0 +1,80 @@
+CREATE TABLE Client (
+    client_id INT PRIMARY KEY AUTO_INCREMENT,
+    nume_client VARCHAR(50) NOT NULL,
+    prenume_client VARCHAR(50) NOT NULL,
+    email VARCHAR(100) NOT NULL UNIQUE,
+    telefon VARCHAR(15) NOT NULL,
+    adresa VARCHAR(200) NOT NULL
+);
+
+CREATE TABLE Produs (
+    produs_id INT PRIMARY KEY AUTO_INCREMENT,
+    nume_produs VARCHAR(100) NOT NULL,
+    descriere_produs TEXT,
+    pret_produs DECIMAL(10, 2) NOT NULL,
+    categorie_produs VARCHAR(50) NOT NULL,
+    oferta: VARCHAR(15) DEFAULT 'nu'
+);
+
+-- CREATE TABLE Categorie (
+--     categorie_id INT PRIMARY KEY AUTO_INCREMENT,
+--     nume_categorie VARCHAR(50) NOT NULL
+-- );
+
+CREATE TABLE Furnizor (
+    furnizor_id INT PRIMARY KEY AUTO_INCREMENT,
+    nume_furnizor VARCHAR(100) NOT NULL,
+    adresa_furnizor VARCHAR(15) NOT NULL,
+    email_furnizor VARCHAR(100) NOT NULL,
+    fax_furnizor VARCHAR(100) NOT NULL,
+    produs_furnizat VARCHAR(100) NOT NULL
+);
+
+CREATE TABLE Stoc (
+    stoc_id INT PRIMARY KEY AUTO_INCREMENT,
+    produs_id INT FOREIGN KEY REFERENCES Produs(produs_id),
+    cantitate INT NOT NULL,
+    data_ultima_aprovizionare DATE NOT NULL,
+    produs VARCHAR(50) NOT NULL
+);
+
+CREATE TABLE Comanda (
+    comanda_id INT PRIMARY KEY AUTO_INCREMENT,
+    client_id INT FOREIGN KEY REFERENCES Client(client_id),
+    data_comanda DATE NOT NULL,
+    data_scadenta DATE NOT NULL,
+    pret_total DECIMAL(10, 2) NOT NULL,
+    mod_plata VARCHAR(50) NOT NULL,
+);
+
+CREATE TABLE Detalii_Comanda (
+    detalii_id INT PRIMARY KEY AUTO_INCREMENT,
+    comanda_id INT FOREIGN KEY REFERENCES Comanda(comanda_id),
+    produs_id INT FOREIGN KEY REFERENCES Produs(produs_id),
+    cantitate INT NOT NULL,
+    pret_unitar DECIMAL(10, 2) NOT NULL,
+    pret_fara_tva DECIMAL(10, 2) NOT NULL,
+    pret_cu_tva DECIMAL(10, 2) NOT NULL,
+    tva DECIMAL(5, 2) NOT NULL CHECK (tva >= 0 AND tva <= 100),
+    cod_promotional VARCHAR(5) DEFAULT 'nu', 
+);
+ 
+CREATE TABLE Aprovizionare (
+    aprovizionare_id INT PRIMARY KEY AUTO_INCREMENT,
+    produs_id INT FOREIGN KEY REFERENCES Produs(produs_id),
+    furnizor_id INT FOREIGN KEY REFERENCES Furnizor(furnizor_id),
+    cantitate INT NOT NULL,
+    data_aprovizionare DATE NOT NULL
+);
+
+
+-- MYSQL
+    -- FOREIGN KEY (produs_id) REFERENCES Produs(produs_id),
+    -- FOREIGN KEY (furnizor_id) REFERENCES Furnizor(furnizor_id)
+
+-- Oracle
+-- CREATE TABLE Orders (
+--     OrderID int NOT NULL PRIMARY KEY,
+--     OrderNumber int NOT NULL,
+--     PersonID int FOREIGN KEY REFERENCES Persons(PersonID)
+-- ); 
