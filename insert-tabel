@@ -1,0 +1,36 @@
+-- from sys grant roles to 'proiect'
+GRANT CONNECT, RESOURCE TO proiect;
+GRANT CREATE TABLE TO proiect;
+GRANT CREATE VIEW TO proiect;
+GRANT CREATE PROCEDURE TO proiect;
+GRANT CREATE SEQUENCE TO proiect;
+GRANT CREATE TRIGGER TO proiect;
+GRANT CREATE ANY TABLE TO proiect;
+GRANT DROP ANY TABLE TO proiect;
+GRANT INSERT ANY TABLE TO proiect;
+GRANT UPDATE ANY TABLE TO proiect;
+GRANT DELETE ANY TABLE TO proiect;
+GRANT SELECT ANY TABLE TO proiect;
+GRANT ALTER ANY TABLE TO proiect;
+GRANT EXECUTE ANY PROCEDURE TO proiect;
+
+
+    INSERT INTO CLIENT (
+    client_id
+    nume_client
+    prenume_client
+    email
+    telefon
+    adresa
+    varsta
+);
+VALUES (
+    1
+)
+
+
+VARCHAR - text 
+NUMBER - number 
+CLOB - logs ( huge texts <= 4gb)
+NCLOB -large unicode data 
+BLOB - binary data( images for ex <= 4gb )
