@@ -1,0 +1,27 @@
+Lista Subiecte 
+
+1. Algoritmi de sortare si cautare:
+-sortarea prin enumerare
+-sortarea prin insertie
+-metoda bulelor
+-sortarea Shell
+-sortarea quicksort
+-cautarea binara
+
+2. Grafuri. Implementare, parcurgeri.
+
+3. Liste alocare statica si alocare dinamica. Inserare, parcurgere, stergere
+
+4. Stiva, inserare, stergere, depasire inferioara, depasire superioara, alocare statica
+
+5. Coada: inserare, stergere, depasire inferioara, depasire superioara. 
+a) alocare statica (general)
+b) coada circulara: inserare, stergere
+
+6. Arbori binari: parcurgeri.
+
+
+Bibliografie
+
+Knuth, Arta programarii calculatoarelor, vol 1 si 3
+cormen, introducere in algoritmi
