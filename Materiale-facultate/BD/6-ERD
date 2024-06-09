@@ -109,3 +109,5 @@ o	ID_Produse: INTEGER, FOREIGN KEY, NOT NULL
 o	ID_Furnizori: INTEGER, FOREIGN KEY, NOT NULL
 o	Cantitate: INTEGER, NOT NULL
 o	Data_Aprovizionarii: DATE, NOT NULL
+
+

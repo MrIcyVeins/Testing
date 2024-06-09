@@ -1,0 +1,281 @@
+-- Etapa 12 
+-- CERERI SQL 
+
+-- a) subcereri sincronizate în care intervin cel puțin 3 tabele 
+-- Afișează numele clienților și numărul total de produse comandate de fiecare dintre ei, filtrând clienții care au comandat produse din cel puțin 2 categorii diferite.
+SELECT cl.nume_client, cl.prenume_client, COUNT(dc.produs_id) AS numar_produse
+FROM Client cl
+JOIN Comanda c ON cl.client_id = c.client_id
+JOIN Detalii_Comanda dc ON c.comanda_id = dc.comanda_id
+JOIN Produs p ON dc.produs_id = p.produs_id
+GROUP BY cl.nume_client, cl.prenume_client
+HAVING COUNT(DISTINCT p.categorie_produs) >= 2;
+
+-- b) subcereri nesincronizate în clauza FROM
+-- Afișează produsele care au fost comandate cel puțin de 3 ori și care au generat venituri totale mai mari de 10000.
+SELECT p.nume_produs, comenzi_totale, venit_total
+FROM Produs p, 
+    (SELECT produs_id, COUNT(*) AS comenzi_totale, SUM(pret_cu_tva) AS venit_total
+     FROM Detalii_Comanda
+     GROUP BY produs_id
+     HAVING COUNT(*) >= 3 AND SUM(pret_cu_tva) > 10000) dc
+WHERE p.produs_id = dc.produs_id;
+
+
+-- c+e
+-- c) grupări de date, funcții grup, filtrare la nivel de grupuri cu subcereri nesincronizate (în clauza de HAVING) în care intervin cel puțin 3 tabele (in cadrul aceleiași cereri)
+-- e) funcții pe date calendaristice 
+-- Afișează categoriile de produse care au generat venituri totale mai mari de 7000, împreună cu numele clienților care au comandat din aceste categorii, și zilele de la ultima comandă pentru fiecare client.
+SELECT p.categorie_produs, cl.nume_client, SUM(dc.pret_cu_tva) AS venit_total,
+       TRUNC(SYSDATE - MAX(c.data_comanda)) AS zile_de_la_ultima_comanda,
+       CASE 
+           WHEN TRUNC(SYSDATE - MAX(c.data_comanda)) <= 30 THEN 'Recent'
+           ELSE 'Nu este recent'
+       END AS statut_comanda
+FROM Produs p
+JOIN Detalii_Comanda dc ON p.produs_id = dc.produs_id
+JOIN Comanda c ON dc.comanda_id = c.comanda_id
+JOIN Client cl ON c.client_id = cl.client_id
+GROUP BY p.categorie_produs, cl.nume_client
+HAVING SUM(dc.pret_cu_tva) > 7000;
+
+-- d+e
+-- d) ordonări și utilizarea funcțiilor NVL și DECODE (în cadrul aceleiași cereri)
+-- e) utilizarea a cel puțin 2 funcții pe șiruri de caractere
+-- Afișează toate comenzile ordonate după data comenzii, folosește NVL pentru a înlocui valoarea null în câmpul cod_promotional și DECODE pentru a traduce modurile de plată, și funcții pe șiruri de caractere pentru a formata numele clienților.
+SELECT c.comanda_id, c.data_comanda, NVL(dc.cod_promotional, 'FARA_COD') AS cod_promotional, 
+       DECODE(UPPER(c.mod_plata), 'CASH', 'CASH', 'CARD') AS mod_plata,
+       UPPER(cl.nume_client) || ', ' || INITCAP(cl.prenume_client) AS nume_complet
+FROM Comanda c
+JOIN Detalii_Comanda dc ON c.comanda_id = dc.comanda_id
+JOIN Client cl ON c.client_id = cl.client_id
+ORDER BY c.data_comanda;
+
+-- f+e
+-- f) utilizarea a cel puțin 1 bloc de cerere (clauza WITH)
+-- e) funcții pe date calendaristice
+-- Afișează produsele și numărul total de comenzi pentru produsele care au fost comandate mai mult de 5 ori, folosind un bloc de cerere (WITH), și zilele trecute de la prima comandă pentru fiecare produs.
+
+WITH Produse_Comandate AS (
+    SELECT produs_id, COUNT(*) AS numar_comenzi, MIN(c.data_comanda) AS prima_comanda
+    FROM Detalii_Comanda dc
+    JOIN Comanda c ON dc.comanda_id = c.comanda_id
+    GROUP BY produs_id
+    HAVING COUNT(*) > 2
+)
+SELECT p.nume_produs, pc.numar_comenzi,
+       TRUNC(SYSDATE - pc.prima_comanda) AS zile_de_la_prima_comanda,
+       LOWER(p.descriere_produs) AS descriere_produs_mic
+FROM Produs p
+JOIN Produse_Comandate pc ON p.produs_id = pc.produs_id;
+
+-- Etapa 13
+-- Implementarea a 3 operatii de actualizare si suoprimare a datelor 
+
+-- operatii ACTUALIZARE
+
+-- actualizare pret produs cu cantitate < 20 in stoc ( marire cu 10% )
+UPDATE Produs
+SET pret_produs = pret_produs * 1.1
+WHERE produs_id IN (SELECT produs_id FROM Stoc WHERE cantitate < 20);
+
+-- Actualizare cantitate produse din categoria ("Accesorii", din tabelul 'Stoc', marind-o cu 50)
+UPDATE Stoc
+SET cantitate = cantitate + 50
+WHERE produs_id IN (SELECT produs_id FROM Produs WHERE categorie_produs = 'Accesorii');
+
+-- Actualizare cont_premium client atunci cand are 2 sau mai multe comenzi facute
+UPDATE Client
+SET cont_premium = 'da'
+WHERE client_id IN (
+    SELECT client_id
+    FROM Comanda
+    GROUP BY client_id
+    HAVING COUNT(comanda_id) >= 2
+);
+
+-- operatii SUPRIMARE
+
+-- Sterge comenzile care au fost plasate inainte de 1 ianuarie 2023
+DELETE FROM Detalii_Comanda
+WHERE comanda_id IN (
+    SELECT comanda_id
+    FROM Comanda
+    WHERE data_comanda < TO_DATE('2023-01-01', 'YYYY-MM-DD')
+);
+
+DELETE FROM Comanda
+WHERE comanda_id IN (SELECT comanda_id FROM Comanda WHERE data_comanda < TO_DATE('2023-01-01', 'YYYY-MM-DD'));
+
+
+-- Sterge produsele care nu sunt in stoc
+DELETE FROM Produs
+WHERE produs_id NOT IN (SELECT produs_id FROM Stoc);
+
+-- Sterge furnizori inactivi
+DELETE FROM Aprovizionare
+WHERE furnizor_id IN (
+    SELECT furnizor_id
+    FROM Aprovizionare
+    WHERE data_aprovizionare < TO_DATE('2023-01-01', 'YYYY-MM-DD')
+);
+
+DELETE FROM Furnizor
+WHERE furnizor_id NOT IN (SELECT DISTINCT furnizor_id FROM Aprovizionare WHERE data_aprovizionare > TO_DATE('2023-01-01', 'YYYY-MM-DD'));
+
+-- Etapa 14 
+-- Crearea unei vizualizari complexe 
+
+-- Crearea vizualizarii
+CREATE VIEW Vizualizare_Comenzi_Clienti_Produse AS
+SELECT
+    c.nume_client,
+    c.prenume_client,
+    com.data_comanda,
+    com.pret_total,
+    p.nume_produs,
+    dc.cantitate
+FROM
+    Client c
+JOIN
+    Comanda com ON c.client_id = com.client_id
+JOIN
+    Detalii_Comanda dc ON com.comanda_id = dc.comanda_id
+JOIN
+    Produs p ON dc.produs_id = p.produs_id;
+    
+    
+-- SELECT * FROM Vizualizare_Comenzi_Clienti_Produse
+
+-- Operatie LMD permisa
+-- Aceasta actualizează cantitatea pentru o anumită comandă a clientului Popescu pentru produsul iPhone 14 Pro Max.
+UPDATE Vizualizare_Comenzi_Clienti_Produse
+SET cantitate = 5
+WHERE nume_client = 'Iliescu' AND nume_produs = 'iPhone 14 Pro Max';
+
+-- Operatie LMD nepermisa  
+-- Inserarea de rânduri într-o vizualizare complexă care implică mai multe tabele nu este permisă, deoarece vizualizarea nu poate determina în ce tabele ar trebui inserate datele noi.
+INSERT INTO Vizualizare_Comenzi_Clienti_Produse (nume_client, prenume_client, data_comanda, pret_total, nume_produs, cantitate)
+VALUES ('Client', 'Nou', TO_DATE('2024-06-01', 'YYYY-MM-DD'), 1000, 'Samsung Galaxy Tab S8', 2);
+
+
+-- Etapa 15
+-- Operatia outer-join
+-- Afișează toate comenzile și produsele comandate, inclusiv comenzile fără produse și produsele fără comenzi, împreună cu informațiile despre clienți și stocuri.
+SELECT
+    c.nume_client,
+    com.data_comanda,
+    p.nume_produs,
+    s.cantitate AS stoc_cantitate
+FROM
+    Comanda com
+FULL OUTER JOIN
+    Client c ON com.client_id = c.client_id
+FULL OUTER JOIN
+    Detalii_Comanda dc ON com.comanda_id = dc.comanda_id
+FULL OUTER JOIN
+    Produs p ON dc.produs_id = p.produs_id
+FULL OUTER JOIN
+    Stoc s ON p.produs_id = s.produs_id;
+
+-- Operatia division
+-- Afișează clienții care au comandat toate produsele din categoria "Electronice".
+SELECT nume_client, prenume_client
+FROM Client c
+WHERE NOT EXISTS (
+    SELECT p.produs_id
+    FROM Produs p
+    WHERE p.categorie_produs = 'Electronice'
+    MINUS
+    SELECT dc.produs_id
+    FROM Comanda com
+    JOIN Detalii_Comanda dc ON com.comanda_id = dc.comanda_id
+    WHERE com.client_id = c.client_id
+);
+
+-- Operatia top-n
+-- Afișează primele 5 produse cele mai comandate.
+
+SELECT p.nume_produs, SUM(dc.cantitate) AS total_cantitate
+FROM Produs p
+JOIN Detalii_Comanda dc ON p.produs_id = dc.produs_id
+GROUP BY p.nume_produs
+ORDER BY total_cantitate DESC
+FETCH FIRST 5 ROWS ONLY;
+
+
+-- Etapa 16
+-- Afișează numele și prenumele clienților care au plasat comenzi în 2024 și care au achiziționat produse din categoria "Accesorii":
+SELECT c.nume_client, c.prenume_client
+FROM Client c
+JOIN Comanda com ON c.client_id = com.client_id
+JOIN Detalii_Comanda dc ON com.comanda_id = dc.comanda_id
+JOIN Produs p ON dc.produs_id = p.produs_id
+WHERE com.data_comanda BETWEEN TO_DATE('2024-01-01', 'YYYY-MM-DD') AND TO_DATE('2024-12-31', 'YYYY-MM-DD')
+AND p.categorie_produs = 'Accesorii';
+
+-- Optimizăm cererea prin utilizarea indecșilor și eliminarea join-urilor nenecesare.
+
+SELECT DISTINCT c.nume_client, c.prenume_client
+FROM Client c
+WHERE EXISTS (
+    SELECT 1
+    FROM Comanda com
+    JOIN Detalii_Comanda dc ON com.comanda_id = dc.comanda_id
+    JOIN Produs p ON dc.produs_id = p.produs_id
+    WHERE com.client_id = c.client_id
+    AND com.data_comanda BETWEEN TO_DATE('2024-01-01', 'YYYY-MM-DD') AND TO_DATE('2024-12-31', 'YYYY-MM-DD')
+    AND p.categorie_produs = 'Accesorii'
+);
+
+-- Etapa 17
+
+-- Vom realiza verificarea progresiva de la BCNF -> FN4 -> FN5 si apoi denormalizarea dupa caz
+-- Vom lua exemplu tabelele Client si Comanda
+
+-- Normalizarea la BCNF - este deja in BCNF deoarece:
+-- Tabelele sunt deja in FN3 
+-- Tabelul Client are cheie primara 'client_id' si nu exista dependente tranzitive
+-- Tabelul comanda are cheie primara 'comanda_id' si 'clinet_id' este cheie straina.
+
+-- Normalizarea la FN4 - este deja in FN4 deoarece:
+-- Tabelele sunt deja in BCNF
+-- Nu exista dependinte multi-valued in aceste tabele 
+
+-- Normalizare la FN5 - este deja FN5 deoarece:
+-- Tabelele sunt deja in FN4
+-- Nu exista dependinte join non-triviale
+
+-- Denormalizarea 
+-- Justificare: 
+-- Performanță îmbunătățită: Având toate datele într-un singur tabel, reducem numărul de join-uri necesare pentru interogările frecvente, ceea ce poate îmbunătăți semnificativ performanța.
+-- Complexitate redusă: Interogările devin mai simple și mai rapide de scris, ceea ce este benefic pentru dezvoltatori și administratori de baze de date.
+-- Cazuri specifice de utilizare: În aplicații OLAP ( Online Analytical Processing ) sau alte scenarii unde citirea rapidă este critică, denormalizarea poate fi esențială pentru a asigura răspunsuri rapide la interogări.
+
+
+-- Crearea tabelului denormalizat ClientComanda
+CREATE TABLE ClientComanda (
+    client_id INT,
+    nume VARCHAR2(100),
+    adresa VARCHAR2(200),
+    cont_premium VARCHAR2(3),
+    comanda_id INT,
+    data_comanda DATE,
+    pret_total NUMBER,
+    PRIMARY KEY (client_id, comanda_id)
+);
+
+
+-- Inserarea datelor în tabelul denormalizat
+INSERT INTO ClientComanda (client_id, nume, adresa, cont_premium, comanda_id, data_comanda, pret_total)
+SELECT c.client_id, c.nume_client, c.adresa, c.cont_premium, com.comanda_id, com.data_comanda, com.pret_total
+FROM Client c
+JOIN Comanda com ON c.client_id = com.client_id;
+
+-- Exemplu de interogare pe tabelul denormalizat
+-- Să presupunem că dorim să vedem toate comenzile și informațiile despre clienți pentru comenzile din luna aprilie 2024:
+
+SELECT client_id, nume, adresa, cont_premium, comanda_id, data_comanda, pret_total
+FROM ClientComanda
+WHERE data_comanda BETWEEN TO_DATE('2024-04-01', 'YYYY-MM-DD') AND TO_DATE('2024-04-30', 'YYYY-MM-DD');
+
