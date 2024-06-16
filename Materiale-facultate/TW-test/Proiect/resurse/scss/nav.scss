@@ -1,0 +1,37 @@
+// >a, .meniu li:hover>div {
+//     color: var(--culoare-text-meniu-selectat);
+// }
+
+.meniu{
+  display: flex;
+  list-style-type: none;
+
+
+  li{
+  border: 1px solid var(--culoare-inchisa);
+  font-weight: bold;
+  height:var(--inaltime-meniu);
+  width:var(--latime-buton);
+  text-align: center;
+  box-sizing:border-box;
+  transition: all 1s linear;
+  list-style-type: none;
+  &:hover{
+      background-color: var(--culoare-inchisa);
+      color: var(--culoare-text-meniu-selectat);
+  }
+  
+  }
+
+   a,  div{
+      text-decoration: none;
+      color: var(--culoare-text-meniu);
+      display: block;
+      height: 100%;
+      line-height: var(--inaltime-meniu);
+      cursor: pointer;
+      box-sizing: border-box;
+      transition: all 1s linear;
+  }
+  
+}

@@ -1,0 +1,17 @@
+{
+  "cale_baza": "resurse\\imagini\\eroare",
+  "eroare_default": {
+    "titlu": "404 Page not found",
+    "text": "Pagina cautata nu a fost gasita sau nu exista.",
+    "imagine": "404.jpg"
+  },
+  "info_erori": [
+    {
+      "identificator": 404,
+      "status": true,
+      "titlu": "Page not found",
+      "text": "Pagina cautata nu a fost gasita sau nu exista.",
+      "imagine": ""
+    }
+  ]
+}

@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="ro">
+  <%- include('views/fragmente/head.ejs'); %>
+  <body>
+    <%- include('views/fragmente/homepage_header.ejs'); %>
+    <%- include('views/fragmente/navbar.ejs'); %>
+    <%- include('views/fragmente/gallery', { images: images, galleryPath: galleryPath }); %>
+    <main>
+      <div id="grid-pagina">
+        <section id="welcome">
+          <h2>Bine ati venit</h2>
+          <p class="intro" >Vă mulțumim că ne vizitați site-ul.</p>
+          <div class="intro-oferte"><div>Laptopuri</div><div>Smartphone-uri</div><div>Tablete</div><div>Casti</div>Accesorii<div></div></div>
+          <p class="anunt intro">Descoperă gadgeturile viitorului la Gadget Haven.</p>
+          <div id="dv-prezentare-1">
+            <div id="dv-prezentare">
+              <figure>
+                <picture>
+                  <!-- il ia pe primul care se potriveste cu query-ul din media-->
+                  <!-- <source srcset="./resurse/imagini/laptop-acer.png" media="(max-width:700px)"/>
+                  <source srcset="./resurse/imagini/laptop-lenovo.png" media="(max-width:1200px)"/>
+                  <img src="./resurse/imagini/laptop-macbook-pro.png" alt="text" title="Laptop"/> -->
+                </picture>
+                <figcaption>Laptop</figcaption>
+              </figure>
+            </div>
+          </div>
+          <hr class="laptopuri"/>
+          <div id="container-video">
+            <!-- <img class="macbook" src="resurse/imagini/laptop-macbook-pro.png" alt="macbook"> -->
+            <div id="centrare-video">
+              <div id="clip-video">
+                <div id="stil-video">
+                  <video width="320" height="240"  playsinline autoplay loop muted>
+                    <source src="resurse/video/video.mp4" type="video/mp4">
+                    <source src="resurse/video/video.ogv" type="video/ogv">
+                    <!-- <track default src="data:image/png;base64, V0VCVlRUIC0gQ2lvY29sYXTEgwoKMDA6MDAuMDAwIC0tPiAwMDowMy4wMDAgbGluZTowCkNpb2NvbGF0xIMhISEKCjAwOjAzLjAwMCAtLT4gMDA6MDcuMDAwIGxpbmU6MApNdWx0xIMgY2lvY29sYXTEgyEhISEKCjAwOjA5LjAwMCAtLT4gMDA6MTQuMDAwIGxpbmU6MApVcHMsIGFtIG11cmTEg3JpdCBtYXNhIQoKMDA6MTQuNTAwIC0tPiAwMDoxOS4wMDAgbGluZTowCk51IGNvbnRlYXrEgyEgQ2lvY29sYXTEg8SDxIPEg8SDxIMhCgo=" kind="captions" srclang="ro" label="romana">
+                    <track src="data:image/png;base64, V0VCVlRUIC0gQ2hvY29sYXRlDQoNCjAwOjAwLjAwMCAtLT4gMDA6MDMuMDAwDQpDaG9jb2xhdGUhISENCg0KMDA6MDMuMDAwIC0tPiAwMDowNy4wMDANCkxvdHMgb2YgY2hvY29sYXRlISEhIQ0KDQowMDowOS4wMDAgLS0+IDAwOjE0LjAwMA0KT3VwcywgdGFibGUgZ290IGRpcnR5IQ0KDQowMDoxNC41MDAgLS0+IDAwOjE5LjAwMA0KRG9lc24ndCBtYXR0ZXIhIENob2NvbGF0ZSEhIQ0KDQo=" kind="captions" srclang="en" label="engleza"> -->
+                  </video>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+        <section id="promotii">
+          <h2>Promoții</h2>
+          <article>
+            <h3 class="titlu">Super ofertă de weekend</h3>
+            <p><b>Gadget Haven</b> oferă <b>reduceri de <s>10%</s> <ins datetime="2024-03-19">15%</ins></b> pentru toate produsele cumpărate în intervalul 10-14.</p>
+            <p>Oferta este valabilă doar în zilele de sâmbătă și duminică la sediile <abbr title="Gadget Haven">CD</abbr>.</p>
+            <p>în cazul în care cumpărați mai mult de zece produse primiți si un card de fidelitate pentru Salvare!</p>
+          </article>
+          <article>
+            <h3>Ofertă pachet</h3>
+            <p>Gadget Haven oferă pachete cuprinzând:</p>
+            <ol>
+              <li><i lang="en">Laptop</i></li>
+              <li>Tastatura</li>
+              <li>Mouse</li>
+              <li>Un <i>rucksack</i></li>
+            </ol>
+          </article>
+          <article>
+            <h3 class="titlu bcd">Promotie 3</h3>
+            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc sed suscipit mauris. Proin commodo, arcu in mollis ullamcorper, tortor elit pulvinar dui, at vehicula mauris felis laoreet mauris. Nunc vulputate risus ex.</p>
+            <ol>
+              <li>Suspendisse tempus imperdiet elit in.</li>
+              <li>Quisque feugiat, mi eget condimentum</li>
+              <li>Nunc vitae semper lacus, sed hendrerit purus </li>
+              <li>Aenean imperdiet lorem vitae velit porta</li>
+            </ol>
+          </article>
+          <article>
+            <h3>Promotie 4</h3>
+            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc sed suscipit mauris. Proin commodo, arcu in mollis ullamcorper, tortor elit pulvinar dui, at vehicula mauris felis laoreet mauris. Nunc vulputate risus ex.</p>
+            <ol>
+              <li>Suspendisse tempus imperdiet elit in.</li>
+              <li>Quisque feugiat, mi eget condimentum</li>
+              <li>Nunc vitae semper lacus, sed hendrerit purus </li>
+              <li>Aenean imperdiet lorem vitae velit porta</li>
+            </ol>
+          </article>
+        </section>
+        <section id="produse">
+          <h2>Produsele noastre</h2>
+          <section>
+            <h3>Laptopuri</h3>
+            <p>Avem Laptopuri pentru:</p>
+            <ul>
+              <li>Gaming</li>
+              <li>Office</li>
+              <li>Uz general</li>
+            </ul>
+          </section>
+          <section>
+            <h3>Gadget-uri pentru casă</h3>
+            <p>Gadget-uri:</p>
+            <ul>
+              <li>Prize inteligente</li>
+              <li>Becuri smart</li>
+              <li>Camere de supraveghere</li>
+            </ul>
+          </section>
+          <section>
+            <h3>Accesorii pentru telefoane</h3>
+            <ul>
+              <li>Huse</li>
+              <li>Folii de protectie</li>
+              <li>Incarcatoare</li>
+            </ul>
+          </section>
+        </section>
+        <section id="orar">
+          <h2>Orar</h2>
+          <table id="tab-orar">
+            <thead>
+              <tr>
+                <th>Cod</th>
+                <th>Perioadă</th>
+                <th>Zi</th>
+                <th>Interval dimineata</th>
+                <th>Pauza de masa</th>
+                <th>Interval seară</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td></td>
+                <td rowspan="5">Zile<br/>Lucrătoare</td>
+                <td>Luni</td>
+                <td>9-12</td>
+                <td>12-14</td>
+                <td>14-20</td>
+              </tr>
+              <tr>
+                <td></td>
+                <td>Marti</td>
+                <td>9-12</td>
+                <td>12-14</td>
+                <td>14-21</td>
+              </tr>
+              <tr>
+                <td></td>
+                <td>Miercuri</td>
+                <td>9-11</td>
+                <td>11-13</td>
+                <td>14-21</td>
+              </tr>
+              <tr>
+                <td></td>
+                <td>Joi</td>
+                <td>9-11</td>
+                <td>11-13</td>
+                <td>14-21</td>
+              </tr>
+              <tr>
+                <td></td>
+                <td>Vineri</td>
+                <td>9-12</td>
+                <td>12-14</td>
+                <td>14-19</td>
+              </tr>
+              <tr>
+                <td></td>
+                <td rowspan="2">Weekend</td>
+                <td>Sambata</td>
+                <td>10-12</td>
+                <td>12-13</td>
+                <td>13-16</td>
+              </tr>
+              <tr>
+                <td></td>
+                <td>Duminica</td>
+                <td>10-14</td>
+                <td>-</td>
+                <td>inchis</td>
+              </tr>
+            </tbody>
+            <tfoot><tr><td colspan="6">Închis cu ocazia sărbătorilor legale.</td></tr></tfoot>
+          </table> 
+        <section id="anunturi">
+          <h2>Anunțuri</h2> 
+          <p><time datetime="2024-03-05">3 martie 2024</time> <strong>Oferta valabilă până la data de 21 noiembrie 2024. Stocurile sunt limitate.</strong></p>
+          <p><time datetime="2024-06-05">5 iunie 2024</time> Vara Tehnologica - Răcorire cu gadgeturi! Descoperă cele mai noi ventilatoare inteligente și sisteme de climatizare. Tablete și laptopuri pentru vacanțe: Lucrează sau te distrează oriunde te afli!</p>
+          <p><time datetime="2024-08-15">15 august 2024</time> Întoarcerea la școală - Laptopuri ultraportabile pentru studenți: Performanță și stil într-un singur pachet. Căști Bluetooth pentru orele lungi de studiu sau relaxare.</p>
+          <p><time datetime="2024-11-20">20 noiembrie 2024</time> Black Friday Tech Deals: Reduceri masive la smartphone-uri, gadgeturi și accesorii. Ceasuri inteligente pentru a-ți surprinde cei dragi. </p>
+          <p><time datetime="2025-01-01">1 ianuarie 2025</time> Un an nou fericit!</p>
+          <p><time datetime="2025-01-03">3 ianuarie 2025</time> An Nou, Tehnologie Nouă - Rezoluția ta pentru 2025: Upgrade la un nou laptop!</p>
+          <p><time datetime="2025-03-11">11 martie 2025</time> Primăvara Tehnologică - Boxe portabile pentru picnicuri și petreceri în aer liber. </p>
+        </section>
+        <section id="index-intrebari">
+          <h2>Întrebări frecvente</h2>
+          <details><summary>Cum pot să returnez un produs defect?</summary>
+            <p>Contactați serviciul nostru de asistență clienți la numărul de telefon afișat pe site.</p>
+          </details>
+          <details><summary>Cum pot să verific starea comenzii mele?</summary>
+            <p>Pentru a verifica starea comenzii, accesați secțiunea “Urmărirea comenzii” de pe site-ul nostru. Introduceți numărul comenzii și adresa de e-mail asociată pentru a afla detalii despre livrare.</p>
+          </details>
+          <details><summary>Care sunt opțiunile de plată acceptate?</summary>
+            <p>Acceptăm plăți cu carduri de credit/debit, PayPal și plata la livrare. Alegeți metoda preferată la finalizarea comenzii.</p>
+          </details>
+          <details><summary>Cum pot să contactez serviciul clienți</summary>
+            <p>Suntem disponibili pentru asistență la numărul de telefon afișat pe site sau prin e-mail la adresa contact@gadgethaven.ro.</p>
+          </details>
+        </section>
+      </div>
+      <section id="galerie-statica">
+        <h2>Galerie</h2>
+        <div id="grid-galerie">
+        </div>
+      </section>
+      <section id="retete">
+        <h2>Prezentare oferte</h2>
+        <p>Top oferte</p>
+        <div class="container-iframe">
+          <div class="taburi-iframe">
+            <a href="https://www.youtube.com/embed/jXBX0WZpppM?si=LYprRdCj1CUsYNle" target="ifr-video">Laptop-acer</a>
+            <a href="https://www.youtube.com/embed/3jK6zcGCKVA?si=bddUdB-xuYvBAdRP" target="ifr-video" >laptop-lenovo</a>
+            <a href="https://www.youtube.com/embed/0pg_Y41waaE" target="ifr-video" >laptop-macbook-pro</a><br/>
+          </div>
+          <iframe name="ifr-video" width="560" height="315" src="https://www.youtube.com/embed/jXBX0WZpppM?si=LYprRdCj1CUsYNle" 
+          frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+        </div>
+      </section>
+    </main>
+    <%- include('views/fragmente/homepage_footer.ejs'); %>
+  </body>  
+</html>

@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Pagina cu date despre firma</title>
+    <style>
+      body {
+        text-align: center;
+        padding: 20px;
+        font-family: Arial, sans-serif;
+      }
+      h1 {
+        font-size: 50px;
+      }
+      p {
+        font-size: 20px;
+      }
+    </style>
+    <%- include('../fragmente/style.ejs'); %>
+  </head>
+  <body>
+    <h1>Povestea noastră</h1>
+    <%- include('../fragmente/navbar.ejs'); %>
+    <p>Vă mulțumim că ne vizitați, acest site este un proiect personal!</p>
+    <img src="resurse/imagini/friendsyouneedinyourinnercircle.jpg" />
+    <%- include('../fragmente/user_data.ejs'); %>
+  </body>
+</html>

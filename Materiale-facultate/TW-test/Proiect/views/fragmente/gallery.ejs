@@ -1,0 +1,12 @@
+<div class="gallery-grid">
+    <% images.forEach((image, index) => { %>
+        <figure class="gallery-item">
+            <picture>
+                <source media="(max-width: 600px)" srcset="<%= galleryPath + 'small_' + image.cale_imagine %>">
+                <source media="(max-width: 1200px)" srcset="<%= galleryPath + 'medium_' + image.cale_imagine %>">
+                <img src="<%= galleryPath + image.cale_imagine %>" alt="<%= image.titlu %>" title="<%= image.descriere %>">
+            </picture>
+            <figcaption><%= ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X'][index] %>. <%= image.titlu %></figcaption>
+        </figure>
+    <% }); %>
+</div>

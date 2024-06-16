@@ -1,0 +1,28 @@
+// Import Bootstrap's source files
+@import "node_modules/bootstrap/scss/bootstrap";
+
+// Custom variables
+$theme-colors: (
+  "primary": #3498db,
+  "secondary": #2ecc71,
+  "success": #1abc9c,
+  "info": #9b59b6,
+  "warning": #f1c40f,
+  "danger": #e74c3c,
+  "light": #ecf0f1,
+  "dark": #34495e
+);
+
+$font-family-base: "Arial, sans-serif";
+$font-size-base: 1rem;
+
+$headings-font-family: "Georgia, serif";
+$headings-font-weight: 700;
+$headings-line-height: 1.2;
+$headings-color: inherit;
+
+$border-radius: 0.25rem;
+$btn-border-radius: 0.25rem;
+
+// Import the rest of Bootstrap
+@import "node_modules/bootstrap/scss/bootstrap";
