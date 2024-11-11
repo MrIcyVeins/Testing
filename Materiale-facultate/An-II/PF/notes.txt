@@ -1,0 +1,48 @@
+Haskell
+
+Haskell este:
+- lenes (lazy) - orice calcul este amanat at de mult posibil = permite lucrul cu colectii infinite de date precum [1..]
+- minimalist - mai putin cod, cu mai putine defecte, in mai putin timp ( exemplu quicksort in Haskell vs C )
+
+
+- limbaj functional pur 
+- functiile = valori ( nu se modifica datele existente )
+            = pure ( aceleasi rezultate pentru aceleasi intrari )
+
+- limbaj elegant - recursivitate, compunere de functii, functori, monade
+                 - cod compact si modular
+                 - rigurozitate = ne forteaza sa gandim mai mult inainte 
+
+- ofer suport pentru paralelistm si concurenta
+
+
+Elemente de baza:
+
+> integer +/- integer 
+> False || True
+> head = first element of any list [1,2,3] for integers / "abcd" for lists   - standard ghci module
+> tail = last elements of any list -||-   - standard ghci module
+
+:? - help
+:q - quit 
+:cd - change directory 
+:t - type ( arata informatii despre element )
+:l - load (fisiere)
+:r - reload ( fisiere incarcate )
+
+--      = comentariu pe o linie 
+{- -}   = comentariu pe mai multe linii
+
+
+Identificatori:
+- siruri formate din litere "a,b,c", cifre [1,2,3]
+- identificatorii pentru variabile incep cu LITERA MICA sau _
+- identificatorii pentru tipuri si costructori incep cu LITERA MARE 
+- Haskell este case sensitive
+
+
+- Variabilele sunt imutabile ( immutable )  -- x = 1 reprezinta o legatura ( binding )
+    cu ajutorul loopurilor ( let .. in ..) se pot face legarea variabilelor - care vor fi folosite doar in interiorul acelor in-uri
+
+    
+
