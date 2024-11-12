@@ -45,4 +45,16 @@ Identificatori:
     cu ajutorul loopurilor ( let .. in ..) se pot face legarea variabilelor - care vor fi folosite doar in interiorul acelor in-uri
 
     
+Operatori ("operator sections")
+
+RIGHT (infixr)
+++   (concatenare) 
+:   (append)
+^
+
+LEFT (infixl)
++
+<-> 
+- / subtract
+
 
