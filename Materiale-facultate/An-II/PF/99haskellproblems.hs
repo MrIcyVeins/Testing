@@ -1,5 +1,8 @@
+import Data.List.NonEmpty (xor)
 -- https://wiki.haskell.org/H-99:_Ninety-Nine_Haskell_Problems
 
+
+-- Questions 1 to 10: Lists
 -- Problem 1 (*)
 -- Find the last element of a list
 {-  
@@ -106,3 +109,78 @@ isPalindrome [] = False
 isPalindrome (x:xs)
     | (x:xs) == reverse(x:xs) = True
     | otherwise = False
+
+-- Problem 7 - used helpers
+{- 
+
+(**) Flatten a nested list structure
+
+Transform a list, possibly holding lists as elements into a `flat' list by replacing each list with its elements (recursively).
+
+Example:
+
+* (my-flatten '(a (b (c d) e)))
+(A B C D E)
+
+We have to define a new data type, because lists in Haskell are homogeneous.
+
+ data NestedList a = Elem a | List [NestedList a]
+
+λ> flatten (Elem 5)
+[5]
+λ> flatten (List [Elem 1, List [Elem 2, List [Elem 3, Elem 4], Elem 5]])
+[1,2,3,4,5]
+λ> flatten (List [])
+[]
+
+-}
+
+-- with concatMap
+-- data NestedList a = Elem a | List [NestedList a]
+-- flatten :: NestedList a -> [a]
+-- flatten (Elem x) = [x]
+-- flatten (List x) = concatMap flatten x
+
+-- without concatMap
+data NestedList a = Elem a | List [NestedList a]
+flatten :: NestedList a -> [a]
+flatten (Elem a )   = [a]
+flatten (List (x:xs)) = flatten x ++ flatten (List xs)
+flatten (List [])     = []
+
+-- Problem 8 - used helpers
+{- 
+
+Eliminate consecutive duplicates of list elements
+λ> compress "aaaabccaadeeee"
+"abcade"
+
+-}
+-- data Elements a =  [a]
+compress :: Eq a => [a] -> [a]
+compress [] = []  -- Handle the empty list case
+compress (x:xs) = x : (compress $ dropWhile (== x) xs)
+
+-- Problem 9
+{-
+Pack consecutive duplicates of list elements into sublists.
+λ> pack ['a', 'a', 'a', 'a', 'b', 'c', 'c', 'a', 
+             'a', 'd', 'e', 'e', 'e', 'e']
+["aaaa","b","cc","aa","d","eeee"]
+
+-}
+
+pack :: Eq a => [a] -> [a]
+pack [] = []
+pack (x:xs) = (x : (pack $ takeWhile (==x) xs)) ++ (x : (pack $ takeWhile (==x) xs))
+
+
+
+-- Problem 10
+{- 
+Run-length encoding of a list.
+
+λ> encode "aaaabccaadeeee"
+[(4,'a'),(1,'b'),(2,'c'),(2,'a'),(1,'d'),(4,'e')]
+
+-}
