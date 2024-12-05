@@ -1,0 +1,10 @@
+Alternative hosting:
+
+Heroku: https://www.heroku.com/github-students
+Alwaysdata: https://www.alwaysdata.com/en/ (spatiu 100MB!!!)
+Infinityfree: https://www.infinityfree.com/
+
+xampp
+mysql-workbench
+
+xampp-windows-x64-8.0.30-0-VS16-installer.exe

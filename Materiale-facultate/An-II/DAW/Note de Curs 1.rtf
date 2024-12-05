@@ -1,0 +1,192 @@
+{\rtf1\ansi\ansicpg1252\deff0\nouicompat\deflang1033{\fonttbl{\f0\fnil\fcharset0 Calibri;}{\f1\fnil\fcharset238 Calibri;}{\f2\fnil\fcharset2 Symbol;}}
+{\colortbl ;\red0\green77\blue187;\red255\green255\blue255;\red0\green128\blue0;\red255\green0\blue0;\red0\green0\blue255;\red102\green102\blue102;\red0\green0\blue128;}
+{\*\generator Riched20 10.0.22621}\viewkind4\uc1 
+\pard\sa200\sl276\slmult1\qc\cf1\b\f0\fs48\lang9 Dezvoltarea Aplicatiilor Web\par
+\cf0\fs40 Curs 1\par
+\b0\fs22\par
+
+\pard{\pntext\f2\'B7\tab}{\*\pn\pnlvlblt\pnf2\pnindent0{\pntxtb\'B7}}\fi-360\li720\sa200\sl276\slmult1\qj pt poriect putem folosi si ChatGPT - doar sa intelegem ce scriem acolo\par
+{\pntext\f2\'B7\tab}Minim pt. promovare: CRUD pe baza de date + Autentificare\par
+{\pntext\f2\'B7\tab}Pe frontend - putem folosi orice, chiar si Bootstrap, nu conteaza\par
+{\pntext\f2\'B7\tab}Partea specifica pentru DAW este de securitate - aici va fi pus accentul.\par
+{\pntext\f2\'B7\tab}\cf2\highlight3\b Evaluare\b0 : \b 19.01.2025, la ora 14\lang1033 :00\b0  (1 - la - 1, 15-20 min cu fiecare persoana)\lang9\par
+{\pntext\f2\'B7\tab}\cf4\highlight0\b proiectele se predau inainte de evaluare, pana la data: 17.01.2025\b0\par
+{\pntext\f2\'B7\tab}\cf2\highlight3 inainte sa trimitem proiectul, sa avem o discutie 1-1 cu proful, ori in decembrie ori in ianuarie, pentru a ne asigura ca vom lua punctajul complet\par
+{\pntext\f2\'B7\tab}\cf4\highlight0\ul DEADLNE: pana la \b 08.11.2024\cf2\highlight3\b0 , toti studentii care vor sa sustina proiectul trebuie sa trimita un email profesorului la vsl@fmi.unibuc.ro, cu: Nume, Grupa, Tema aleasa\par
+{\pntext\f2\'B7\tab}\ulnone\b Vreau sa predau proiectul: \b0 link de hosting, link de github, user de administrare, regular user\par
+{\pntext\f2\'B7\tab}Proiect individual, dar pot fi maxim 4 studenti pe aceeasi tema\par
+
+\pard{\pntext\f2\'B7\tab}{\*\pn\pnlvlblt\pnf2\pnindent0{\pntxtb\'B7}}\fi-360\li720\sl276\slmult1\qj Ap\lang1033 licatia Web trebuie:\lang9\par
+
+\pard 
+{\pntext\f0 1.\tab}{\*\pn\pnlvlbody\pnf0\pnindent0\pnstart1\pndec{\pntxta.}}
+\fi-360\li1080\sl276\slmult1\qj\lang1033 sa fie accesibila prin Internet (hosting gratuit cu MySQL si compilare PHP, care ofera (Open) SSL / certificate pentru conexiuni securizate http\b s\b0 )\lang9\par
+
+\pard 
+{\pntext\f0 2.\tab}{\*\pn\pnlvlbody\pnf0\pnindent0\pnstart1\pndec{\pntxta.}}
+\fi-360\li1080\sa200\sl276\slmult1\qj\lang1033 pe GitHub (commit-ul sa nu fie dimineata, inainte de prezentare, sa eliminam partea de user cu care ne conectam etc.)\lang9\par
+
+\pard{\pntext\f2\'B7\tab}{\*\pn\pnlvlblt\pnf2\pnindent0{\pntxtb\'B7}}\fi-360\li720\sa200\sl276\slmult1\qj\cf0\highlight0\i Putem sa venim si anticipat, dar nu mai devreme de 07.12.2024 si pe 12.12.2024, daca suntem avansati si vrem sa sustinem mai devreme proiectul\i0\par
+{\pntext\f2\'B7\tab}\cf1 Tema: gasit hosting; alternative de hosting: azure.microsoft.com, heroku.com/ithub-students, alwaysdata.com/en (spatiu 100MB), go.runhosting.com/free-web-hosting.html (fara SSL/HTPS), infinityfree.com . \par
+{\pntext\f2\'B7\tab}Tema: sa ne facem un cont de gmail.com dedicat pentru DAW, cu two factor authenticator - pentru login vom folosi autentificarea in 2 pasi (inregitrare, cu mail de validare) - folosim GMail pentru a ne livra continutl emailul si pentru captcha (detalii: {\cf0{\field{\*\fldinst{HYPERLINK https://www.google.com/recaptcha/admin/create }}{\fldrslt{https://www.google.com/recaptcha/admin/create\ul0\cf0}}}}\f0\fs22  - folositi cheile (SITE, SECRET) in fisierele din folderul contact); \par
+{\pntext\f2\'B7\tab}\cf0 cert bot (linux) - il activam, il punem in chrome si reinnoieste automat certificatele de securitate\par
+{\pntext\f2\'B7\tab}certificatele pentru https expira dupa o perioada de timp (ex. 3 luni)\par
+{\pntext\f2\'B7\tab}PHP e folosit si e de neocolit: CMS (ex. WordPress)\par
+{\pntext\f2\'B7\tab}cand expunem un site pe Internet, trebuie sa ne gandim la ce atacuri ne expunem\par
+{\pntext\f2\'B7\tab}avantaj: suport si comunitate exceptionale (cam toate problemele cu care ne confruntam au fost deja rezovlate de cineva)\lang1033 ; documentatie: \cf4 php.net \cf0 (atentie la versiunea de PHP folosita!), {{\field{\*\fldinst{HYPERLINK https://www.youtube.com/results?search_query=php+tutorials+playlist }}{\fldrslt{https://www.youtube.com/results?search_query=php+tutorials+playlist\ul0\cf0}}}}\f0\fs22\lang9\par
+{\pntext\f2\'B7\tab}MySQL - e varianta open source pentru baze de date; documentatie: {{\field{\*\fldinst{HYPERLINK https://dev.mysql.com/doc/ }}{\fldrslt{https://dev.mysql.com/doc/\ul0\cf0}}}}\cf4\f0\fs22  \cf0 , {{\field{\*\fldinst{HYPERLINK https://www.mysqltutorial.org/ }}{\fldrslt{https://www.mysqltutorial.org/\ul0\cf0}}}}\f0\fs22\par
+{\pntext\f2\'B7\tab}XAMPP - default serveste content pe portul 80\par
+{\pntext\f2\'B7\tab}folder: C:\\xampp\\htdocs\par
+{\pntext\f2\'B7\tab}le va deschide in ordinea: index.php index.pl index.cgi index.asp index.shtml index.html index.htm default.php default.pl default.cgi default.asp default.shtml default.html default.htm home.php home.pl home.cgi home.asp home.shtml home.html home.htm\par
+
+\pard\sl276\slmult1\qj\par
+
+\pard{\pntext\f2\'B7\tab}{\*\pn\pnlvlblt\pnf2\pnindent0{\pntxtb\'B7}}\fi-360\li720\sl276\slmult1\qj exemplu de cod PHP\lang1033 :\lang9\par
+
+\pard\li720\sl276\slmult1\qj\i <?php\par
+echo 'Buna, frumosule!' \cf4\b .\cf0\b0  234*19; \par
+?>\par
+\cf6\i0 // punctul uneste cele doua elemente, un string si un calcul si le afiseaza impreuna\cf0\par
+
+\pard\sa200\sl276\slmult1\qj\par
+
+\pard{\pntext\f2\'B7\tab}{\*\pn\pnlvlblt\pnf2\pnindent0{\pntxtb\'B7}}\fi-360\li720\sa200\sl276\slmult1\qj exercitiu: definiti o pagina PHP care sa ofere continut diferit in functie de minutul la care a fost incarcata pagina: continutul1 -> daca minutul e impar, continut2 -> minut par (extra - se schimba si culoarea de background in bleu)\par
+
+\pard\sl276\slmult1\qj <?php\par
+\tab $minute = date("i");\par
+\tab $mesaj = 'continut1';\par
+\tab if ($minute % 2 == 0) $mesaj = '<b>'.'continut2'.'</b>';\par
+\tab else $mesaj = '<i>'.'continut1'.'</i>';\tab\par
+\tab $backgroundColor = "#add8e6";\par
+?>\par
+\par
+<!DOCTYPE html>\par
+<html lang="en">\par
+<head>\par
+    <meta charset="UTF-8">\par
+    <title>Dynamic Background Color</title>\par
+</head>\par
+<body style="background-color: <?php echo $backgroundColor; ?>;">\par
+\tab <p>\par
+\tab <?php echo $mesaj; ?>\par
+\tab </p>\par
+</body>\par
+</html>\par
+
+\pard\li720\sl276\slmult1\qj\par
+\cf6 // Sintaxa:\cf0\par
+\i <?php\par
+
+\pard\li1440\sl276\slmult1\qj echo date("Y-m-d");          // Outputs: 2023-10-25 (Year-Month-Day)\par
+echo date("l, F j, Y");         // Outputs: Wednesday, October 25, 2023\par
+echo date("m/d/Y");         // Outputs: 10/25/2023 (Month/Day/Year)\par
+echo date("h:i A");            // Outputs: 01:46 PM (12-hour format with AM/PM)\par
+echo date("H:i:s");            // Outputs: 13:46:00 (24-hour format)\par
+echo date("Y-m-d H:i:s"); // Outputs: 2023-10-25 13:46:00 (ISO-style format)\par
+
+\pard\li720\sl276\slmult1\qj ?>\par
+
+\pard\sl276\slmult1\qj\tab print_r($_POST); \par
+
+\pard\sa200\sl276\slmult1\qj\cf6 // printeaza un array - in cazul asta, $_POST - unde se preiau toate datele din postul trimis catre fisierul php;\cf0\par
+
+\pard{\pntext\f2\'B7\tab}{\*\pn\pnlvlblt\pnf2\pnindent0{\pntxtb\'B7}}\fi-360\li720\sa200\sl276\slmult1\qj\i0 lab2.php (unde se trimit datele din formular:\par
+
+\pard\sl276\slmult1\qj\i <?php\par
+    print_r($_POST['nume']);\par
+?>\par
+\i0\par
+
+\pard{\pntext\f2\'B7\tab}{\*\pn\pnlvlblt\pnf2\pnindent0{\pntxtb\'B7}}\fi-360\li720\sa200\sl276\slmult1\qj in lab1_forma.php importam in select valorile dintr-o lista .csv cu judete\par
+
+\pard\sl276\slmult1\qj\i <?php\par
+        \cf6 // Open the CSV file\cf0\par
+        $file = fopen("coduri-judete.csv", "r");\par
+\par
+        \cf6 // Check if the file opened successfully\cf0\par
+        if ($file !== FALSE) \{\par
+            echo '<select name="judet">';\par
+            \cf6 // Skip the header row\cf0\par
+            fgetcsv($file);\par
+            \cf6 // Loop through each row of the CSV\cf0\par
+            while (($data = fgetcsv($file)) !== FALSE) \{\par
+                $cod = $data[0];\par
+                $jude\f1\u539? = $data[1];\par
+                echo "<option value=\\"$cod\\">$jude\u539?</option>";\par
+            \}\par
+            echo '</select>';\par
+            fclose($file);\par
+        \} else \{\par
+            echo "Eroare la deschiderea fisierului CSV.";\par
+        \}\par
+?>\par
+\i0\f0\par
+
+\pard{\pntext\f2\'B7\tab}{\*\pn\pnlvlblt\pnf2\pnindent0{\pntxtb\'B7}}\fi-360\li720\sa200\sl276\slmult1\qj lab2.php : scrie datele introduse in file.csv:\par
+
+\pard\sl276\slmult1\qj\i <?php\par
+    $fp = fopen('file.csv', 'wa+');\par
+    $singleLineData = [];\par
+\par
+    foreach ($_POST as $fields) \{\par
+        $content = is_array($fields) ? $fields : explode(",", $fields);\par
+   \cf6      // explode(string $separator, string $string, int $limit = PHP_INT_MAX): array\par
+\cf0         $singleLineData = array_merge($singleLineData, $content);\par
+    \}\par
+    fputcsv($fp, $singleLineData);\par
+    fclose($fp);\par
+\par
+    print_r($_POST);\par
+?>\par
+\i0\par
+
+\pard{\pntext\f2\'B7\tab}{\*\pn\pnlvlblt\pnf2\pnindent0{\pntxtb\'B7}}\fi-360\li720\sl276\slmult1\qj configurare baza de date: {{\field{\*\fldinst{HYPERLINK http://localhost/phpmyadmin }}{\fldrslt{http://localhost/phpmyadmin\ul0\cf0}}}}\f0\fs22\par
+{\pntext\f2\'B7\tab}phpinfo(); // trebuie sa avem o sectiune mySQLi\par
+{\pntext\f2\'B7\tab}conexiune la BD -> user f, parola din fisierul dbpass.txt:\i\par
+
+\pard\sl276\slmult1\qj <?php\par
+    \cf6 // phpinfo();\cf0\par
+    $db_pass = trim(file_get_contents('dbpass.txt'));\par
+\par
+    $link = mysqli_connect("localhost", "f", $db_pass, "test");\par
+\cf6     // Sintaxa: mysqli_connect(host, user, pass, dabase_name)\par
+\cf0\par
+    if(!$link) \{\par
+        echo('Error! Unable to connect to MySQL!');\par
+        exit;\par
+    \}\par
+    else \{\par
+        echo('Successfully Connected to MySQL!');\par
+    \}\par
+?>\par
+\i0\par
+
+\pard{\pntext\f2\'B7\tab}{\*\pn\pnlvlblt\pnf2\pnindent0{\pntxtb\'B7}}\fi-360\li720\sl276\slmult1\qj importat conexiunea in fisierul curent:\i\par
+
+\pard\sl276\slmult1\qj <?php \par
+    \cf2\highlight7 require_once('db_connect.php');\highlight0  \cf6 // => $link\cf0\par
+\par
+    $query = 'SELECT * FROM coduri_judete';\par
+    foreach($link->query($query) as $row) \{\par
+        print($row['cod'] . ' - ' . $row['judet'] . '<br>');\par
+    \}\par
+\par
+    \cf6 // print($query2);\cf0\par
+    if(count(array_keys($_POST)) > 1) \{\par
+        $query2 = "INSERT INTO raspunsuri (nume, judet, venit) VALUES (\par
+            '".$_POST['nume']."', \par
+            '".$_POST['judet']."', \par
+            '".$_POST['venit']."'\par
+        );";\par
+        $link->query($query2);\par
+        $_POST = array(); \cf6 // golim $_POST\cf0\par
+        \cf2\highlight7 header('location: lab1_forma.php');\cf0\highlight0  \cf6 // redirectioneaza catre pagina lab1.forma.php\cf0\par
+    \}\par
+\par
+    mysqli_close($link);\par
+?>\i0\par
+\par
+
+\pard\sa200\sl276\slmult1\qj\par
+}
+ 

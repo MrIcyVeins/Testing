@@ -1,0 +1,17 @@
+Despre examen 
+
+
+Examenul constă în prezentarea a 3 programe, însoţite de descrierea lor succintă. 
+Programele trebuie să fie de naturi diferite, ca de exemplu liste, metode de programare: Greedy, Backtracking, programare dinamică, Divide et impera, algoritmi probabilişti etc. 
+Poate fi folosit orice mediu de programare.  
+Se conţine cont (ca bonus) de prezenţe, prezentare grafică, tentă personală. 
+
+ 
+Pentru Java şi exemple de probleme, lista este “infinită”: 
+
+java exercises 
+geeksforgeeks 
+geeks4geeks 
+codefinity 
+ChatGPT 
+etc. 

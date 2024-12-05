@@ -1,0 +1,24 @@
+1) sursa + docs OpenSSL: https://github.com/openssl/openssl
+2) install windows(!) OpenSSL: https://thesecmaster.com/procedure-to-install-openssl-on-the-windows-platform/
+3) parametrii certificat: https://www.shellhacks.com/create-csr-openssl-without-prompt-non-interactive/
+4) definire certificat localhost: https://gist.github.com/cecilemuller/9492b848eb8fe46d462abeb26656c4f8
+ 
+https://maradns.samiam.org/download.html
+
+openssl req -x509 -nodes -new -sha256 -days 1024 -newkey rsa:2048 -keyout RootCA.key -out RootCA.pem -subj "/C=RO/CN=DAW-Root-CA"
+openssl x509 -outform pem -in RootCA.pem -out RootCA.crt
+
+domains.ext
+
+authorityKeyIdentifier=keyid,issuer
+basicConstraints=CA:FALSE
+keyUsage = digitalSignature, nonRepudiation, keyEncipherment, dataEncipherment
+subjectAltName = @alt_names
+[alt_names]
+DNS.1 = localhost
+DNS.2 = silviuvasile.ro
+DNS.3 = daw.silviuvasile.ro
+
+
+openssl req -new -nodes -newkey rsa:2048 -keyout localhost.key -out localhost.csr -subj "/C=RO/ST=Romania/L=Bucharest/O=DAW-curs/CN=localhost"
+openssl x509 -req -sha256 -days 1024 -in localhost.csr -CA RootCA.pem -CAkey RootCA.key -CAcreateserial -extfile "C:\Users\user\Desktop\generare_certificat\domain.ext" -out localhost.crt

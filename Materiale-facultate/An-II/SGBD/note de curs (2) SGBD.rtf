@@ -1,0 +1,482 @@
+{\rtf1\ansi\ansicpg1252\deff0\nouicompat\deflang1033{\fonttbl{\f0\fnil\fcharset0 Arial;}{\f1\fnil\fcharset2 Symbol;}}
+{\colortbl ;\red255\green0\blue0;\red192\green80\blue77;\red0\green176\blue80;\red165\green165\blue165;\red0\green77\blue187;}
+{\*\generator Riched20 10.0.22621}\viewkind4\uc1 
+\pard\sa200\sl276\slmult1\qc\b\fs40\lang9 SGBD Curs 2\par
+
+\pard\sa200\sl276\slmult1\b0\fs28\par
+
+\pard{\pntext\f1\'B7\tab}{\*\pn\pnlvlblt\pnf1\pnindent0{\pntxtb\'B7}}\fi-360\li720\sa200\sl276\slmult1\qj Toate SELECT-urile \cf1\b TREBUIE \cf0\b0 sa aibe INTO (salvata intr-o variabila)\lang1033 :\par
+
+\pard\sl276\slmult1\qj\tab\cf2\tab\b SELECT .... INTO nume_variabila;\b0\par
+\cf0\lang9  \par
+
+\pard{\pntext\f1\'B7\tab}{\*\pn\pnlvlblt\pnf1\pnindent0{\pntxtb\'B7}}\fi-360\li720\sa200\sl276\slmult1\qj  Cereri cu input de la tastatura (cerinta se rezolva la nivelul clientului, nu prin interactiune cu BD)\lang1033 :\lang9\par
+
+\pard\sl276\slmult1\qj\cf2\b\tab\tab SELECT &coloana\par
+
+\pard\sa200\sl276\slmult1\qj\tab\tab FROM &tabel\lang1033 ;\lang9\par
+
+\pard{\pntext\f1\'B7\tab}{\*\pn\pnlvlblt\pnf1\pnindent0{\pntxtb\'B7}}\fi-360\li720\sa200\sl276\slmult1\qj\cf0\b0 Bloc PL/SQL\lang1033 :\lang9\par
+
+\pard\sl276\slmult1\qj\cf2\b\tab\tab BEGIN\par
+\tab\tab\tab ...\par
+
+\pard\sa200\sl276\slmult1\qj\tab\tab END\lang1033 ;\lang9\par
+
+\pard{\pntext\f1\'B7\tab}{\*\pn\pnlvlblt\pnf1\pnindent0{\pntxtb\'B7}}\fi-360\li720\sa200\sl276\slmult1\qj\cf0\b0  Ex. PL/SQL (cea mai simpla forma de declarare a tipului variabilei):\par
+
+\pard\sl276\slmult1\qj\tab\tab\cf2\b DECLARE\par
+\tab\tab\tab x tabel_T.c1%type\lang1033 ;\lang9\par
+\tab\tab BEGIN\par
+\tab\tab\tab SELECT .... INTO X\par
+\tab\tab\tab FROM tabel_T\lang1033 ;\lang9\par
+
+\pard\sa200\sl276\slmult1\qj\tab\tab END\lang1033 ;\lang9\par
+
+\pard{\pntext\f1\'B7\tab}{\*\pn\pnlvlblt\pnf1\pnindent0{\pntxtb\'B7}}\fi-360\li720\sa200\sl276\slmult1\qj\cf0\b0  X este tip \b\i\caps tabel imbricat \b0\i0\caps0 (echivalent cu lista dublu inlauntuita) - legaturile intre celule se realizeaza cu \ul\b prior\ulnone  \b0 si \ul\b next\ulnone\b0 :\par
+
+\pard\li1440\sl276\slmult1\cf2\b DECLARE\par
+    x ?;\par
+BEGIN\par
+    SELECT last_name INTO x\par
+    FROM employees;\par
+
+\pard\li1440\sa200\sl276\slmult1 END;\par
+
+\pard{\pntext\f1\'B7\tab}{\*\pn\pnlvlblt\pnf1\pnindent0{\pntxtb\'B7}}\fi-360\li720\sa200\sl276\slmult1\qj\cf0\b0  X este de tipul OBIECT pentru ca avem un numar limitat, cunoscut, de coloane:\par
+
+\pard\li1440\sl276\slmult1\cf2\b DECLARE\par
+    x ?;\par
+BEGIN\par
+    SELECT c1, c3, c5, c9, c7 INTO x\par
+    FROM employees;\par
+
+\pard\li1440\sa200\sl276\slmult1 END;\par
+
+\pard{\pntext\f1\'B7\tab}{\*\pn\pnlvlblt\pnf1\pnindent0{\pntxtb\'B7}}\fi-360\li720\sa200\sl276\slmult1\qj\cf0\b0 Tipul lui X - daca e ARRAY, toate elementele ar trebui sa fie de acelasi tip\par
+{\pntext\f1\'B7\tab}Tipuri de date: O\caps biect, Record, table indexat, tabel imbricat, VECTORI\caps0\par
+
+\pard{\pntext\f1\'B7\tab}{\*\pn\pnlvlblt\pnf1\pnindent0{\pntxtb\'B7}}\fi-360\li720\sa200\sl276\slmult1 Alternativ, folosim CURSOR (pointer) *p (parameter)\par
+
+\pard\li1440\sl276\slmult1\cf2\b DECLARE\par
+    x ?;\par
+BEGIN\par
+    SELECT c1, c3, c5, c9, c7 INTO x\par
+    FROM employees\par
+    WHERE department_id = parameter\par
+
+\pard\li1440\sa200\sl276\slmult1 END;\cf0\b0\par
+
+\pard{\pntext\f1\'B7\tab}{\*\pn\pnlvlblt\pnf1\pnindent0{\pntxtb\'B7}}\fi-360\li720\sa200\sl276\slmult1\qj Putem defini si *(*p) - spunem ca variabila x este pointer dinamic (putem incarca orice cerere)\par
+{\pntext\f1\'B7\tab}Avand tipurile de date gestionate, putem crea functii si proceduri\par
+
+\pard\li1440\sl276\slmult1\cf2\b set serveroutput on \par
+DECLARE\par
+    x employees.last_name%type;\par
+    cod employees.employee_id%type:=123;\par
+BEGIN\par
+    SELECT last_name INTO x\par
+    FROM employees\par
+    WHERE employee_id=cod;\par
+    dbms_output.put_line(x);\par
+
+\pard\li1440\sa200\sl276\slmult1 END;\par
+
+\pard{\pntext\f1\'B7\tab}{\*\pn\pnlvlblt\pnf1\pnindent0{\pntxtb\'B7}}\fi-360\li720\sa200\sl276\slmult1\qj\cf0\b0 set serveroutput on - permte afisarea rezultatelor in fereastra de output; alternativ, putem deschide fereastra \b dbms view\b0 . Comanda pentru  a afisa rezultatul: \cf2\b dbms_output.put_line(x);\cf0\b0\par
+{\pntext\f1\'B7\tab}toate comenzile PL/SQL se finalizeaza cu ;\par
+{\pntext\f1\'B7\tab}Pentru a gestiona erorile care apar in eventualitatea in care nu se returneaza nimic prin SELECT, folosim COUNT pentru a nu opri executia:\par
+
+\pard\li1440\sl276\slmult1\qj\cf2\b set serveroutput on \par
+\par
+DECLARE\par
+    x employees.last_name%type;\par
+    cod employees.employee_id%type:=23;\par
+    nr number:=0;\par
+BEGIN\par
+    SELECT COUNT(*) INTO nr\par
+    FROM employees\par
+    WHERE employee_id = cod;\par
+    \par
+    IF nr = 1 \par
+        THEN\par
+            SELECT last_name INTO x\par
+            FROM employees\par
+            WHERE employee_id=cod;\par
+            dbms_output.put_line(x);\par
+        ELSE\par
+            dbms_output.put_line('Angajatul cu id-ul '||cod||' nu exista');\par
+    END IF;\par
+
+\pard\li1440\sa200\sl276\slmult1\qj END;\cf0\b0\par
+
+\pard{\pntext\f1\'B7\tab}{\*\pn\pnlvlblt\pnf1\pnindent0{\pntxtb\'B7}}\fi-360\li720\sa200\sl276\slmult1\qj putem folosi EXCEPTION, insa codul de opreste din cauza erorii si eroarea este gestionata la comun, desi poate avea mai multe cauze:\par
+
+\pard\li1440\sl276\slmult1\qj\cf2\b set serveroutput on \par
+\par
+DECLARE\par
+    x employees.last_name%type;\par
+    cod employees.employee_id%type:=23;\par
+    nr number:=0;\par
+BEGIN\par
+    SELECT last_name INTO x\par
+    FROM employees\par
+    WHERE employee_id=cod;\par
+    dbms_output.put_line(x);\par
+    \par
+    EXCEPTION\par
+        WHEN no_data_found THEN\par
+        dbms_output.put_line('Angajatul cu id-ul '||cod||' nu exista');\par
+
+\pard\li1440\sa200\sl276\slmult1\qj END;\par
+
+\pard{\pntext\f1\'B7\tab}{\*\pn\pnlvlblt\pnf1\pnindent0{\pntxtb\'B7}}\fi-360\li720\sa200\sl276\slmult1\qj\cf0\b0 profesorul NU VREA sa folosim EXCEPTION in gestionarea exceptiilor / erorilor.\par
+{\pntext\f1\'B7\tab}Exceptie generica:\par
+
+\pard\li1440\sl276\slmult1\qj\cf2\b EXCEPTION\par
+\tab WHEN OTHERS THEN\par
+\tab ...\par
+
+\pard\li1440\sa200\sl276\slmult1\qj END;\par
+
+\pard{\pntext\f1\'B7\tab}{\*\pn\pnlvlblt\pnf1\pnindent0{\pntxtb\'B7}}\fi-360\li720\sa200\sl276\slmult1\qj\cf0\b0 Tabelele imbricate se parcurg ca listele inltantuite la ambele capete:\par
+
+\pard\li1440\sl276\slmult1\qj\cf2\b set serveroutput on \par
+DECLARE\par
+\cf3     TYPE lista_sal IS TABLE OF employees.salary%type\par
+        INDEX BY pls_integer;\par
+    x lista_sal;\par
+    nr NUMBER;\par
+\cf2 BEGIN\par
+    x(7) := 4500;\par
+    x(-9) := 2300;\par
+    x(1000) := 2456;\par
+\par
+    dbms_output.put_line(x.count);\cf4  -- 3\cf2\par
+    dbms_output.put_line(x.first); \cf4 -- INDEXUL primului element -9\par
+\cf2     dbms_output.put_line(x(x.first)); \cf4 -- 2300\cf2\par
+    dbms_output.put_line(x.next(x.first)); \cf4 -- INDEXUL urmatorului element 7\cf2\par
+    dbms_output.put_line(x(x.next(x.first))); \cf4 -- 4500\cf2\par
+    \par
+    \cf3 nr := x.first;\par
+    FOR i in 1..x.count LOOP\par
+\cf2         dbms_output.put_line(x(nr));\par
+\cf3         nr := x.next(nr);\par
+\cf2     END LOOP;\par
+
+\pard\li1440\sa200\sl276\slmult1\qj END;\par
+
+\pard{\pntext\f1\'B7\tab}{\*\pn\pnlvlblt\pnf1\pnindent0{\pntxtb\'B7}}\fi-360\li720\sa200\sl276\slmult1\qj\cf0\b0 Altfel, daca tabelul e dens (nu are spatii), atunci putem proceda asa:\cf4\b\par
+
+\pard\sa200\sl276\slmult1\qj\cf0\b0\tab\cf4\b -- Sa se afiseze salariul angajatilor cu numele King\par
+
+\pard\li1440\sl276\slmult1\qj\cf2 set serveroutput on\par
+DECLARE\par
+    TYPE lista_sal IS TABLE OF employees.salary%type\par
+        INDEX BY pls_integer;\par
+    x lista_sal;\par
+    nume employees.last_name%type := 'King';\par
+    nr number := 0;\par
+BEGIN\par
+    SELECT salary \cf3 BULK COLLECT INTO \cf2 x \par
+\cf4     --daca avem mai multe valori de salvat intr-o variabila BULK COLLECT INTO\par
+\cf2     FROM employees\par
+    WHERE last_name = nume;\par
+    \par
+    FOR i in 1..x.count LOOP\par
+        dbms_output.put_line(x(i));\par
+    END LOOP;\par
+
+\pard\li1440\sa200\sl276\slmult1\qj END;\par
+
+\pard{\pntext\f1\'B7\tab}{\*\pn\pnlvlblt\pnf1\pnindent0{\pntxtb\'B7}}\fi-360\li720\sa200\sl276\slmult1\qj\cf0\b0 In cazul in care avem mai multe coloane, folosim tipul RECORDS:\par
+
+\pard\sa200\sl276\slmult1\qj\cf4\tab -- Sa se afiseze salariul, hire_date, job_id angajatilor cu numele King\cf0\par
+
+\pard\li720\sl276\slmult1\qj\cf2\b set serveroutput on\par
+DECLARE\par
+\cf3     TYPE rec_ang IS RECORD (\par
+        sal employees.salary%type,\par
+        data_ang employees.hire_date%type,\par
+        job employees.job_id%type\par
+    );\par
+\cf2     TYPE lista_sal IS TABLE OF rec_ang\par
+        INDEX BY PLS_INTEGER;\par
+    x lista_sal;\par
+    nume employees.last_name%type := 'King';\par
+    nr number := 0;\par
+BEGIN\par
+    SELECT salary, hire_date, job_id BULK COLLECT INTO x \par
+    FROM employees\par
+    WHERE last_name = nume;\par
+    \par
+    FOR i in 1..x.count LOOP\par
+        dbms_output.put_line(\cf3 x(i).sal || x(i).data_ang || x(i).job\cf2 );\par
+    END LOOP;\par
+
+\pard\li720\sa200\sl276\slmult1\qj END;\par
+
+\pard{\pntext\f1\'B7\tab}{\*\pn\pnlvlblt\pnf1\pnindent0{\pntxtb\'B7}}\fi-360\li720\sa200\sl276\slmult1\qj\cf0\b0 Varianta pentru functia FOR strict pentru afisare:\par
+
+\pard\sa200\sl276\slmult1\qj\cf4\tab -- Sa se afiseze salariul, hire_date, job_id angajatilor cu numele King\par
+
+\pard\li1440\sl276\slmult1\qj\cf2\b set serveroutput on\par
+DECLARE\par
+    nume employees.last_name%type := 'King';\par
+BEGIN\par
+    FOR ang IN (\par
+        SELECT salary, hire_date, job_id\par
+        FROM employees\par
+        WHERE last_name = nume\par
+    ) LOOP\par
+        dbms_output.put_line(ang.salary || ang.hire_date|| ang.job_id);\par
+    END LOOP;\par
+
+\pard\li1440\sa200\sl276\slmult1\qj END;\par
+
+\pard{\pntext\f1\'B7\tab}{\*\pn\pnlvlblt\pnf1\pnindent0{\pntxtb\'B7}}\fi-360\li720\sa200\sl276\slmult1\qj\cf0\b0 In cazul FOR xxx IN (SELECT ... ), xxx nu il vom mai putea folosi ulterior\par
+
+\pard\li1440\sl276\slmult1\qj\cf4\b -- Sa se afiseze suma salariilor angajatilor cu numele King\cf2\par
+set serveroutput on\par
+DECLARE\par
+    nume employees.last_name%type := 'King';\par
+BEGIN\par
+    FOR ang IN (\par
+        SELECT sum(salary) suma\par
+        FROM employees\par
+        WHERE last_name = nume\par
+    ) LOOP\par
+        dbms_output.put_line(ang.suma);\par
+    END LOOP;\par
+
+\pard\li1440\sa200\sl276\slmult1\qj END;\cf0\b0\par
+
+\pard{\pntext\f1\'B7\tab}{\*\pn\pnlvlblt\pnf1\pnindent0{\pntxtb\'B7}}\fi-360\li720\sa200\sl276\slmult1\qj Varianta pentru afisarea coloanei 2:\par
+
+\pard\li1440\sl276\slmult1\qj\cf2\b set serveroutput on\par
+DECLARE\par
+    nume employees.last_name%type := 'King';\par
+BEGIN\par
+    FOR ang IN (\par
+        \cf3 SELECT 2 om_de_zapada\par
+\cf2         FROM employees\par
+        WHERE last_name = nume\par
+    ) LOOP\par
+        dbms_output.put_line(\cf3 ang.om_de_zapada\cf2 );\par
+    END LOOP;\par
+
+\pard\li1440\sa200\sl276\slmult1\qj END;\par
+
+\pard{\pntext\f1\'B7\tab}{\*\pn\pnlvlblt\pnf1\pnindent0{\pntxtb\'B7}}\fi-360\li720\sa200\sl276\slmult1\qj\cf0\b0 Cursoare\lang1033 :\lang9  e un pointer catre o zona de memorie: \ul\b sql\ulnone  e cursor IMPLICIT care insoteste operatia de scriere\b0 :\par
+
+\pard\li1440\sl276\slmult1\qj\cf2\b BEGIN\par
+    UPDATE employees\par
+    SET salary = salary + 5\par
+    WHERE salary BETWEEN 4500 AND 6000;\par
+    dbms_output.put_line(\cf3 sql%rowcount\cf2 );\par
+    ROLLBACK;\par
+
+\pard\li1440\sa200\sl276\slmult1\qj END;\cf0\b0\par
+
+\pard{\pntext\f1\'B7\tab}{\*\pn\pnlvlblt\pnf1\pnindent0{\pntxtb\'B7}}\fi-360\li720\sa200\sl276\slmult1\qj un cursor \b EXPLICIT \b0 este cel definit (denumit) de utilizator:\par
+
+\pard\li1440\sl276\slmult1\qj\cf4\b -- Sa se afiseze salariul, hire_date, job_id angajatilor cu numele King\cf2\par
+set serveroutput on\par
+DECLARE\par
+    nume employees.last_name%type := 'King';\par
+\cf3     CURSOR list_ang IS \par
+        SELECT salary, hire_date, job_id\par
+        FROM employees\par
+        WHERE last_name = nume;\par
+\cf2     \cf3 linie list_ang%rowtype;\cf2\par
+    \cf4 -- %rowtype e scurtatura pentru tipul liniei indicate de cursor\par
+\cf2 BEGIN \par
+\cf3     OPEN list_ang;\par
+        FETCH list_ang INTO linie;        \par
+\cf2         WHILE list_ang%found LOOP\par
+            dbms_output.put_line(linie.salary||' '||linie.hire_date||' '||linie.job_id);\par
+\cf3             FETCH list_ang INTO linie;\par
+\cf2         END LOOP;\par
+\cf3     CLOSE list_ang;\par
+
+\pard\li1440\sa200\sl276\slmult1\qj\cf2 END;\cf0\b0\par
+
+\pard{\pntext\f1\'B7\tab}{\*\pn\pnlvlblt\pnf1\pnindent0{\pntxtb\'B7}}\fi-360\li720\sa200\sl276\slmult1\qj Cu FOR (+ nu se poate folosi FOR la un cursor deschis si nu se poate inchide un cursor deschis cu FOR):\par
+
+\pard\li1440\sl276\slmult1\qj\cf4\b -- Sa se afiseze salariul, hire_date, job_id angajatilor cu numele King\cf2\par
+set serveroutput on\par
+DECLARE\par
+    CURSOR \cf3 list_ang(nume employees.last_name%type)\cf2  IS \par
+        SELECT salary, hire_date, job_id\par
+        FROM employees\par
+        WHERE last_name = \cf3 nume\cf2 ;\par
+    linie list_ang%rowtype;\par
+BEGIN\par
+    \cf4 -- FOR-ul deschide si inchide cursoarele, defineste variabile\par
+\cf3     FOR i in list_ang('&nume') LOOP\par
+\cf2         dbms_output.put_line(i.salary||' '||i.hire_date||' '||i.job_id);\cf3\par
+    END LOOP;\par
+
+\pard\li1440\sa200\sl276\slmult1\qj\cf2 END;\par
+
+\pard{\pntext\f1\'B7\tab}{\*\pn\pnlvlblt\pnf1\pnindent0{\pntxtb\'B7}}\fi-360\li720\sa200\sl276\slmult1\qj\cf0\b0 Exista 2 tipuri de cursoare dinamice: predefinite si definite de utilizator.\cf4\b\par
+
+\pard\li1440\sl276\slmult1\qj -- cursor in care incarc diferite cereri\par
+\cf2 set serveroutput on\par
+DECLARE\par
+\cf4     -- c_dinamic IS SYS_REFCURSOR; -- cursor dinamic predefinit\par
+\cf2     TYPE cameleon IS REF CURSOR;\par
+    c_dinamic cameleon;\par
+    \par
+    TYPE emp IS RECORD(\par
+        nume employees.last_name%type, \par
+        sal employees.salary%type,\par
+        email employees.email%type\par
+    );\par
+    TYPE l_ang IS TABLE OF emp INDEX BY PLS_INTEGER;\par
+    v1 l_ang; \par
+    \par
+    TYPE l_dep IS TABLE OF departaments.departmanet_name%type\par
+        INDEX BY binary_integer; \par
+    v2 l_dep;\par
+    \par
+    TYPE l_proj IS TABLE OF departaments.project%type\par
+        INDEX BY binary_integer; \par
+    v3 l_proj;\par
+BEGIN\par
+\par
+\cf4     -- numele, salariul si emailul angajatului cu id-ul 50\cf2\par
+    OPEN c_dinamic FOR ' \par
+        SELECT last_name, salary, email\par
+        FROM employees\par
+        WHERE department_id = 50\par
+    ';\par
+    \par
+        FETCH c_dinamic BULK COLLECT INTO v1;\par
+        FOR i IN 1..v1.count LOOP\par
+            dbms_output.put_line(v1(i).nume||' '||v1(i).sal||' '||v1(i).email);\par
+        END LOOP; \par
+    CLOSE c_dinamic;\par
+    \par
+\cf4     -- numele departamentelor care au cei mai multi angajati\par
+\cf2     OPEN c_dinamic FOR '\par
+        SELECT department_name\par
+        FROM departments\par
+        WHERE department_id IN (\par
+            SELECT departmanet_id\par
+            FROM employees\par
+            WHERE department_id IS NOT NULL\par
+\cf4             -- pentru a nu aparea indivizii fara departamente\cf2\par
+            GROUP BY department_id;\par
+            HAVING COUNT(employee_id) = (\par
+                SELECT MAX(COUNT(employee_id))\par
+                FROM employees\par
+                GORuP BY department_id\par
+            )\par
+        )\par
+    ';\par
+        FETCH c_dinamic BULK COLLECT INTO v2;\par
+        FOR i IN 1..v2.count LOOP\par
+            dbms_output.put_line(v2(i));\par
+        END LOOP;\par
+    CLOSE c_dinamic;\par
+    \par
+\cf4     -- numele proiectelor care au fost create pana azi\par
+\cf2     OPEN c_dinamic FOR '\par
+        SELECT project_name\par
+        FROM projects\par
+        WHERE deadline < sysdate\par
+    ';\par
+        FETCH c_dinamic BULK COLLECT INTO v3;\par
+        FOR i IN 1..v3.count LOOP\par
+            dbms_output.put_line(v3(i));\par
+        END LOOP;\par
+    CLOSE c_dinamic;\par
+
+\pard\li1440\sa200\sl276\slmult1\qj END;\par
+\par
+\cf5 Corectat:\par
+
+\pard\li1440\sl276\slmult1\qj\cf2 set serveroutput on\par
+declare \par
+--c_dinamic sys_refcursor;\par
+type cameleon is ref cursor;\par
+c_dinamic cameleon;\par
+type emp is record(nume employees.last_name%type,\par
+                     sal employees.salary%type,\par
+                     email employees.email%type);\par
+type l_ang is table of emp index by pls_integer;\par
+v1 l_ang;\par
+type l_dep is table of departments.department_name%type index by BINARY_INTEGER;\par
+v2 l_dep;\par
+type l_proj is table of projects.project_name%type index by BINARY_INTEGER;\par
+v3 l_proj;\par
+ \par
+begin\par
+  open c_dinamic for 'select last_name, salary, email from employees where department_id=50';\par
+  fetch c_dinamic bulk collect into v1;\par
+  for i in 1..v1.count loop\par
+   dbms_output.put_line(v1(i).nume||' '||v1(i).sal||' '||v1(i).email);\par
+  end loop;\par
+  close c_dinamic;\par
+  open c_dinamic for 'select department_name \par
+                       from departments\par
+                       where department_id in \par
+                          (select department_id\par
+                           from employees\par
+                           group by department_id\par
+                           having count(employee_id)=(select max(count(employee_id))\par
+                                                      from employees\par
+                                                      where department_id is not null\par
+                                                      group by department_id))';\par
+  fetch c_dinamic bulk collect into v2;\par
+  for i in 1..v2.count loop\par
+   dbms_output.put_line(v2(i));\par
+  end loop;\par
+  close c_dinamic;\par
+  open c_dinamic for 'select project_name from projects where deadline<sysdate';\par
+   fetch c_dinamic bulk collect into v3;\par
+  for i in 1..v3.count loop\par
+   dbms_output.put_line(v3(i));\par
+  end loop;\par
+  close c_dinamic;\par
+end;\par
+\par
+
+\pard{\pntext\f1\'B7\tab}{\*\pn\pnlvlblt\pnf1\pnindent0{\pntxtb\'B7}}\fi-360\li720\sa200\sl276\slmult1\qj\cf5\b0 TEMA: notiunile de tip sintaxa, vector, tabou imbricat, tablou indexat etc. - de uitat pe materialele din curs cu temele astea (predarea a fost superficiala)\par
+{\pntext\f1\'B7\tab}\cf0 In decembrie - facem functii si proceduri. \b La examen vom avea functii si proceduri\par
+{\pntext\f1\'B7\tab}\b0 In ianuarie facem \b triggeri\b0\par
+{\pntext\f1\'B7\tab}Exersat: din laborator, din practice, din curs.\par
+
+\pard{\pntext\f1\'B7\tab}{\*\pn\pnlvlblt\pnf1\pnindent0{\pntxtb\'B7}}\fi-360\li720\sa200\sl276\slmult1 In SQL:\par
+
+\pard\li1440\sl276\slmult1\cf2\b CREATE TYPE info_ang IS OBJECT (\par
+    nr_ang NUMBER,\par
+    max_sal numbr(8,2),\par
+    nume_sev VARCHAR2(30)\par
+);\par
+\par
+CREATE TYPE lista_ang IS TABLE OF NUMBER(6);\par
+\par
+CREATE TABLE deps (\par
+        id_dep NUMBER PRIMARY KEY,\par
+        info info_ang,\par
+        lista lista_ang\par
+) NESTED TABLE lista STORE AS wzy_lista;\par
+\par
+INSERT INTO deps VALUES(1, null, null);\par
+
+\pard\li1440\sa200\sl276\slmult1 COMMIT;\par
+
+\pard\li1440\sl276\slmult1 INSERT INTO deps VALUES(\par
+    5, \par
+    info_ang(24, 34000, 'Calin'), \par
+    lista_ang(121, 134, 156, 154, 178)\par
+
+\pard\li1440\sa200\sl276\slmult1 );\par
+
+\pard{\pntext\f1\'B7\tab}{\*\pn\pnlvlblt\pnf1\pnindent0{\pntxtb\'B7}}\fi-360\li720\sa200\sl276\slmult1\qj\cf5\b0 TEMA: In deps - centralizez - numele departamentului, info - cele 3 proprietati ale departamentului si pe coloana lista sa am lista angajatilor (s-a dat la examen)\cf0\par
+
+\pard\sa200\sl276\slmult1\par
+\par
+}
+ 

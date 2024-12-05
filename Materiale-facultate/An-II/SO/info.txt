@@ -1,0 +1,6 @@
+adaos -> uso_j13ian2022 -> (teme laborator)
+
+Tema - 2 programe:
+
+> 1 Din primele 2 sub-capitole ( utilizatori si grupuri / fisiere si directoare )
+> 1 (obligatoriu) din sub-capitolul procese, semnale, tuburi
