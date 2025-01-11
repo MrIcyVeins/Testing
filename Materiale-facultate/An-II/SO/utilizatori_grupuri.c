@@ -1,3 +1,8 @@
+//  1. Implementati functia getpwnam() folosind functiile setpwent(),
+//  getpwent() si endpwent(). Utilizati aceasta functie ntr-un program care
+//  primeste ca argument n linia de comanda un username si a saza informatia
+//  gecos asociata
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

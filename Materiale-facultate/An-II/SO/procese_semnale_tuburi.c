@@ -56,7 +56,7 @@ int main() {
         // Cod pentru procesul copil
         srand(time(NULL)); // Inițializează generatorul de numere aleatoare
         int semnale_trimise = 0;
-        int numar_semnale = rand() % 200 + 1; // Generează un număr aleator între 1 și 100
+        int numar_semnale = rand() % 1000 + 1; // Generează un număr aleator între 1 și 1000
 
         printf("Copilul va trimite %d semnale SIGUSR1.\n", numar_semnale);
 
