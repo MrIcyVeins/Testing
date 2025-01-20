@@ -1,3 +1,18 @@
+// Import pentru JavaFX si functionalitati auxiliare
+/* Se importa pachetele
+- javafx.animation  pentru animatii
+- javafx.application    pentru interfata grafica
+- javafx.geometry   pentru pozitionarea elementelor
+- javafx.scene  pentru elementele vizuale
+- javafx.scene.control  pentru controalele interfetei
+- javafx.scene.image    pentru imagini
+- javafx.scene.layout   pentru layout-ul interfetei
+- javafx.stage  pentru fereastra aplicatiei
+- javafx.util   pentru functionalitati auxiliare
+
+- java.util     pentru colectii si alte functionalitati
+*/
+
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
 import javafx.animation.Timeline;
@@ -24,6 +39,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+
+// Declaratia clasei principale - Application - JavaFX (start-logica pentru interfata grafica si interactiunea utilizatorului)
 public class GreedyCoinChangeModified extends Application {
 
     @Override
@@ -31,44 +48,49 @@ public class GreedyCoinChangeModified extends Application {
         // Layout principal
         VBox root = new VBox(10);
 
-        // Elemente UI (partea de sus)
+        // Elemente UI (partea de sus) = suma si buton de calcul
         VBox topBox = new VBox(10);
         topBox.setAlignment(Pos.TOP_CENTER);
 
-        Label instructionLabel = new Label("Introduceți suma în lei (poate include zecimale):");
+        Label instructionLabel = new Label("Introduceti suma in lei (poate include zecimale):");
         instructionLabel.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-padding: 10px;");
 
-        TextField amountField = new TextField();
+        // Camp pentru introducerea sumei
+        TextField amountField = new TextField(); // Camp pentru introducerea sumei
         amountField.setPrefWidth(100);
 
-        Button calculateButton = new Button("Calculează");
+        Button calculateButton = new Button("Calculeaza"); // Butonul pentru initierea calculului
         calculateButton.setStyle("-fx-font-size: 14px; -fx-padding: 5px 10px;");
 
-        HBox inputBox = new HBox(10, amountField, calculateButton);
+        HBox inputBox = new HBox(10, amountField, calculateButton); // Organizarea campului si butonului
         inputBox.setAlignment(Pos.CENTER);
 
+        // Elemente de progres si rezultate intermediare
         Label totalCoinsLabel = new Label();
         totalCoinsLabel.setStyle("-fx-font-size: 16px; -fx-padding: 10px;");
         VBox coinStatsBox = new VBox(5);
         coinStatsBox.setAlignment(Pos.TOP_LEFT);
 
-        ProgressBar progressBar = new ProgressBar(0);
+        ProgressBar progressBar = new ProgressBar(0); // Bara de progres
         progressBar.setPrefWidth(400);
         progressBar.setStyle("-fx-accent: green;");
         progressBar.setVisible(false);
 
+        // Adaugare elemente in partea de sus
         topBox.getChildren().addAll(instructionLabel, inputBox, progressBar, totalCoinsLabel, coinStatsBox);
 
-        // Rezultate (partea centrală)
+        // Rezultate (partea centrala)
         VBox resultPane = new VBox(10);
         resultPane.setAlignment(Pos.TOP_LEFT);
 
+        // ScrollPane pentru a permite vizualizarea multor rezultate
         ScrollPane scrollPane = new ScrollPane(resultPane);
         scrollPane.setFitToWidth(true);
         scrollPane.setPrefHeight(400);
 
-        // Adăugare acțiune buton
+        // Adaugare actiune buton
         calculateButton.setOnAction(e -> {
+            // Resetare UI
             resultPane.getChildren().clear(); // Resetare rezultate
             totalCoinsLabel.setText("");
             coinStatsBox.getChildren().clear();
@@ -76,10 +98,12 @@ public class GreedyCoinChangeModified extends Application {
             String input = amountField.getText();
             try {
                 double amountInLei = Double.parseDouble(input);
-                int amountInBani = (int) Math.round(amountInLei * 100); // Conversie lei în bani
+                int amountInBani = (int) Math.round(amountInLei * 100); // Conversie lei in bani
+                // Apelarea algoritmului Greedy
                 List<Integer> coins = calculateCoins(amountInBani);
                 Map<Integer, Integer> coinCount = new HashMap<>();
 
+                 // Afisarea rezultatului ( monede si statistici )
                 progressBar.setVisible(true);
                 Timeline progressTimeline = new Timeline(
                     new KeyFrame(Duration.seconds(0), new KeyValue(progressBar.progressProperty(), 0)),
@@ -101,11 +125,12 @@ public class GreedyCoinChangeModified extends Application {
                     row10Pane.setAlignment(Pos.TOP_LEFT);
 
                     int displayed50Count = 0;
-
+                    
+                    // loop prin elementele array-ului
                     for (int coin : coins) {
                         if (coin == 50) {
                             if (displayed50Count < coinDisplayLimit) {
-                                ImageView coinImage = createCoinImage(coin);
+                                ImageView coinImage = createCoinImage(coin); // Imagine pentru fiecare moneda
                                 row50Pane.getChildren().add(coinImage);
                                 displayed50Count++;
                             }
@@ -131,7 +156,7 @@ public class GreedyCoinChangeModified extends Application {
                     resultPane.getChildren().addAll(row50Pane, row1Pane, row5Pane, row10Pane);
 
                     long endTime = System.currentTimeMillis();
-                    double totalTime = (endTime - startTime) / 1000.0; // În secunde
+                    double totalTime = (endTime - startTime) / 1000.0; // In secunde
 
                     Timeline finalProgress = new Timeline(
                         new KeyFrame(Duration.seconds(totalTime), new KeyValue(progressBar.progressProperty(), 1))
@@ -160,37 +185,39 @@ public class GreedyCoinChangeModified extends Application {
                     finalProgress.play();
                 });
             } catch (NumberFormatException ex) {
-                totalCoinsLabel.setText("Introduceți un număr valid, de exemplu 1.5 pentru 1 leu și 50 bani!");
+                totalCoinsLabel.setText("Introduceti un numar valid, de exemplu 1.5 pentru 1 leu si 50 bani!");
             }
         });
 
-        // Adăugare componente în root
+        // Adaugare componente in root
         root.getChildren().addAll(topBox, scrollPane);
         root.setSpacing(10);
 
-        // Configurare scenă și fereastră
+        // Configurare scena si fereastra
         Scene scene = new Scene(root, 600, 600);
         primaryStage.setScene(scene);
         primaryStage.setTitle("Greedy Coin Change - Modificat");
         primaryStage.show();
     }
 
+    // Algoritm Greedy
     private List<Integer> calculateCoins(int amount) {
-        int[] coins = {1, 5, 10, 50};
-        Arrays.sort(coins);
+        int[] coins = {1, 5, 10, 50}; // Monede disponibile
+        Arrays.sort(coins); // Sortarea monedelor
         List<Integer> result = new ArrayList<>();
 
-        for (int i = coins.length - 1; i >= 0; i--) {
-            while (amount >= coins[i]) {
-                amount -= coins[i];
-                result.add(coins[i]);
+        for (int i = coins.length - 1; i >= 0; i--) { // Iterare in ordine descrescatoare a valorilor monedelor
+            while (amount >= coins[i]) { // Cat timp suma ramasa poate fi acoperita de moneda curenta
+                amount -= coins[i]; // Scadem valoarea monedei din suma totala
+                result.add(coins[i]); // Adaugam moneda in rezultat
             }
         }
 
-        return result;
+        return result; // Returnam lista de monede
     }
 
     private ImageView createCoinImage(int coinValue) {
+        // Creeaza o imagine pentru moneda (fata si verso)
         Image frontImage = new Image(getClass().getResourceAsStream("/images/" + coinValue + "_face.png"));
         Image backImage = new Image(getClass().getResourceAsStream("/images/" + coinValue + "_back.png"));
 
@@ -204,6 +231,7 @@ public class GreedyCoinChangeModified extends Application {
     }
 
     private void animate2DRotation(ImageView coinImage) {
+        // Animatia rotirii monedelor
         Image frontImage = (Image) coinImage.getProperties().get("front");
         Image backImage = (Image) coinImage.getProperties().get("back");
 
