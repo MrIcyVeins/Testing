@@ -33,7 +33,7 @@ import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 
-import java.util.ArrayList;
+import java.util.ArrayList; // array din care se pot adauga si elimina elemente
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -41,6 +41,9 @@ import java.util.Map;
 
 
 // Declaratia clasei principale - Application - JavaFX (start-logica pentru interfata grafica si interactiunea utilizatorului)
+// GreedyCoinChangeModified - sublcasa
+// Application - superclasa
+
 public class GreedyCoinChangeModified extends Application {
 
     @Override
