@@ -1,3 +1,10 @@
+/* 
+    Metoda Greedy
+    Program - Transformarea unei sume de bani in monede folosind algoritmul Greedy
+    Interfata grafica - JavaFX
+*/
+
+
 // Import pentru JavaFX si functionalitati auxiliare
 /* Se importa pachetele
 - javafx.animation  pentru animatii
