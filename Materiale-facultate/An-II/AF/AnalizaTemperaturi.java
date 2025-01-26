@@ -4,7 +4,7 @@
 */
 
 
-public class AnalizaTemperaturilor {
+public class AnalizaTemperaturi {
 
     // Functie pentru a gasi cea mai mica temperatura folosind Divide et Impera
     public static double gasesteTemperaturaMinima(double[] temperaturi, int start, int end) {

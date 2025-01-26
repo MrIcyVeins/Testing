@@ -9,7 +9,7 @@ import java.util.List;
 
 
 // Clasa principala - Backtracking
-public class Backtracking {
+public class PlanificareOrar {
 
     // Clasa pentru o activitate
     static class Activitate {

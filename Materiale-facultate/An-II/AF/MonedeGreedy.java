@@ -4,7 +4,6 @@
     Interfata grafica - JavaFX
 */
 
-
 // Import pentru JavaFX si functionalitati auxiliare
 /* Se importa pachetele
 - javafx.animation  pentru animatii
@@ -51,7 +50,7 @@ import java.util.Map;
 // GreedyCoinChangeModified - sublcasa
 // Application - superclasa
 
-public class GreedyCoinChangeModified extends Application {
+public class MonedeGreedy extends Application {
 
     @Override
     public void start(Stage primaryStage) {
