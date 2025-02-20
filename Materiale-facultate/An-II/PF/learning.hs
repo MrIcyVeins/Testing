@@ -95,3 +95,62 @@ else "This is an odd number"
 -- main = do 
 --     putStrLn "Function composition: "
 --     print ((foonoteven.fooeven)(4))
+
+
+{- 
+S II. (2pct) Folosind recursivitate, definiti o functie care are ca argument o lista de cuvinte si calculeaza
+numarul total de vocale ce apar in cuvintele palindrom.
+-}
+
+-- recursivitate = folosirea unei functii in alta functie (exemplu: factorial)
+nrVocale :: [String] -> Int
+nrVocale [] = 0
+nrVocale (x:xs) | isPalindrom x == True = nrVocala x + nrVocale xs -- prin recursivitate se aduna din nou lista
+                | otherwise = nrVocale xs  -- prin recursivitate se intoarce mereu lista 
+
+nrVocala :: String -> Int
+nrVocala [] = 0
+nrVocala (x:xs) | x `elem` ['A','E','I','O','U','a','e','i','o','u'] = 1 + nrVocala xs
+                | otherwise = nrVocala xs
+
+isPalindrom :: String -> Bool
+isPalindrom [] = True
+isPalindrom (xs)   | xs == reverse xs = True 
+                   | otherwise = False
+
+{-
+S III. (2pct) Folosind metoda prin selectie (list comprehension), sa se scrie o functie data fiind o lista de
+numere calculeaza lista pozitiilor elementelor impare din lista originala.
+-}
+
+-- list comprehension = [x | x <- [1..10], x `mod` 2 == 0]
+
+-- [ <output-syntax> | x <- <input-list>, <condition> ]
+
+{- 
+
+output-syntax == the calculation that will be done to the list elements 
+    Example: 2*x
+input-list == the list that will be used to calculate the output-syntax
+    Example: [1..10]
+condition == the condition that must be met for the element to be included in the output list
+    Example: x `mod` 2 == 0
+
+-}
+
+listPozImpare :: [Int] -> [Int]
+listPozImpare [] = []
+listPozImpare xs = [ i | (i,x) <- zip [0..] xs, x `mod` 2 /= 0 ]
+
+-- Problema - lista cu 2 argumente, primul argument un caracter iar al 2 lea argument o lista de tupluri formate din un caracter si o lista de numere, se doreste sa se returneze suma numerelor din lista de numere care au ca prim caracter argumentul dat
+
+listaTupluri :: Char -> [(Char, [Int])] -> Int
+listaTupluri _ [] = 0
+listaTupluri c ((x,y):xs) | c == x = sum y + listaTupluri c xs 
+                          | otherwise = listaTupluri c xs
+
+-- Problema - dintr-o lista de liste de numere sa se afiseze o lista cu liste de numere impare 
+nestedOdd s = [[ sii | sii <- si, odd sii ] | si <- s ]
+
+-- Problema - dintr-o lista de stringuri, sa se afiseze lista fara whitespace-uri 
+removeSpace s = [[  y|y <- x,y /= ' '] | x <- s ]
