@@ -154,3 +154,23 @@ nestedOdd s = [[ sii | sii <- si, odd sii ] | si <- s ]
 
 -- Problema - dintr-o lista de stringuri, sa se afiseze lista fara whitespace-uri 
 removeSpace s = [[  y|y <- x,y /= ' '] | x <- s ]
+
+-- Problema - Definește o funcție recursivă care inversează fiecare cuvânt dintr-o listă de string-uri.
+-- map 
+
+reverseWords :: [String] -> [String]
+reverseWords [] = []
+reverseWords (x:xs) | not(null (x:xs)) = map reverse (x:xs)
+                    | otherwise = reverseWords xs 
+
+-- filter 
+-- filter odd [1..5]
+-- filter (\x -> length x > 2 ) ["a","ab"]
+-- filter (\xs -> x == 'a' ) ["a", "abb", "cc"]
+
+-- Problema: Folosind list comprehension, definește o funcție care returnează numerele divizibile atât cu 3, cât și cu 5 dintr-o listă.
+
+div35 :: [Int] -> [Int]
+div35 xs = [ x | x <- xs, x `mod` 3 == 0, x `mod` 5 == 0]
+
+-- Problema: Definește o funcție care primește o listă de tupluri (Int, String) și returnează toate numerele unde string-ul începe cu un anumit caracter.
