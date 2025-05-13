@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.ResultSet;
 
 public class DBConnection {
     private static final String URL = "jdbc:sqlite:db/biblioteca.db";
@@ -15,7 +16,7 @@ public class DBConnection {
         if (connection == null) {
             try {
                 connection = DriverManager.getConnection(URL);
-                initTables(); // Creează tabele dacă lipsesc
+                initTables();
             } catch (SQLException e) {
                 System.out.println("Eroare la conectare: " + e.getMessage());
             }
@@ -29,7 +30,8 @@ public class DBConnection {
             "id INTEGER PRIMARY KEY AUTOINCREMENT," +
             "nume TEXT NOT NULL," +
             "email TEXT UNIQUE," +
-            "parola TEXT" +
+            "parola TEXT," +
+            "rol TEXT DEFAULT 'user'" +
             ");";
 
         String createAutor =
@@ -55,6 +57,23 @@ public class DBConnection {
             stmt.execute(createCarte);
         } catch (SQLException e) {
             System.out.println("Eroare la crearea tabelelor: " + e.getMessage());
+        }
+
+        // ✅ Inserare admin implicit dacă nu există
+        String sqlCheckAdmin = "SELECT COUNT(*) AS total FROM cititor WHERE rol = 'admin'";
+        try (
+            Statement stmt = connection.createStatement();
+            ResultSet rs = stmt.executeQuery(sqlCheckAdmin)
+        ) {
+            if (rs.next() && rs.getInt("total") == 0) {
+                String insertAdmin =
+                    "INSERT INTO cititor (nume, email, parola, rol) " +
+                    "VALUES ('admin', 'admin@admin.com', 'admin123', 'admin')";
+                stmt.execute(insertAdmin);
+                System.out.println("✅ Utilizator admin implicit creat");
+            }
+        } catch (SQLException e) {
+            System.out.println("Eroare la verificarea/crearea adminului: " + e.getMessage());
         }
     }
 }

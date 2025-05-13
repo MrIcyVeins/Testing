@@ -1,3 +1,4 @@
+
 package service;
 
 import model.Cititor;
@@ -10,72 +11,123 @@ public class UserService {
     private List<Cititor> cititori = new ArrayList<>();
     private Cititor cititorAutentificat = null;
 
-    // Înregistrare utilizator
-    public void inregistreazaCititor(Cititor cititor) {
-        cititori.add(cititor); // Adaugă și în memorie
-        salveazaCititorInDB(cititor); // Salvează în DB
+    public void inregistreazaCititor(Cititor cititor, String rol) {
+        cititori.add(cititor);
+        salveazaCititorInDB(cititor, rol);
         System.out.println("Cititor înregistrat cu succes!");
     }
 
-    // Autentificare utilizator
-    public boolean autentifica(String email, String parola) {
-        for (Cititor c : cititori) {
-            if (c.getEmail().equals(email) && c.getParola().equals(parola)) {
+    public Cititor autentificare(String email, String parola) {
+        String sql = "SELECT * FROM cititor WHERE email = ? AND parola = ?";
+        try (PreparedStatement stmt = DBConnection.getConnection().prepareStatement(sql)) {
+            stmt.setString(1, email);
+            stmt.setString(2, parola);
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                String nume = rs.getString("nume");
+                String e = rs.getString("email");
+                String p = rs.getString("parola");
+                String rol = rs.getString("rol");
+                Cititor c = new Cititor(nume, e, p, rol);
                 cititorAutentificat = c;
-                System.out.println("Autentificare reușită! Bun venit, " + c.getNume());
-                return true;
+                return c;
             }
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
-        System.out.println("Email sau parolă incorecte.");
-        return false;
+        return null;
     }
 
-    // Returnează utilizatorul autentificat
     public Cititor getCititorAutentificat() {
         return cititorAutentificat;
     }
 
-    // Getter pentru toți cititorii (opțional, pentru debug)
-    public List<Cititor> getCititori() {
-        return cititori;
+    public boolean esteAdmin(Cititor c) {
+        return c.getRol().equalsIgnoreCase("admin");
     }
 
-    // Salvează un utilizator nou în baza de date
-    public void salveazaCititorInDB(Cititor c) {
-        String sql = "INSERT INTO cititor (nume, email, parola) VALUES (?, ?, ?)";
+    public void salveazaCititorInDB(Cititor c, String rol) {
+        String sql = "INSERT INTO cititor (nume, email, parola, rol) VALUES (?, ?, ?, ?)";
         try (PreparedStatement stmt = DBConnection.getConnection().prepareStatement(sql)) {
             stmt.setString(1, c.getNume());
             stmt.setString(2, c.getEmail());
             stmt.setString(3, c.getParola());
+            stmt.setString(4, rol);
             stmt.executeUpdate();
         } catch (SQLException e) {
             System.out.println("Eroare la salvarea cititorului: " + e.getMessage());
         }
     }
 
-    // Încarcă toți cititorii existenți din baza de date
-    public void incarcaCititoriDinDB() {
-        String sql = "SELECT nume, email, parola FROM cititor";
-        try (Statement stmt = DBConnection.getConnection().createStatement();
-             ResultSet rs = stmt.executeQuery(sql)) {
+    public void stergeUtilizator(String email) {
+        String checkSql = "SELECT rol FROM cititor WHERE email = ?";
+        try (PreparedStatement checkStmt = DBConnection.getConnection().prepareStatement(checkSql)) {
+            checkStmt.setString(1, email);
+            ResultSet rs = checkStmt.executeQuery();
 
-            while (rs.next()) {
-                String nume = rs.getString("nume");
-                String email = rs.getString("email");
-                String parola = rs.getString("parola");
-
-                Cititor cititor = new Cititor(nume, email, parola);
-                cititori.add(cititor);
+            if (rs.next()) {
+                String rol = rs.getString("rol");
+                if (rol.equalsIgnoreCase("admin")) {
+                    System.out.println("❌ Nu poți șterge un administrator.");
+                    return;
+                }
+            } else {
+                System.out.println("❌ Utilizatorul nu există.");
+                return;
             }
-
-            // DEBUG – Afișează utilizatorii încărcați
-            System.out.println("Cititori încărcați din baza de date:");
-            for (Cititor c : cititori) {
-                System.out.println(" - " + c.getEmail());
-            }
-
         } catch (SQLException e) {
-            System.out.println("Eroare la încărcarea cititorilor: " + e.getMessage());
+            System.out.println("Eroare la verificare: " + e.getMessage());
+            return;
+        }
+
+        String sql = "DELETE FROM cititor WHERE email = ?";
+        try (PreparedStatement stmt = DBConnection.getConnection().prepareStatement(sql)) {
+            stmt.setString(1, email);
+            int affected = stmt.executeUpdate();
+            if (affected > 0) {
+                System.out.println("✅ Utilizator șters cu succes.");
+            } else {
+                System.out.println("❌ Utilizatorul nu a putut fi șters.");
+            }
+        } catch (SQLException e) {
+            System.out.println("Eroare la ștergere: " + e.getMessage());
+        }
+    }
+
+    public void schimbaParola(String email, String parolaNoua) {
+        String checkSql = "SELECT rol FROM cititor WHERE email = ?";
+        try (PreparedStatement checkStmt = DBConnection.getConnection().prepareStatement(checkSql)) {
+            checkStmt.setString(1, email);
+            ResultSet rs = checkStmt.executeQuery();
+
+            if (rs.next()) {
+                String rol = rs.getString("rol");
+                if (rol.equalsIgnoreCase("admin") && !email.equals(getCititorAutentificat().getEmail())) {
+                    System.out.println("❌ Nu poți modifica parola altui admin.");
+                    return;
+                }
+            } else {
+                System.out.println("❌ Utilizatorul nu există.");
+                return;
+            }
+        } catch (SQLException e) {
+            System.out.println("Eroare la verificare: " + e.getMessage());
+            return;
+        }
+
+        String sql = "UPDATE cititor SET parola = ? WHERE email = ?";
+        try (PreparedStatement stmt = DBConnection.getConnection().prepareStatement(sql)) {
+            stmt.setString(1, parolaNoua);
+            stmt.setString(2, email);
+            int affected = stmt.executeUpdate();
+            if (affected > 0) {
+                System.out.println("✅ Parolă modificată cu succes.");
+            } else {
+                System.out.println("❌ Eroare la modificare.");
+            }
+        } catch (SQLException e) {
+            System.out.println("Eroare la actualizare: " + e.getMessage());
         }
     }
 }
