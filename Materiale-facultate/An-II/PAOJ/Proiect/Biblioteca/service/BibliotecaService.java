@@ -240,4 +240,20 @@ public class BibliotecaService {
         }
         return null;
     }
+
+    public void stergeCarteDinDB(String titlu) {
+        String sql = "DELETE FROM carte WHERE LOWER(titlu) = ?";
+        try (PreparedStatement stmt = DBConnection.getConnection().prepareStatement(sql)) {
+            stmt.setString(1, titlu.toLowerCase());
+            int affected = stmt.executeUpdate();
+            if (affected > 0) {
+                System.out.println("Carte stearsa din baza de date.");
+            } else {
+                System.out.println("Cartea nu a fost gasita.");
+            }
+        } catch (SQLException e) {
+            System.out.println("Eroare la stergerea cartii: " + e.getMessage());
+        }
+    }
+
 }

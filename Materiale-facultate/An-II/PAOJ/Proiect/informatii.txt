@@ -3,23 +3,45 @@ Proiect PAOJ
 1) Structura directoarelor:
 
 Biblioteca/
+├── Main.class
 ├── Main.java
 ├── audit.csv
-├── db/
-│   └── biblioteca.db          # Bază de date SQLite
-├── lib/
+├── carti.csv
+├── db
+├── lib
 │   └── sqlite-jdbc-3.43.0.0.jar
-├── model/
-│   ├── Persoana.java
-│   ├── Cititor.java
+├── model
+│   ├── Autor.class
 │   ├── Autor.java
+│   ├── Carte.class
 │   ├── Carte.java
-│   └── Sectiune.java
-├── service/
-│   ├── DBConnection.java
-│   ├── UserService.java
-│   ├── BibliotecaService.java
-│   └── AuditService.java
+│   ├── Persoana.class
+│   ├── Persoana.java
+│   ├── Sectiune.class
+│   ├── Sectiune.java
+│   ├── User.class
+│   └── User.java
+└── service
+    ├── AdminService.class
+    ├── AdminService.java
+    ├── AuditService.class
+    ├── AuditService.java
+    ├── BibliotecaService.class
+    ├── BibliotecaService.java
+    ├── DBConnection.class
+    ├── DBConnection.java
+    ├── FavoriteService.class
+    ├── FavoriteService.java
+    ├── ImprumutService.class
+    ├── ImprumutService.java
+    ├── MeniuAdmin.class
+    ├── MeniuAdmin.java
+    ├── MeniuUser.class
+    ├── MeniuUser.java
+    ├── UserService.class
+    └── UserService.java
+
+5 directories, 33 files
 
 2) Instalarea dependintelor
 
@@ -32,16 +54,14 @@ sqlite3 db/biblioteca.db
 
 4) Compilare 
 
-javac *.java model/*.java service/*.java
-javac -cp ".:lib/sqlite-jdbc-3.43.0.0.jar" -d . Main.java model/*.java service/*.java
 javac -d . Main.java model/*.java service/*.java
-
 
 5) Rulare
 
 java -cp ".:lib/sqlite-jdbc-3.43.0.0.jar" Main
 
-6) Admin user
+6) Admin user initializat in main
+
 admin@admin.com
 admin123
 

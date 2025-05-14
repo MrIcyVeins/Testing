@@ -2,113 +2,105 @@
 package service;
 
 import model.Carte;
-import model.Cititor;
+import model.User;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class MeniuUser {
-    private static List<Carte> favorite = new ArrayList<>();
+    private static final FavoriteService favoriteService = new FavoriteService();
+    private static final ImprumutService imprumutService = new ImprumutService();
 
     public static void run(UserService userService, BibliotecaService biblioteca, AuditService audit, Scanner scanner) {
+        User user = userService.getUserAutentificat();
+
         while (true) {
             System.out.println("\n>>> MENIU UTILIZATOR <<<");
-            System.out.println("1. Afișează toate cărțile");
-            System.out.println("2. Caută carte (titlu parțial)");
-            System.out.println("3. Caută carte după gen");
-            System.out.println("4. Caută carte după autor");
-            System.out.println("5. Adaugă carte la favorite");
-            System.out.println("6. Afișează cărți favorite");
-            System.out.println("7. Resetează parola proprie");
-            System.out.println("8. Sortează cărțile (alfabetic)");
+            System.out.println("1. Afiseaza toate cartile");
+            System.out.println("2. Cauta carte - dupa titlu");
+            System.out.println("3. Cauta carte - dupa gen");
+            System.out.println("4. Cauta carte - dupa autor");
+            System.out.println("5. Adauga carte la favorite");
+            System.out.println("6. Afiseaza carti favorite");
+            System.out.println("7. Sterge carte din favorite");
+            System.out.println("8. Reseteaza parola");
+            System.out.println("9. Imprumuta carte");
+            System.out.println("10. Returneaza carte");
+            System.out.println("11. Vezi imprumuturi");
             System.out.println("0. Logout");
-            System.out.print("Alege opțiunea: ");
+            System.out.print("Alege optiunea: ");
 
             int opt;
             try {
                 opt = Integer.parseInt(scanner.nextLine());
             } catch (NumberFormatException e) {
-                System.out.println("Opțiune invalidă.");
+                System.out.println("Optiune invalida.");
                 continue;
             }
 
             switch (opt) {
                 case 1:
                     biblioteca.afiseazaCarti();
-                    audit.logActiune("user_afiseaza_carti");
+                    audit.logActiune("user_afiseaza_carti", user);
                     break;
-
                 case 2:
-                    System.out.print("Cuvânt cheie în titlu: ");
-                    String partial = scanner.nextLine();
-                    biblioteca.cautaCartePartialTitlu(partial);
-                    audit.logActiune("user_cauta_partial_titlu");
+                    System.out.print("Titlu carte: ");
+                    biblioteca.cautaCartePartialTitlu(scanner.nextLine());
+                    audit.logActiune("user_cauta_partial_titlu", user);
                     break;
-
                 case 3:
                     System.out.print("Genul dorit: ");
-                    String gen = scanner.nextLine();
-                    biblioteca.cautaCartiDupaGen(gen);
-                    audit.logActiune("user_cauta_dupa_gen");
+                    biblioteca.cautaCartiDupaGen(scanner.nextLine());
+                    audit.logActiune("user_cauta_dupa_gen", user);
                     break;
-
                 case 4:
                     System.out.print("Nume autor: ");
-                    String autor = scanner.nextLine();
-                    biblioteca.cautaCartiDupaAutor(autor);
-                    audit.logActiune("user_cauta_dupa_autor");
+                    biblioteca.cautaCartiDupaAutor(scanner.nextLine());
+                    audit.logActiune("user_cauta_dupa_autor", user);
                     break;
-
                 case 5:
-                    System.out.print("Titlu exact carte de adăugat la favorite: ");
-                    String titluFav = scanner.nextLine();
-                    Carte carteFav = biblioteca.getCarteByTitlu(titluFav);
-                    if (carteFav != null) {
-                        favorite.add(carteFav);
-                        System.out.println("✅ Adăugată la favorite.");
+                    System.out.print("Titlu carte: ");
+                    Carte favAdd = biblioteca.getCarteByTitlu(scanner.nextLine());
+                    if (favAdd != null) {
+                        favoriteService.adaugaFavorite(user, favAdd);
                     } else {
-                        System.out.println("❌ Carte negăsită.");
+                        System.out.println("❌ Carte negasita.");
                     }
-                    audit.logActiune("user_adauga_favorite");
+                    audit.logActiune("user_adauga_favorite", user);
                     break;
-
                 case 6:
-                    System.out.println(">>> Cărți favorite <<<");
-                    for (Carte c : favorite) {
-                        System.out.println(c);
-                    }
-                    audit.logActiune("user_afiseaza_favorite");
+                    favoriteService.afiseazaFavorite(user);
+                    audit.logActiune("user_afiseaza_favorite", user);
                     break;
-
                 case 7:
-                    System.out.print("Noua parolă: ");
-                    String nouaParola = scanner.nextLine();
-                    Cititor user = userService.getCititorAutentificat();
-                    if (user != null) {
-                        userService.schimbaParola(user.getEmail(), nouaParola);
-                        System.out.println("✅ Parolă actualizată.");
-                    }
-                    audit.logActiune("user_reseteaza_parola");
+                    System.out.print("Titlu carte de eliminat din favorite: ");
+                    favoriteService.stergeFavorite(user, scanner.nextLine());
+                    audit.logActiune("user_sterge_favorite", user);
                     break;
-
                 case 8:
-                    List<Carte> toate = biblioteca.getCarti();
-                    List<Carte> sortate = toate.stream()
-                            .sorted(Comparator.comparing(Carte::getTitlu, String.CASE_INSENSITIVE_ORDER))
-                            .collect(Collectors.toList());
-                    System.out.println(">>> Cărți sortate alfabetic <<<");
-                    for (Carte c : sortate) {
-                        System.out.println(c);
-                    }
-                    audit.logActiune("user_sorteaza_carti");
+                    System.out.print("Parola noua: ");
+                    userService.schimbaParola(user.getEmail(), scanner.nextLine());
+                    System.out.println("✅ Parola a fost actualizata.");
+                    audit.logActiune("user_reseteaza_parola", user);
                     break;
-
+                case 9:
+                    System.out.print("Titlu carte de imprumutat: ");
+                    imprumutService.imprumutaCarte(user, scanner.nextLine());
+                    audit.logActiune("user_imprumuta_carte", user);
+                    break;
+                case 10:
+                    System.out.print("Titlu carte de returnat: ");
+                    imprumutService.returneazaCarte(user, scanner.nextLine());
+                    audit.logActiune("user_returneaza_carte", user);
+                    break;
+                case 11:
+                    imprumutService.veziImprumuturi(user);
+                    audit.logActiune("user_vezi_imprumuturi", user);
+                    break;
                 case 0:
                     System.out.println("Logout...");
                     return;
-
                 default:
-                    System.out.println("Opțiune invalidă.");
+                    System.out.println("Optiune invalida.");
             }
         }
     }

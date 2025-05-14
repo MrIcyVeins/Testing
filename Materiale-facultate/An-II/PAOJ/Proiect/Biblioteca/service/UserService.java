@@ -1,24 +1,23 @@
 
 package service;
 
-import model.Cititor;
-
+import model.User;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
 public class UserService {
-    private List<Cititor> cititori = new ArrayList<>();
-    private Cititor cititorAutentificat = null;
+    private List<User> utilizatori = new ArrayList<>();
+    private User userAutentificat = null;
 
-    public void inregistreazaCititor(Cititor cititor, String rol) {
-        cititori.add(cititor);
-        salveazaCititorInDB(cititor, rol);
-        System.out.println("Cititor înregistrat cu succes!");
+    public void inregistreazaUser(User user) {
+        utilizatori.add(user);
+        salveazaUserInDB(user);
+        System.out.println("Utilizator înregistrat cu succes!");
     }
 
-    public Cititor autentificare(String email, String parola) {
-        String sql = "SELECT * FROM cititor WHERE email = ? AND parola = ?";
+    public User autentificare(String email, String parola) {
+        String sql = "SELECT * FROM user WHERE email = ? AND parola = ?";
         try (PreparedStatement stmt = DBConnection.getConnection().prepareStatement(sql)) {
             stmt.setString(1, email);
             stmt.setString(2, parola);
@@ -28,10 +27,9 @@ public class UserService {
                 String nume = rs.getString("nume");
                 String e = rs.getString("email");
                 String p = rs.getString("parola");
-                String rol = rs.getString("rol");
-                Cititor c = new Cititor(nume, e, p, rol);
-                cititorAutentificat = c;
-                return c;
+                User u = new User(nume, e, p);
+                userAutentificat = u;
+                return u;
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -39,49 +37,24 @@ public class UserService {
         return null;
     }
 
-    public Cititor getCititorAutentificat() {
-        return cititorAutentificat;
+    public User getUserAutentificat() {
+        return userAutentificat;
     }
 
-    public boolean esteAdmin(Cititor c) {
-        return c.getRol().equalsIgnoreCase("admin");
-    }
-
-    public void salveazaCititorInDB(Cititor c, String rol) {
-        String sql = "INSERT INTO cititor (nume, email, parola, rol) VALUES (?, ?, ?, ?)";
+    public void salveazaUserInDB(User u) {
+        String sql = "INSERT INTO user (nume, email, parola) VALUES (?, ?, ?)";
         try (PreparedStatement stmt = DBConnection.getConnection().prepareStatement(sql)) {
-            stmt.setString(1, c.getNume());
-            stmt.setString(2, c.getEmail());
-            stmt.setString(3, c.getParola());
-            stmt.setString(4, rol);
+            stmt.setString(1, u.getNume());
+            stmt.setString(2, u.getEmail());
+            stmt.setString(3, u.getParola());
             stmt.executeUpdate();
         } catch (SQLException e) {
-            System.out.println("Eroare la salvarea cititorului: " + e.getMessage());
+            System.out.println("Eroare la salvarea userului: " + e.getMessage());
         }
     }
 
-    public void stergeUtilizator(String email) {
-        String checkSql = "SELECT rol FROM cititor WHERE email = ?";
-        try (PreparedStatement checkStmt = DBConnection.getConnection().prepareStatement(checkSql)) {
-            checkStmt.setString(1, email);
-            ResultSet rs = checkStmt.executeQuery();
-
-            if (rs.next()) {
-                String rol = rs.getString("rol");
-                if (rol.equalsIgnoreCase("admin")) {
-                    System.out.println("❌ Nu poți șterge un administrator.");
-                    return;
-                }
-            } else {
-                System.out.println("❌ Utilizatorul nu există.");
-                return;
-            }
-        } catch (SQLException e) {
-            System.out.println("Eroare la verificare: " + e.getMessage());
-            return;
-        }
-
-        String sql = "DELETE FROM cititor WHERE email = ?";
+    public void stergeUser(String email) {
+        String sql = "DELETE FROM user WHERE email = ?";
         try (PreparedStatement stmt = DBConnection.getConnection().prepareStatement(sql)) {
             stmt.setString(1, email);
             int affected = stmt.executeUpdate();
@@ -96,38 +69,34 @@ public class UserService {
     }
 
     public void schimbaParola(String email, String parolaNoua) {
-        String checkSql = "SELECT rol FROM cititor WHERE email = ?";
-        try (PreparedStatement checkStmt = DBConnection.getConnection().prepareStatement(checkSql)) {
-            checkStmt.setString(1, email);
-            ResultSet rs = checkStmt.executeQuery();
-
-            if (rs.next()) {
-                String rol = rs.getString("rol");
-                if (rol.equalsIgnoreCase("admin") && !email.equals(getCititorAutentificat().getEmail())) {
-                    System.out.println("❌ Nu poți modifica parola altui admin.");
-                    return;
-                }
-            } else {
-                System.out.println("❌ Utilizatorul nu există.");
-                return;
-            }
-        } catch (SQLException e) {
-            System.out.println("Eroare la verificare: " + e.getMessage());
-            return;
-        }
-
-        String sql = "UPDATE cititor SET parola = ? WHERE email = ?";
+        String sql = "UPDATE user SET parola = ? WHERE email = ?";
         try (PreparedStatement stmt = DBConnection.getConnection().prepareStatement(sql)) {
             stmt.setString(1, parolaNoua);
             stmt.setString(2, email);
             int affected = stmt.executeUpdate();
             if (affected > 0) {
-                System.out.println("✅ Parolă modificată cu succes.");
+                System.out.println("✅ Parola modificată cu succes.");
             } else {
                 System.out.println("❌ Eroare la modificare.");
             }
         } catch (SQLException e) {
             System.out.println("Eroare la actualizare: " + e.getMessage());
+        }
+    }
+
+    public void afiseazaTotiUserii() {
+        String sql = "SELECT nume, email FROM user";
+        try (Statement stmt = DBConnection.getConnection().createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+
+            System.out.println("📋 Lista utilizatori:");
+            while (rs.next()) {
+                String nume = rs.getString("nume");
+                String email = rs.getString("email");
+                System.out.println("- " + nume + " | " + email);
+            }
+        } catch (SQLException e) {
+            System.out.println("Eroare la afisarea userilor: " + e.getMessage());
         }
     }
 }
