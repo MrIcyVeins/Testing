@@ -68,7 +68,7 @@ public class FavoriteService {
     }
 
     private int getUserId(String email) {
-        try (PreparedStatement stmt = DBConnection.getConnection().prepareStatement("SELECT id FROM user WHERE email = ?")) {
+        try (PreparedStatement stmt = DBConnection.getConnection().prepareStatement("SELECT id FROM utilizator WHERE email = ?")) {
             stmt.setString(1, email);
             ResultSet rs = stmt.executeQuery();
             return rs.next() ? rs.getInt("id") : -1;

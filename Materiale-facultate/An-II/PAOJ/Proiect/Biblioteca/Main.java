@@ -14,6 +14,22 @@ public class Main {
         AuditService audit = new AuditService();
         Console console = System.console();
 
+        // ✅ Initializeaza tabelele
+        // DBConnection.getConnection();
+        // DBConnection.initTables(); 
+
+        // ✅ Inserare admin implicit în tabela `admin` dacă nu există
+        try (Statement stmt = DBConnection.getConnection().createStatement()) {
+            String checkAdmin = "SELECT COUNT(*) AS total FROM utilizator WHERE email = 'admin@admin.com' AND rol = 'admin'";
+            ResultSet rs = stmt.executeQuery(checkAdmin);
+            if (rs.next() && rs.getInt("total") == 0) {
+                stmt.execute("INSERT INTO utilizator (nume, email, parola, rol) VALUES ('admin', 'admin@admin.com', 'admin123', 'admin')");
+                System.out.println("✅ Utilizator admin implicit creat (admin@admin.com)");
+            }
+        } catch (SQLException e) {
+            System.out.println("Eroare la crearea utilizatorului admin: " + e.getMessage());
+        }
+
         while (true) {
             System.out.println("\n>>> BUN VENIT LA BIBLIOTECA <<<");
             System.out.println("1. Login");
@@ -30,15 +46,15 @@ public class Main {
             }
 
             switch (opt) {
-                case 1:
+                case 1: // Login
                     System.out.print("Email: ");
                     String email = scanner.nextLine();
                     String parola;
 
                     if (console != null) {
-                        char[] parolaChars = console.readPassword("Parola: ");
-                        parola = new String(parolaChars);
-                        Arrays.fill(parolaChars, '\0');
+                        char[] parolaChars = console.readPassword("Parola: "); // readPassowrd creaza char[] by default
+                        parola = new String(parolaChars); // convertim parola in String
+                        Arrays.fill(parolaChars, '\0'); // sterge parola din memorie ( pentru parolaChars[] )
                     } else {
                         System.out.print("Parola: ");
                         parola = scanner.nextLine();
@@ -58,7 +74,7 @@ public class Main {
                     }
                     break;
 
-                case 2:
+                case 2: // Register
                     System.out.print("Nume: ");
                     String nume = scanner.nextLine();
                     System.out.print("Email: ");
@@ -78,7 +94,7 @@ public class Main {
                     System.out.println("Inregistrare reusita! Acum te poti autentifica.");
                     break;
 
-                case 0:
+                case 0: // Iesire
                     System.out.println("La revedere!");
                     return;
 

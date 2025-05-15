@@ -9,11 +9,14 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
+
+
 public class ImprumutService {
 
     public void imprumutaCarte(User user, String titluCarte) {
         int userId = getUserId(user.getEmail());
         int carteId = getCarteId(titluCarte);
+        AuditService audit = new AuditService();
 
         if (userId == -1 || carteId == -1) {
             System.out.println("❌ Utilizator sau carte inexistenta.");
@@ -31,6 +34,7 @@ public class ImprumutService {
             stmt.setInt(2, carteId);
             stmt.setString(3, LocalDate.now().toString());
             stmt.executeUpdate();
+            audit.logActiune("carte_imprumutata", user);
             System.out.println("✅ Carte imprumutata cu succes.");
         } catch (SQLException e) {
             System.out.println("Eroare la imprumut: " + e.getMessage());
@@ -40,6 +44,7 @@ public class ImprumutService {
     public void returneazaCarte(User user, String titluCarte) {
         int userId = getUserId(user.getEmail());
         int carteId = getCarteId(titluCarte);
+        AuditService audit = new AuditService();
 
         String sql = "UPDATE imprumut SET data_returnare = ? WHERE user_id = ? AND carte_id = ? AND data_returnare IS NULL";
         try (PreparedStatement stmt = DBConnection.getConnection().prepareStatement(sql)) {
@@ -48,6 +53,7 @@ public class ImprumutService {
             stmt.setInt(3, carteId);
             int updated = stmt.executeUpdate();
             if (updated > 0) {
+                audit.logActiune("carte_returnata", user);
                 System.out.println("✅ Carte returnata.");
             } else {
                 System.out.println("❌ Nu ai aceasta carte împrumutata.");
@@ -92,7 +98,7 @@ public class ImprumutService {
     }
 
     private int getUserId(String email) {
-        String sql = "SELECT id FROM user WHERE email = ?";
+        String sql = "SELECT id FROM utilizator WHERE email = ?";
         try (PreparedStatement stmt = DBConnection.getConnection().prepareStatement(sql)) {
             stmt.setString(1, email);
             ResultSet rs = stmt.executeQuery();

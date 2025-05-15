@@ -23,6 +23,7 @@ public class MeniuAdmin {
             System.out.println("7. Schimba parola unui utilizator");
             System.out.println("8. Schimba parola proprie");
             System.out.println("9. Sterge carte dupa titlu");
+            System.out.println("10. Sterge utilizator");
             System.out.println("0. Logout");
             System.out.print("Alege optiunea: ");
 
@@ -71,6 +72,11 @@ public class MeniuAdmin {
                     System.out.print("Titlu carte de sters: ");
                     String titlu = scanner.nextLine();
                     biblioteca.stergeCarte(titlu);
+                    break;
+                case 10:
+                    System.out.print("Email utilizator de sters: ");
+                    String emailDeSters = scanner.nextLine();
+                    userService.stergeUtilizator(emailDeSters);
                     break;
                 case 0:
                     System.out.println("Logout...");

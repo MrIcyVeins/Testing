@@ -6,6 +6,7 @@ public class Autor {
     private String nume;
     private String biografie;
 
+    // constructor Autor
     public Autor(String nume, String biografie) {
         this.nume = nume;
         this.biografie = biografie;
@@ -19,11 +20,13 @@ public class Autor {
         return biografie;
     }
 
+    // supraincarcarea metodie toString()
     @Override
     public String toString() {
         return nume + " - " + biografie;
     }
 
+    // suprascriere - verifica daca doua obiecte de tip Autor sunt egale ( == campul nume )
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -32,6 +35,7 @@ public class Autor {
         return Objects.equals(nume, autor.nume);
     }
 
+    // suprascriere - folosire hashCode ( obligatoriu ) 
     @Override
     public int hashCode() {
         return Objects.hash(nume);

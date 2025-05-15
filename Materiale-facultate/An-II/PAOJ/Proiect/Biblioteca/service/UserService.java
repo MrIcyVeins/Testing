@@ -6,13 +6,14 @@ import java.sql.*;
 public class UserService {
     private User userAutentificat = null;
 
+    // metode din UserService
     public void inregistreazaUser(User user) {
         String sql = "INSERT INTO utilizator (nume, email, parola, rol) VALUES (?, ?, ?, ?)";
         try (PreparedStatement stmt = DBConnection.getConnection().prepareStatement(sql)) {
-            stmt.setString(1, user.getNume());
-            stmt.setString(2, user.getEmail());
-            stmt.setString(3, user.getParola());
-            stmt.setString(4, user.getRol());
+            stmt.setString(1, user.getNume()); // mostenit din clasa Persoana
+            stmt.setString(2, user.getEmail()); // mostenit din clasa Persoana
+            stmt.setString(3, user.getParola()); // mostenit din clasa User
+            stmt.setString(4, user.getRol()); // mostenit din clasa User
             stmt.executeUpdate();
             System.out.println("✅ Utilizator inregistrat cu succes.");
         } catch (SQLException e) {
@@ -72,6 +73,21 @@ public class UserService {
             }
         } catch (SQLException e) {
             System.out.println("Eroare la actualizarea parolei: " + e.getMessage());
+        }
+    }
+
+    public void stergeUtilizator(String email) {
+        String sql = "DELETE FROM utilizator WHERE email = ?";
+        try (PreparedStatement stmt = DBConnection.getConnection().prepareStatement(sql)) {
+            stmt.setString(1, email);
+            int affected = stmt.executeUpdate();
+            if (affected > 0) {
+                System.out.println("✅ Utilizator sters.");
+            } else {
+                System.out.println("❌ Utilizatorul nu a fost gasit.");
+            }
+        } catch (SQLException e) {
+            System.out.println("Eroare la stergerea utilizatorului: " + e.getMessage());
         }
     }
 }

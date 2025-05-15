@@ -50,17 +50,31 @@ public class DBConnection {
             "FOREIGN KEY(autor_id) REFERENCES autor(id)" +
             ");";
 
+        String createImprumut =
+            "CREATE TABLE IF NOT EXISTS imprumut (" +
+            "id INTEGER PRIMARY KEY AUTOINCREMENT," +
+            "user_id INTEGER NOT NULL," +
+            "carte_id INTEGER NOT NULL," +
+            "data_imprumut TEXT NOT NULL," +
+            "data_returnare TEXT," +
+            "FOREIGN KEY(user_id) REFERENCES utilizator(id)," +
+            "FOREIGN KEY(carte_id) REFERENCES carte(id)" +
+            ");";
+
+        String createFavorite =
+            "CREATE TABLE IF NOT EXISTS favorite (" +
+            "user_id INTEGER," +
+            "carte_id INTEGER," +
+            "FOREIGN KEY(user_id) REFERENCES user(id)," +
+            "FOREIGN KEY(carte_id) REFERENCES carte(id)" +
+            ");";
+
         try (Statement stmt = connection.createStatement()) {
             stmt.execute(createUserTable);
             stmt.execute(createAutor);
             stmt.execute(createCarte);
-
-            String checkAdmin = "SELECT COUNT(*) AS total FROM utilizator WHERE email = 'admin@admin.com' AND rol = 'admin'";
-            var rs = stmt.executeQuery(checkAdmin);
-            if (rs.next() && rs.getInt("total") == 0) {
-                stmt.execute("INSERT INTO utilizator (nume, email, parola, rol) VALUES ('admin', 'admin@admin.com', 'admin123', 'admin')");
-                System.out.println("✅ Utilizator admin implicit creat (admin@admin.com)");
-            }
+            stmt.execute(createImprumut);
+            stmt.execute(createFavorite);
         } catch (SQLException e) {
             System.out.println("Eroare la crearea tabelelor: " + e.getMessage());
         }

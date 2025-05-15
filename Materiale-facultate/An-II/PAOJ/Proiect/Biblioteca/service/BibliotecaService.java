@@ -83,6 +83,8 @@ public class BibliotecaService {
 
     public void stergeCarte(String titlu) {
         boolean gasita = false;
+
+        // Stergere din memorie (daca e cazul)
         Iterator<Carte> it = carti.iterator();
         while (it.hasNext()) {
             Carte c = it.next();
@@ -93,10 +95,22 @@ public class BibliotecaService {
             }
         }
 
+        // Stergere din baza de date
+        String sql = "DELETE FROM carte WHERE LOWER(titlu) = ?";
+        try (PreparedStatement stmt = DBConnection.getConnection().prepareStatement(sql)) {
+            stmt.setString(1, titlu.toLowerCase());
+            int affected = stmt.executeUpdate();
+            if (affected > 0) {
+                gasita = true;
+            }
+        } catch (SQLException e) {
+            System.out.println("Eroare la stergerea cartii din baza de date: " + e.getMessage());
+        }
+
         if (gasita) {
-            System.out.println("Carte ștearsă din memorie. (Ștergerea din DB nu e implementată încă)");
+            System.out.println("✅ Cartea a fost ștearsă.");
         } else {
-            System.out.println("Carte negăsită.");
+            System.out.println("❌ Cartea nu a fost găsită.");
         }
     }
 

@@ -8,6 +8,7 @@ public class Carte {
     private String gen;
     private int an;
 
+    // constructor Carte
     public Carte(String titlu, Autor autor, String gen, int an) {
         this.titlu = titlu;
         this.autor = autor;
@@ -15,6 +16,7 @@ public class Carte {
         this.an = an;
     }
 
+    // metode get Carte
     public String getTitlu() {
         return titlu;
     }
@@ -31,11 +33,13 @@ public class Carte {
         return an;
     }
 
+    // supraincarcarea metodei toString
     @Override
     public String toString() {
         return titlu + " - " + autor.getNume() + " [" + gen + ", " + an + "]";
     }
 
+    // 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -44,6 +48,7 @@ public class Carte {
         return Objects.equals(titlu, carte.titlu) && Objects.equals(autor, carte.autor);
     }
 
+    // 
     @Override
     public int hashCode() {
         return Objects.hash(titlu, autor);
