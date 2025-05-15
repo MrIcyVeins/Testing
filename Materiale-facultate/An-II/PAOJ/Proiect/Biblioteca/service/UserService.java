@@ -1,23 +1,27 @@
-
 package service;
 
 import model.User;
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.List;
 
 public class UserService {
-    private List<User> utilizatori = new ArrayList<>();
     private User userAutentificat = null;
 
     public void inregistreazaUser(User user) {
-        utilizatori.add(user);
-        salveazaUserInDB(user);
-        System.out.println("Utilizator înregistrat cu succes!");
+        String sql = "INSERT INTO utilizator (nume, email, parola, rol) VALUES (?, ?, ?, ?)";
+        try (PreparedStatement stmt = DBConnection.getConnection().prepareStatement(sql)) {
+            stmt.setString(1, user.getNume());
+            stmt.setString(2, user.getEmail());
+            stmt.setString(3, user.getParola());
+            stmt.setString(4, user.getRol());
+            stmt.executeUpdate();
+            System.out.println("✅ Utilizator inregistrat cu succes.");
+        } catch (SQLException e) {
+            System.out.println("Eroare la inregistrare: " + e.getMessage());
+        }
     }
 
     public User autentificare(String email, String parola) {
-        String sql = "SELECT * FROM user WHERE email = ? AND parola = ?";
+        String sql = "SELECT * FROM utilizator WHERE email = ? AND parola = ?";
         try (PreparedStatement stmt = DBConnection.getConnection().prepareStatement(sql)) {
             stmt.setString(1, email);
             stmt.setString(2, parola);
@@ -25,14 +29,12 @@ public class UserService {
 
             if (rs.next()) {
                 String nume = rs.getString("nume");
-                String e = rs.getString("email");
-                String p = rs.getString("parola");
-                User u = new User(nume, e, p);
-                userAutentificat = u;
-                return u;
+                String rol = rs.getString("rol");
+                userAutentificat = new User(nume, email, parola, rol);
+                return userAutentificat;
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.out.println("Eroare la autentificare: " + e.getMessage());
         }
         return null;
     }
@@ -41,62 +43,35 @@ public class UserService {
         return userAutentificat;
     }
 
-    public void salveazaUserInDB(User u) {
-        String sql = "INSERT INTO user (nume, email, parola) VALUES (?, ?, ?)";
-        try (PreparedStatement stmt = DBConnection.getConnection().prepareStatement(sql)) {
-            stmt.setString(1, u.getNume());
-            stmt.setString(2, u.getEmail());
-            stmt.setString(3, u.getParola());
-            stmt.executeUpdate();
-        } catch (SQLException e) {
-            System.out.println("Eroare la salvarea userului: " + e.getMessage());
-        }
-    }
-
-    public void stergeUser(String email) {
-        String sql = "DELETE FROM user WHERE email = ?";
-        try (PreparedStatement stmt = DBConnection.getConnection().prepareStatement(sql)) {
-            stmt.setString(1, email);
-            int affected = stmt.executeUpdate();
-            if (affected > 0) {
-                System.out.println("✅ Utilizator șters cu succes.");
-            } else {
-                System.out.println("❌ Utilizatorul nu a putut fi șters.");
+    public void afiseazaTotiUserii() {
+        String sql = "SELECT nume, email, rol FROM utilizator WHERE rol = 'user'";
+        try (Statement stmt = DBConnection.getConnection().createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+            System.out.println(">>> Lista utilizatori:");
+            while (rs.next()) {
+                String nume = rs.getString("nume");
+                String email = rs.getString("email");
+                String rol = rs.getString("rol");
+                System.out.println("- " + nume + " | " + email + " | " + rol);
             }
         } catch (SQLException e) {
-            System.out.println("Eroare la ștergere: " + e.getMessage());
+            System.out.println("Eroare la afișarea utilizatorilor: " + e.getMessage());
         }
     }
 
     public void schimbaParola(String email, String parolaNoua) {
-        String sql = "UPDATE user SET parola = ? WHERE email = ?";
+        String sql = "UPDATE utilizator SET parola = ? WHERE email = ?";
         try (PreparedStatement stmt = DBConnection.getConnection().prepareStatement(sql)) {
             stmt.setString(1, parolaNoua);
             stmt.setString(2, email);
-            int affected = stmt.executeUpdate();
-            if (affected > 0) {
-                System.out.println("✅ Parola modificată cu succes.");
+            int rows = stmt.executeUpdate();
+            if (rows > 0) {
+                System.out.println("✅ Parola a fost actualizata pentru " + email);
             } else {
-                System.out.println("❌ Eroare la modificare.");
+                System.out.println("❌ Nu s-a gasit utilizatorul.");
             }
         } catch (SQLException e) {
-            System.out.println("Eroare la actualizare: " + e.getMessage());
-        }
-    }
-
-    public void afiseazaTotiUserii() {
-        String sql = "SELECT nume, email FROM user";
-        try (Statement stmt = DBConnection.getConnection().createStatement();
-             ResultSet rs = stmt.executeQuery(sql)) {
-
-            System.out.println("📋 Lista utilizatori:");
-            while (rs.next()) {
-                String nume = rs.getString("nume");
-                String email = rs.getString("email");
-                System.out.println("- " + nume + " | " + email);
-            }
-        } catch (SQLException e) {
-            System.out.println("Eroare la afisarea userilor: " + e.getMessage());
+            System.out.println("Eroare la actualizarea parolei: " + e.getMessage());
         }
     }
 }

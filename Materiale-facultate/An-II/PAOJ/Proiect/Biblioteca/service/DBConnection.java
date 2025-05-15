@@ -1,11 +1,9 @@
-
 package service;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.sql.ResultSet;
 
 public class DBConnection {
     private static final String URL = "jdbc:sqlite:db/biblioteca.db";
@@ -26,66 +24,43 @@ public class DBConnection {
     }
 
     private static void initTables() {
+        String createUserTable =
+            "CREATE TABLE IF NOT EXISTS utilizator (" +
+            "id INTEGER PRIMARY KEY AUTOINCREMENT," +
+            "nume TEXT NOT NULL," +
+            "email TEXT UNIQUE NOT NULL," +
+            "parola TEXT NOT NULL," +
+            "rol TEXT CHECK(rol IN ('admin','user')) NOT NULL" +
+            ");";
+
+        String createAutor =
+            "CREATE TABLE IF NOT EXISTS autor (" +
+            "id INTEGER PRIMARY KEY AUTOINCREMENT," +
+            "nume TEXT," +
+            "biografie TEXT" +
+            ");";
+
+        String createCarte =
+            "CREATE TABLE IF NOT EXISTS carte (" +
+            "id INTEGER PRIMARY KEY AUTOINCREMENT," +
+            "titlu TEXT," +
+            "gen TEXT," +
+            "an INTEGER," +
+            "autor_id INTEGER," +
+            "FOREIGN KEY(autor_id) REFERENCES autor(id)" +
+            ");";
+
         try (Statement stmt = connection.createStatement()) {
-            String createUser =
-                "CREATE TABLE IF NOT EXISTS user (" +
-                "id INTEGER PRIMARY KEY AUTOINCREMENT," +
-                "nume TEXT NOT NULL," +
-                "email TEXT UNIQUE," +
-                "parola TEXT" +
-                ");";
-
-            String createAdmin =
-                "CREATE TABLE IF NOT EXISTS admin (" +
-                "id INTEGER PRIMARY KEY AUTOINCREMENT," +
-                "nume TEXT NOT NULL," +
-                "email TEXT UNIQUE," +
-                "parola TEXT" +
-                ");";
-
-            String createAutor =
-                "CREATE TABLE IF NOT EXISTS autor (" +
-                "id INTEGER PRIMARY KEY AUTOINCREMENT," +
-                "nume TEXT," +
-                "biografie TEXT" +
-                ");";
-
-            String createCarte =
-                "CREATE TABLE IF NOT EXISTS carte (" +
-                "id INTEGER PRIMARY KEY AUTOINCREMENT," +
-                "titlu TEXT," +
-                "gen TEXT," +
-                "an INTEGER," +
-                "autor_id INTEGER," +
-                "FOREIGN KEY(autor_id) REFERENCES autor(id)" +
-                ");";
-
-            String createFavorite =
-                "CREATE TABLE IF NOT EXISTS favorite (" +
-                "user_id INTEGER," +
-                "carte_id INTEGER," +
-                "FOREIGN KEY(user_id) REFERENCES user(id)," +
-                "FOREIGN KEY(carte_id) REFERENCES carte(id)" +
-                ");";
-
-            String createImprumut =
-                "CREATE TABLE IF NOT EXISTS imprumut (" +
-                "id INTEGER PRIMARY KEY AUTOINCREMENT," +
-                "user_id INTEGER," +
-                "carte_id INTEGER," +
-                "data_imprumut TEXT," +
-                "data_returnare TEXT," +
-                "FOREIGN KEY(user_id) REFERENCES user(id)," +
-                "FOREIGN KEY(carte_id) REFERENCES carte(id)" +
-                ");";
-
-            stmt.execute(createUser);
-            stmt.execute(createAdmin);
+            stmt.execute(createUserTable);
             stmt.execute(createAutor);
             stmt.execute(createCarte);
-            stmt.execute(createFavorite);
-            stmt.execute(createImprumut);
 
+            String checkAdmin = "SELECT COUNT(*) AS total FROM utilizator WHERE email = 'admin@admin.com' AND rol = 'admin'";
+            var rs = stmt.executeQuery(checkAdmin);
+            if (rs.next() && rs.getInt("total") == 0) {
+                stmt.execute("INSERT INTO utilizator (nume, email, parola, rol) VALUES ('admin', 'admin@admin.com', 'admin123', 'admin')");
+                System.out.println("✅ Utilizator admin implicit creat (admin@admin.com)");
+            }
         } catch (SQLException e) {
             System.out.println("Eroare la crearea tabelelor: " + e.getMessage());
         }

@@ -1,10 +1,10 @@
-
 import model.*;
 import service.*;
 
-import java.io.Console;
+import java.io.Console; // pentru citirea parolelor fara sa fie afisate pe ecran
 import java.sql.*;
-import java.util.Scanner;
+import java.util.Arrays; // pentru stergerea parolei din memorie (Arrays.fill)
+import java.util.Scanner; // pentru inserarea datelor din consola
 
 public class Main {
     public static void main(String[] args) {
@@ -13,19 +13,6 @@ public class Main {
         UserService userService = new UserService();
         AuditService audit = new AuditService();
         Console console = System.console();
-
-        // ✅ Inserare admin implicit în tabela `admin` dacă nu există
-        try {
-            Statement stmt = DBConnection.getConnection().createStatement();
-            ResultSet rs = stmt.executeQuery("SELECT COUNT(*) AS total FROM admin WHERE email = 'admin@admin.com'");
-            if (rs.next() && rs.getInt("total") == 0) {
-                stmt.execute("INSERT INTO admin (nume, email, parola) " +
-                            "VALUES ('admin', 'admin@admin.com', 'admin123')");
-                System.out.println("✅ Utilizator admin implicit creat (admin@admin.com)");
-            }
-        } catch (SQLException e) {
-            System.out.println("Eroare la inițializarea adminului: " + e.getMessage());
-        }
 
         while (true) {
             System.out.println("\n>>> BUN VENIT LA BIBLIOTECA <<<");
@@ -47,37 +34,27 @@ public class Main {
                     System.out.print("Email: ");
                     String email = scanner.nextLine();
                     String parola;
+
                     if (console != null) {
-                        parola = new String(console.readPassword("Parolă: "));
+                        char[] parolaChars = console.readPassword("Parola: ");
+                        parola = new String(parolaChars);
+                        Arrays.fill(parolaChars, '\0');
                     } else {
                         System.out.print("Parola: ");
                         parola = scanner.nextLine();
                     }
 
-                    try {
-                        String sqlAdmin = "SELECT * FROM admin WHERE email = ? AND parola = ?";
-                        PreparedStatement stmt = DBConnection.getConnection().prepareStatement(sqlAdmin);
-                        stmt.setString(1, email);
-                        stmt.setString(2, parola);
-                        ResultSet rs = stmt.executeQuery();
-
-                        if (rs.next()) {
-                            System.out.println("Bun venit, admin!");
-                            audit.logActiune("autentificare_admin");
+                    User user = userService.autentificare(email, parola);
+                    if (user != null) {
+                        audit.logActiune("autentificare", user);
+                        System.out.println("Bun venit, " + user.getNume() + "!");
+                        if (user.getRol().equals("admin")) {
                             MeniuAdmin.run(userService, biblioteca, audit, scanner);
                         } else {
-                            User user = userService.autentificare(email, parola);
-                            if (user != null) {
-                                audit.logActiune("autentificare_user");
-                                System.out.println("Bun venit, " + user.getNume() + "!");
-                                MeniuUser.run(userService, biblioteca, audit, scanner);
-                            } else {
-                                System.out.println("Email sau parola incorecte.");
-                            }
+                            MeniuUser.run(userService, biblioteca, audit, scanner);
                         }
-
-                    } catch (SQLException e) {
-                        System.out.println("Eroare la login: " + e.getMessage());
+                    } else {
+                        System.out.println("Email sau parola incorecte.");
                     }
                     break;
 
@@ -88,14 +65,16 @@ public class Main {
                     String newEmail = scanner.nextLine();
                     String newParola;
                     if (console != null) {
-                        newParola = new String(console.readPassword("Parolă: "));
+                        char[] parolaChars = console.readPassword("Parola: ");
+                        newParola = new String(parolaChars);
+                        Arrays.fill(parolaChars, '\0');
                     } else {
                         System.out.print("Parola: ");
                         newParola = scanner.nextLine();
                     }
-                    User userNou = new User(nume, newEmail, newParola);
+                    User userNou = new User(nume, newEmail, newParola, "user");
                     userService.inregistreazaUser(userNou);
-                    audit.logActiune("inregistrare_user");
+                    audit.logActiune("inregistrare_user", userNou);
                     System.out.println("Inregistrare reusita! Acum te poti autentifica.");
                     break;
 

@@ -1,4 +1,3 @@
-
 package service;
 
 import model.Autor;
@@ -12,8 +11,6 @@ import java.sql.*;
 import java.util.Scanner;
 
 public class MeniuAdmin {
-    private static final User admin = new User("admin", "admin@admin.com", "");
-
     public static void run(UserService userService, BibliotecaService biblioteca, AuditService audit, Scanner scanner) {
         while (true) {
             System.out.println("\n>>> MENIU ADMIN <<<");
@@ -23,9 +20,9 @@ public class MeniuAdmin {
             System.out.println("4. Adauga carte noua");
             System.out.println("5. Listeaza utilizatori");
             System.out.println("6. Statistici");
-            System.out.println("7. Sterge carte dupa titlu");
-            System.out.println("8. Schimba parola unui utilizator");
-            System.out.println("9. Schimba parola proprie");
+            System.out.println("7. Schimba parola unui utilizator");
+            System.out.println("8. Schimba parola proprie");
+            System.out.println("9. Sterge carte dupa titlu");
             System.out.println("0. Logout");
             System.out.print("Alege optiunea: ");
 
@@ -40,57 +37,40 @@ public class MeniuAdmin {
             switch (opt) {
                 case 1:
                     biblioteca.afiseazaCarti();
-                    audit.logActiune("admin_afiseaza_carti", admin);
                     break;
                 case 2:
                     biblioteca.afiseazaAutori();
-                    audit.logActiune("admin_afiseaza_autori", admin);
                     break;
                 case 3:
                     System.out.print("Numele fisierului CSV (ex: carti.csv): ");
                     String numeFisier = scanner.nextLine();
                     importaDateUnice(numeFisier, biblioteca);
-                    audit.logActiune("admin_importa_date_unice", admin);
                     break;
                 case 4:
                     adaugaCarteNoua(scanner, biblioteca);
-                    audit.logActiune("admin_adauga_carte", admin);
                     break;
                 case 5:
                     userService.afiseazaTotiUserii();
-                    audit.logActiune("admin_afiseaza_utilizatori", admin);
                     break;
                 case 6:
                     biblioteca.afiseazaStatistici();
-                    audit.logActiune("admin_statistici", admin);
                     break;
                 case 7:
-                    System.out.print("Titlul cartii de sters: ");
-                    String titlu = scanner.nextLine();
-                    biblioteca.stergeCarteDinDB(titlu);
-                    audit.logActiune("admin_sterge_carte", admin);
-                    break;
-                case 8:
                     System.out.print("Email utilizator: ");
                     String email = scanner.nextLine();
                     System.out.print("Noua parola: ");
                     String parola = scanner.nextLine();
                     userService.schimbaParola(email, parola);
-                    audit.logActiune("admin_schimba_parola_user", admin);
+                    break;
+                case 8:
+                    System.out.print("Noua ta parola: ");
+                    String selfParola = scanner.nextLine();
+                    userService.schimbaParola("admin@admin.com", selfParola);
                     break;
                 case 9:
-                    System.out.print("Noua parola admin: ");
-                    String parolaNoua = scanner.nextLine();
-                    try {
-                        PreparedStatement stmt = DBConnection.getConnection().prepareStatement("UPDATE admin SET parola = ? WHERE email = ?");
-                        stmt.setString(1, parolaNoua);
-                        stmt.setString(2, "admin@admin.com");
-                        stmt.executeUpdate();
-                        System.out.println("Parola admin schimbata.");
-                        audit.logActiune("admin_schimba_parola_proprie", admin);
-                    } catch (SQLException e) {
-                        System.out.println("Eroare la schimbarea parolei admin: " + e.getMessage());
-                    }
+                    System.out.print("Titlu carte de sters: ");
+                    String titlu = scanner.nextLine();
+                    biblioteca.stergeCarte(titlu);
                     break;
                 case 0:
                     System.out.println("Logout...");
@@ -131,7 +111,7 @@ public class MeniuAdmin {
                 }
             }
 
-            System.out.println("Import finalizat. " + adaugate + " carti adaugate.");
+            System.out.println("Import finalizat. " + adaugate + " din " + total + " carti au fost adaugate.");
 
         } catch (IOException | NumberFormatException e) {
             System.out.println("Eroare la import: " + e.getMessage());

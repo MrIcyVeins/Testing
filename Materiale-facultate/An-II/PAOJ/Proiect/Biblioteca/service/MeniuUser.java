@@ -1,4 +1,3 @@
-
 package service;
 
 import model.Carte;
@@ -40,61 +39,51 @@ public class MeniuUser {
             switch (opt) {
                 case 1:
                     biblioteca.afiseazaCarti();
-                    audit.logActiune("user_afiseaza_carti", user);
                     break;
                 case 2:
                     System.out.print("Titlu carte: ");
                     biblioteca.cautaCartePartialTitlu(scanner.nextLine());
-                    audit.logActiune("user_cauta_partial_titlu", user);
                     break;
                 case 3:
                     System.out.print("Genul dorit: ");
                     biblioteca.cautaCartiDupaGen(scanner.nextLine());
-                    audit.logActiune("user_cauta_dupa_gen", user);
                     break;
                 case 4:
                     System.out.print("Nume autor: ");
                     biblioteca.cautaCartiDupaAutor(scanner.nextLine());
-                    audit.logActiune("user_cauta_dupa_autor", user);
                     break;
                 case 5:
                     System.out.print("Titlu carte: ");
-                    Carte favAdd = biblioteca.getCarteByTitlu(scanner.nextLine());
-                    if (favAdd != null) {
-                        favoriteService.adaugaFavorite(user, favAdd);
+                    String titluFav = scanner.nextLine();
+                    Carte fav = biblioteca.getCarteByTitlu(titluFav);
+                    if (fav != null) {
+                        favoriteService.adaugaFavorite(user, fav);
                     } else {
                         System.out.println("❌ Carte negasita.");
                     }
-                    audit.logActiune("user_adauga_favorite", user);
                     break;
                 case 6:
                     favoriteService.afiseazaFavorite(user);
-                    audit.logActiune("user_afiseaza_favorite", user);
                     break;
                 case 7:
-                    System.out.print("Titlu carte de eliminat din favorite: ");
+                    System.out.print("Titlu carte de sters din favorite: ");
                     favoriteService.stergeFavorite(user, scanner.nextLine());
-                    audit.logActiune("user_sterge_favorite", user);
                     break;
                 case 8:
                     System.out.print("Parola noua: ");
                     userService.schimbaParola(user.getEmail(), scanner.nextLine());
-                    System.out.println("✅ Parola a fost actualizata.");
-                    audit.logActiune("user_reseteaza_parola", user);
+                    System.out.println("Parola a fost actualizata.");
                     break;
                 case 9:
                     System.out.print("Titlu carte de imprumutat: ");
                     imprumutService.imprumutaCarte(user, scanner.nextLine());
-                    audit.logActiune("user_imprumuta_carte", user);
                     break;
                 case 10:
                     System.out.print("Titlu carte de returnat: ");
                     imprumutService.returneazaCarte(user, scanner.nextLine());
-                    audit.logActiune("user_returneaza_carte", user);
                     break;
                 case 11:
                     imprumutService.veziImprumuturi(user);
-                    audit.logActiune("user_vezi_imprumuturi", user);
                     break;
                 case 0:
                     System.out.println("Logout...");
