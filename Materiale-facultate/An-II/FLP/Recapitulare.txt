@@ -1,0 +1,133 @@
+FLP - PROLOG
+___________
+I. Bazele
+___________
+
+Constane
+	- Atomi - incep cu litera mica ( '' )
+	- Numere
+Variabile
+	- Incep cu - litera mare / _
+	- Variabila speciala _  = variabila anonima  / doua paritii a lui _ sunt variabile diferite
+
+vINCENT - constanta
+Footmassage - variabila
+variable23 - constanta 
+Variable2000 - variabila
+big_kahuna_burger - constanta
+'big kahuna burger' - constanta
+big kahuna burger - nici una nici alta
+'Jules' - constanta
+_Jules - variabila
+'_Jules' - constanta
+
+Termen compus:
+p(t1, ... , tn)      = nume/aritate
+
+p = atom             -> nume sau functor (p) -> predicat / simbol de functie
+t1,...,tn = termeni  -> aritate sau numarul de argumente (numar de 'argumente')
+
+Notatie: nume/aritate
+
+-> numele poate fi un predicat sau simbol de functie
+-> program prolog = baza de cunostinte ( Knowledge Base )
+-> predicat care este analizat pentru a se raspunde la o interogare = tinta/goal
+
+Reguli:
+Head :- Body.
+
+Head = predicat aplicat unui nr de termeni egal cu aritatea sa
+Body = secventa de predicate ( din nou fiecare aplicat unui nr de termeni egal cu aritatea sa, separate prin , )
+
+Reguli - fara Body = fapte
+
+
+comedy(X) :- griffin(X)
+daca griffin(X) = true => comedy(X) = true
+
+Interogari: predicat1(...),...,predicatn(...).
+
+Raspunsuri:
+-> false
+-> true sau valori pentru var din interogare
+
+
+potrivire = 
+nu exista potrivire \=
+identic ==
+diferit \==
+
+forteaza evaluarea =:=
+
+% - comenteaza o linie 
+/* */ - comenteaza mai multe linii
+
+
+1. Care din urmatoare expresii sunt atomi ? 
+
+f, loves(john, mary), Mary, _c1, 'Hello'
+
+Raspuns: f, 'Hello'
+
+2. Care din urmatoarele expresii sunt variabile ? 
+
+A, Paul, 'Hello', a_123, _,_abc
+
+Raspuns: A, Paul, _,_abc
+
+
+II. Aritmetica, Recursivitate, Liste
+____________________________________
+
+* operatorul "is"
+
+-> primeste 2 argumente ( is/2 )
+-> al 2 lea argument = expresie aritmetica valida, cu toate variabilele initializate
+-> primul argument = numar / variabila 
+-> primul arg = numar => rezultatul = true daca este egal cu valoarea expreiei aritm din al 2 lea argument 
+-> primul arg = variabila => rezultatul = pozitiv daca variabila poate fi unificata cu evaluarea expr aritm din al 2 lea argument 
+
+* operatorul "=:=" - recomandat pentru expresii aritmetice
+
+Operatorii aritmetici predefiniti in Prolog:
+-> functii ( adunare, inmultire )
+-> relatii (predicate)
+
+Operatori:
+** ( putere )
+abs ( modul )
+sqrt ( radical )
+sin ( sinus )
+// ( impartire intreaga )
+mod ( restul impartirii intregi )
+
+=\= ( diferit )
+=:= ( aritmetic egal )
+
+Recursivitate 
+_____________
+
+-> ex stramosi
+-> ex numere Fibonacci
+-> ex patrat de caractere
+
+
+Liste
+_____________
+= tip special de date ( termeni speciali )
+- se scriu intre paranteze drepte []
+- elemente despartite prin virgula
+[] = lista vida
+
+[1, 2, 3, 4, 5] = [Head | Tail].
+Head = 1 
+Tail = [2, 3, 4, 5]
+
+Predicate predefinite:
+
+length/2 - intoarce lungimea listei date ca prim argument
+member/2 - adevarat daca primul argument se afla in lista data ca al doilea argument
+append/3 - identic cu predicatul anterior concat_lists/3
+last/2 - este adevarat daca al doilea argument este identic cu ultimul element al listei date ca prim argument
+reverse/2 - lista din al doilea argument este lista data ca prim element in oglinda
+
