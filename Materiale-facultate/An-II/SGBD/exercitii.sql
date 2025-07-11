@@ -25,6 +25,9 @@ VALUES(4, 'Sally', 'Umber', 'sallyumber@email.com', 100000, 102);
 INSERT INTO EMPLOYEES(EMPLOYEE_ID, FIRST_NAME, LAST_NAME, EMAIL, SALARY, DEPARTMENT_ID)
 VALUES(5, 'Joe', 'South', 'joesouth@email.com', 10000, 300);
 
+INSERT INTO EMPLOYEES(EMPLOYEE_ID,FIRST_NAME,LAST_NAME,EMAIL,SALARY,DEPARTMENT_ID)
+VALUES(4,'Daryl','Dyxon','dd@email.com',10000,205);
+
  1. Creai un bloc PL/SQL care declar 2 variabile (una de tip ir de caractere i cealalt numeric ),
  ini ializate la declarare. Atribuiti valorile acestor variabile PLSQL unor variabile gazd (VARIABLE)
  SQL*Plus i tip riti valorile variabilelor PL/SQL pe ecran. Executai blocul PL/SQL.
@@ -42,9 +45,7 @@ VALUES(5, 'Joe', 'South', 'joesouth@email.com', 10000, 300);
  5. Sa se creeze un bloc PL/SQL care calculeaza si modifica valoarea comisionului pentru un angajat al
  carui cod este dat de la tastatura, pe baza salariului acestuia, astfel:- daca salariul este mai mic decat 1000$, comisionul va fi 10% din salariu;- daca salariul ete intre 1000 si 1500$, comisionul va fi 15% din salariu;- daca salariul depaseste 1500$, comisionul va fi 20% din salariu;- daca salariul este NULL, comisionul va fi 0.
  Modific rile se fac în tabelul emp_pnu.
- 6. Sa se creeze un bloc PL/SQL care selecteaza codul maxim de departament din tabelul
-12
- DEPARTMENTS si il stocheaza intr-o variabila SQL*Plus. Se va tipari rezultatul pe ecran.
+ 6. Sa se creeze un bloc PL/SQL care selecteaza codul maxim de departament din tabelul DEPARTMENTS si il stocheaza intr-o variabila SQL*Plus. Se va tipari rezultatul pe ecran.
  7. Sa se creeze un bloc PL/SQL care insereaza un nou departament in tabelul DEPT_PNU. Se va
  folosi parametru de substitutie pentru numele departamentului. Codul este dat de valoarea variabilei
  calculate anterior +1. Locatia va avea valoarea null. Sa se listeze continutul tabelului DEPT_PNU.
@@ -166,3 +167,538 @@ BEGIN
     UPDATE EMPLOYEES SET COMISION = v_comision WHERE EMPLOYEE_ID = v_cod;
     dbms_output.put_line('Comision pentru ' || v_nume || ' ' || v_last || ' este ' || v_comision);
 END;
+
+/*
+6. Sa se creeze un bloc PL/SQL care selecteaza codul maxim de departament din tabelul DEPARTMENTS si il stocheaza intr-o variabila SQL*Plus. Se va tipari rezultatul pe ecran.
+*/
+
+DECLARE
+    v_cod employees.department_id%TYPE;
+    cod_max employees.department_id%TYPE;
+BEGIN
+    SELECT max(DEPARTMENT_ID) INTO cod_max FROM EMPLOYEES;
+    dbms_output.put_line('Codul maxim de departament este: ' || cod_max);
+END;
+
+/*
+
+7.  Sa  se  creeze  un  bloc  PL/SQL  care  insereaza  un  nou  departament  in  tabelul  DEPT_PNU.  Se  va
+folosi parametru de substitutie pentru numele departamentului. Codul este dat de valoarea variabilei
+calculate anterior +1. Locatia va avea valoarea null. Sa se listeze continutul tabelului DEPT_PNU
+
+- departament nou in tabel ( insert into )
+- nume departament var subsitutie
+- cod departament = cod_max + 1
+- locatie = null
+- listarea tabelului DEPT_PNU
+
+*/
+
+CREATE TABLE DEPT_PNU(
+  DEPARTMENT_NAME VARCHAR2(30),
+  DEPARTMENT_ID NUMBER,
+  LOCATION VARCHAR2(200)
+);
+
+DECLARE
+    v_nume_dept VARCHAR2(50) := '&nume_departament';
+    v_cod_max_anterior employees.department_id%TYPE;
+    v_cod_max employees.department_id%TYPE;
+BEGIN
+    SELECT NVL(max(department_id),0)
+    INTO v_cod_max_anterior
+    FROM employees;
+    
+    v_cod_max := v_cod_max_anterior + 1;
+
+    INSERT INTO DEPT_PNU(DEPARTMENT_NAME,DEPARTMENT_ID,LOCATION)
+    VALUES(v_nume_dept,v_cod_max,null);
+END;
+
+SELECT * FROM DEPT_PNU;
+
+
+/*
+
+8. Sa se creeze un bloc PL/SQL care reactualizeaza locatia pentru un departament existent (în tabelul
+DEPT_PNU).  Se  vor  folosi  parametri  de  substitutie  pentru  numarul  departamentului  si  locatia
+acestuia. Sa se listeze codul, numele si locatia pentru departamentul reactualizat.
+*/
+
+SET SERVEROUTPUT ON
+DECLARE
+    v_nume_dept dept_pnu.department_name%TYPE;
+    v_nr_dept dept_pnu.department_id%TYPE := &numar_departament;
+    v_loc_dept dept_pnu.location%TYPE := '&locatie_departament';
+BEGIN
+    SELECT DEPARTMENT_NAME into v_nume_dept FROM DEPT_PNU WHERE DEPARTMENT_ID = v_nr_dept;
+    UPDATE DEPT_PNU SET LOCATION = v_loc_dept WHERE DEPARTMENT_ID = v_nr_dept;
+    dbms_output.put_line('Numele departamentului este: ' || v_nume_dept || ' Locatia departamentului este: ' || v_loc_dept || ' Id-ul departamentului este: ' || v_nr_dept );
+EXCEPTION
+    WHEN NO_DATA_FOUND THEN
+        dbms_output.put_line('Departamentul cu ID ' || v_nr_dept || ' nu exista.');
+END;
+
+SELECT DEPARTMENT_NAME,DEPARTMENT_ID,LOCATION FROM DEPT_PNU WHERE DEPARTMENT_ID=v_nr_dept;
+
+SELECT * FROM DEPT_PNU;
+
+
+/*
+9.  Sa  se  creeze  un  bloc  PL/SQL  care  sterge  departamentul  creat  la  exercitiul  7.  Se  va  folosi  un
+parametru  de  substitutie  pentru  numarul  departamentului.  Se  va  tipari  pe  ecran  numarul  de  linii
+afectate. Ce se intampla daca se introduce un cod de departament care nu exista?
+
+- cursor implicit SQL % ROWCOUNT = nr linii incarcate de cursor 
+
+*/
+
+DECLARE
+    v_nr_dept dept_pnu.department_id%TYPE := &numar_departament;
+BEGIN
+    DELETE FROM DEPT_PNU WHERE DEPARTMENT_ID = v_nr_dept;
+    IF SQL%ROWCOUNT = 0 THEN
+        dbms_output.put_line('Niciun departament nu a fost sters. Codul nu exista.');
+    ELSE
+        dbms_output.put_line('Departamentul a fost sters. Linii afectate: ' || SQL%ROWCOUNT);
+    END IF;
+END;
+
+SELECT * FROM DEPT_PNU;
+/*
+Curs 4 - Tipuri de date
+- RECORD
+- colectie > tablou indexat
+           > tablou imbricat
+           > vectori
+
+    RECORD - mecanism pentru prelucrarea inregistrarilor
+inregistrarile = campuri cu date diferite dar legate logic
+inregistrarile trebuie definite in doi pasi
+> se defineste tipul de RECOR
+> se declara inregistrarile de acest tip 
+
+OBSERVATII
+> un RECORD poate sa aiba un camp de tip RECORD
+> mod elegant de a salva o linie returnata de o cerere
+> poate constitui un tip de date pentru coloana unui tabel ( varianta stocata )
+
+> compnentele unei inregistrati pot fi de tip scalar, RECORD, TABLE, biect, colectie ( nu REF CURSOR )
+> Inregistrarile nu pot fi comparate
+
+ATRIBUTE + METODE COLECTIE
+> COUNT - nr componente colectie
+> FIRST - indice prim elem tablou
+> LAST - indice ultim elem tablou
+> EXISTS - intoarce TRUE daca exista in tablou componenta cu indexul specificat
+> NEXT - returneaza indicele urmatoarei componente
+> PRIOR - returneaza indicele compoentei anterioare
+> DELETE - sterge una sau mai multe componente 
+> EXTEND - adauga elemente la sfarsit
+> LIMIT - numarul maxim de elemente al unei colectii ( de vectori), null pentru tablouri imbricate 
+*/
+
+
+/* RECORD
+10.
+Să se steargă angajatul având codul 200 din tabelul EMP_PNU. Să se retină într-o variabilă de tip
+RECORD  codul,  numele,  salariul  si  departamentul  acestui  angajat  (clauza RETURNING)  .  Să  se
+afiseze înregistrarea respectivă. Rollback.
+*/
+
+DECLARE
+    -- declaram variabila de tip regord
+    TYPE info_ang_pnu IS RECORD (
+        cod_ang NUMBER(4),
+        nume VARCHAR(20),
+        salariu NUMBER(8),
+        cod_dep NUMBER(4)
+    );
+    v_info_ang info_ang_pnu;
+BEGIN
+    DELETE FROM EMP_PNU
+    WHERE employee_id = 200
+    RETURNING employee_id, last_name, salary, department_id
+    INTO v_info_ang;
+    
+    dbms_output.put_line('A fost stears linia continant valorile ' || v_info_ang.cod_ang || ' ' || v_info_ang.nume || ' ' || v_info_ang.salariu || ' ' || v_info_ang.cod_dep );
+END;
+/
+ROLLBACK;
+
+/*
+11.
+a) Folosind tipul declarat mai sus, să se adauge o linie în tabelul EMP_PNU prin intermediul unei
+variabile de  tip  înregistrare  initializate.  Efectuati modificările necesare  asupra tipului  de date, astfel
+încât  această  inserare  să  fie  posibilă.  La  initializarea  unei  variabile  de  tip  record,  tineti  cont  de
+constrângerile NOT NULL definite asupra tabelului EMP_PNU.
+b)  Modificati  valoarea  unei  componente  a  variabilei  definite  anterior  si  actualizati  continutul  liniei
+introduse în tabel.
+
+
+v_emp emp_pnu%ROWTYPE;
+
+*/
+
+CREATE TABLE emp_pnu (
+        cod_ang NUMBER(4),
+        nume VARCHAR(20),
+        prenume VARCHAR(20),
+        email VARCHAR2(50),
+        phone_number NUMBER(15), 
+        hire_date DATE,
+        job_id VARCHAR2(50),
+        salariu NUMBER(8,2),
+        commision_pct NUMBER,
+        manager_id VARCHAR2(50),
+        cod_dep NUMBER(4)
+);
+
+DROP TABLE EMP_PNU;
+SELECT * FROM EMP_PNU;
+
+DECLARE
+    TYPE info_ang_pnu IS RECORD (
+        cod_ang NUMBER(4) := 500,
+        nume VARCHAR(20) := 'abc',
+        prenume VARCHAR(20) := 'john',
+        email emp_pnu.email%TYPE := 'abc@mail',
+        telefon emp_pnu.phone_number%TYPE, 
+        data emp_pnu.hire_date%TYPE := SYSDATE,
+        job emp_pnu.job_id%TYPE := 'SA_REP',
+        salariu NUMBER(8,2) := 1000,
+        comision emp_pnu.commision_pct%TYPE,
+        manager emp_pnu.manager_id%TYPE,
+        cod_dep NUMBER(4) := 30
+    );
+    v_info_ang_pnu info_ang_pnu;
+BEGIN
+    -- a) inserare; nu ar fi fost posibila maparea unei variabile tip RECORD intr-o lista
+    -- explicita de coloane
+    INSERT INTO EMP_PNU
+    VALUES v_info_ang_pnu;
+    
+    dbms_output.put_line('A fost introdusa linia continand valorile ' || v_info_ang_pnu.cod_ang || ' ' || v_info_ang_pnu.nume || ' ' || v_info_ang_pnu.salariu || ' ' || v_info_ang_pnu.cod_dep);
+    
+    -- b) actualizare
+    v_info_ang_pnu.nume := 'golden';
+    UPDATE EMP_PNU
+    SET ROW = v_info_ang_pnu
+    WHERE cod_ang = v_info_ang_pnu.cod_ang;
+    
+    dbms_output.put_line('A fost actualizata linia cu valorile ....');
+END;
+/
+ROLLBACK;
+
+/*
+Analizati si comentati exemplul următor. Afisati valorile variabilelor definite.
+
+
+DECLARE
+  TYPE  tab_index IS TABLE OF NUMBER
+    INDEX BY BINARY_INTEGER;
+  TYPE  tab_imbri IS TABLE OF NUMBER;
+  TYPE  vector IS VARRAY(15) OF NUMBER;
+  v_tab_index  tab_index;
+  v_tab_imbri  tab_imbri;
+  v_vector     vector;
+  i INTEGER;
+BEGIN
+  v_tab_index(1) := 72;
+  v_tab_index(2) := 23;
+  v_tab_imbri := tab_imbri(5, 3, 2, 8, 7);
+  v_vector := vector(1, 2);
+-- afisati valorile variabilelor definite; exemplu dat pentru v_tab_imbri
+i:=v_tab_imbri.FIRST;
+WHILE (i <= v_tab_imbri.LAST) LOOP
+  DBMS_OUTPUT.PUT_LINE('v_tab_imbri: '||v_tab_imbri(i));
+  i:= v_tab_imbri.NEXT(i);
+END LOOP;
+END;
+/
+
+Loop 1 <= 5  
+v_tab_imbri(1) = 5
+
+Loop 2 <=5
+v_tab_imbri(2) = 3 
+
+...
+
+5 <= 5
+v_tab_imbri(5) = 7
+
+
+
+Loop 2 -  
+
+*/
+
+/*
+
+12. Să se definească un tablou indexat PL/SQL având elemente de tipul NUMBER. Să se introducă
+20 de elemente în acest tablou. Să se afiseze, apoi să se steargă tabloul utilizând diverse metode.
+
+*/
+
+DECLARE
+    TYPE tablou_numar IS TABLE OF NUMBER
+        INDEX BY PLS_INTEGER;
+    v_tablou tablou_numar;
+    v_aux tablou_numar; -- tablou folosit pentru stergere
+BEGIN
+    FOR i IN 1..20 LOOP
+        v_tablou(i) := i;
+    DBMS_OUTPUT.PUT_LINE(v_tablou(i));
+    END LOOP;
+--    FOR i IN v_tablou.FIRST..v_tablou.LAST LOOP -- metoda 1 de stergere
+--        v_tablou(i) := NULL;
+--    END LOOP;
+--    -- SAU
+--    v_tablou := v_aux; -- metoda 2 de stergere
+--    -- SAU
+--    v_tablou.delete; -- metoda 3 de stergere
+    DBMS_OUTPUT.PUT_LINE('tabloul are ' || v_tablou.COUNT || ' elemente');
+END;
+/
+
+
+/*
+13. Să se definească un tablou de înregistrări având tipul celor din tabelul dept_pnu. Să se initializeze
+un element al tabloului si să se introducă în tabelul dept_pnu. Să se steargă elementele tabloului
+*/
+
+SELECT * FROM employee
+
+DECLARE
+    TYPE tablou IS TABLE OF dept_pnu%ROWTYPE
+        INDEX BY BINARY_INTEGER;
+    dept_table tablou;
+    i NUMBER;
+BEGIN
+    IF dept_table.COUNT <> 0 THEN
+        i := dept_table.LAST + 1;
+    ELSE i := 1;
+    END IF;
+    dept_table(i).department_id := 92;
+    dept_table(i).department_name := 'NewDep';
+    dept_table(i).location_id := 2700;
+    
+    -- VARIANTA 1 insert
+    INSERT INTO dept_pnu( department_id, department_name, location_id)
+    VALUES(dept_table(i).department_id,dept_table(i).department_name,dept_table(i).location_id);
+    
+    -- VARIANTA 2 insert ( Oracle9i )
+    INSERT INTO dept_pnu
+    VALUES dept_table(i);
+    
+    dept_table.delete; -- sterge datele din dept_table
+    
+    dbms_output.put_line('Dupa aplicarea metodei DELETE sunt ' || TO_CHAR(dept_table.COUNT) || ' elemente ' );
+END;
+
+/*
+VECTORI - varray
+
+- fiecare element are un index - limita inferioara = 1 
+
+6. Analizati si comentati exemplul următor.
+
+DECLARE
+    TYPE secventa IS VARRAY(5) OF VARCHAR2(10);
+     v_sec  secventa := secventa ('alb', 'negru', 'rosu',
+                               'verde');
+BEGIN
+  v_sec (3) := 'rosu';
+  v_sec.EXTEND; -- adauga un element null
+  v_sec(5) := 'albastru';
+  -- extinderea la 6 elemente va genera eroarea ORA-06532
+  v_sec.EXTEND;
+END;
+/
+
+*/
+
+/*
+
+14.    a) Să se declare un tip proiect_pnu care poate retine maxim 50 de valori de tip VARCHAR2(15).
+       b)  Să  se  creeze  un  tabel test_pnu  având  o  coloana cod_ang  de  tip  NUMBER(4)  úi  o  coloană
+proiecte_alocate de tip proiect_pnu. Ce relaĠie se modelează în acest fel?
+       c)  Să  se  creeze  un  bloc  PL/SQL  care  declară  o  variabilă  (un  vector)  de  tip proiect_pnu,
+introduce  valori  în  aceasta  iar  apoi  valoarea  vectorului  respectiv  este  introdusă  pe  una  din  liniile
+tabelului test_pnu.
+
+*/
+
+CREATE TYPE proiect_pnu AS VARRAY(50) OF VARCHAR2(15)
+CREATE TABLE test_pnu(cod_ang NUMBER(4), proiecte_alocate proiect_pnu);
+
+
+DECLARE
+    v_proiect proiect_pnu := proiect_pnu(); -- initializare utilizand constructorul
+BEGIN
+    v_proiect.extend(2);
+    v_proiect(1) := 'proiect 1';
+    v_proiect(2) := 'proiect 2');
+    INSERT INTO test_pnu VALUES(1, v_proiect);
+END;
+/
+
+
+/*
+15.  Să  se  scrie  un  bloc  care  măreste  salariile  angajatilor  din  departamentul  50  cu  10%,  în  cazul  în
+care salariul este mai mic decât 5000. Se va utiliza un vector corespunzător codurilor angajatilor. Se cer 3 solutii.
+*/
+
+-- Solutia 1 
+DECLARE
+    TYPE t_id is VARRAY(100) OF emp_pnu.employee_id%TYPE;
+    v_id t_id := t_id();
+BEGIN
+    FOR contor IN ( SELECT * FROM emp_pnu) LOOP
+    IF contor.DEPARTMENT_id = 50 AND contor.salary < 5000 THEN
+        v_id.extend;
+        v_id(v_id.COUNT) := contor.employee_id;
+    END IF;
+    END LOOP;
+    FOR contor IN 1..v_id.COUNT LOOP
+        UPDATE emp_pnu
+        SET salary = salary * 1.1
+        WHERE employee_id = v_id(contor);
+    END LOOP;
+END;
+
+-- Solutia 2 ( varianta FORALL )
+
+DECLARE
+    TYPE t_id IS VARRAY(100) OF emp_pnu.employee_id%TYPE;
+    v_id t_id := t_id();
+BEGIN
+    FOR contor IN ( SELECT * FROM emp_pnu ) LOOP
+        IF contor.department_id = 50 AND contor.salary < 5000 THEN
+            v_id.extend;
+            v_id(v_id.COUNT) := contor.employee_id;
+        END IF;
+    END LOOP;
+    FORALL contor IN 1..v_id.COUNT
+        UPDATE emp_pnu
+        SET salary = salary *1.1
+        WHERE employee_id = v_id(contor);
+END;
+
+-- Solutia 3 ( varianta BULK COLLECT ) 
+DECLARE
+    TYPE t_id IS VARRAY(100) OF emp_pnu.employee_id%TYPE;
+    v_id t_id := t_id();
+BEGIN
+    SELECT employee_id
+    BULK COLLECT INTO v_id
+    FROM emp_pnu
+    WHERE department_id = 50 AND salary < 5000;
+    FORALL contor IN 1..v_id.COUNT
+        UPDATE emp_pnu
+        SET salary = salary * 1.1
+        WHERE employee_id = v_id(contor);
+END;
+
+
+/*
+Tablouri imbricate
+
+16.  Să  se  declare  un  tip  tablou  imbricat si  o  variabilă  de  acest  tip. Initializati  variabila  si  afisati
+continutul  tabloului, de la primul la ultimul element si invers.
+
+*/
+
+DECLARE
+    TYPE CharTab is TABLE OF CHAR(1);
+    v_Characters CharTab := CharTab('M','a','d',',','I','','m');
+    v_index INTEGER;
+BEGIN
+    v_index := v_Characters.FIRST;
+    WHILE v_index <= v_Characters.LAST LOOP
+        DBMS_OUTPUT.PUT(v_Characters(v_index));
+        v_index := v_Characters.NEXT(v_index);
+    END LOOP;
+    DBMS_OUTPUT.NEW_LINE;
+    v_index := v_Characters.LAST;
+    WHILE v_index >= v_Characters.FIRST LOOP
+        DBMS_OUTPUT.PUT(v_Characters(v_index));
+        v_index := v_Characters.PRIOR(v_index);
+    END LOOP;
+        DBMS_OUTPUT.NEW_LINE;
+END;
+/
+
+
+
+DECLARE
+    v_employee_number number := 124;
+    v_emp_rec retired_emp%ROWTYPE;
+BEGIN
+    SELECT employee_id, last_name, job_id, manager_id, hire_date, salary, comission_pct, department_id INTO v_emp_rec
+    FROM  employees
+    WHERE employee_id = v_employee_number;
+    INSERT INTO retired_emps VALUES v_emp_rec;
+END;
+
+
+
+/*
+Curs5 - Cursoare
+
+Exemplu:
+
+Incarcarea datelor dintr-un cursor in doua colectii
+
+DECLARE
+TYPE ccopera is TABLE OF opera.cod_opera%TYPE;
+TYPE ctopera is TABLE OF opera.titlu%TYPE;
+cod1 ccopera; titlu1 ctopera;
+CURSOR alfa iS SELECT cod_opera, titlu FROM opera WHERE stil = 'impresionism';
+BEGIN
+OPEN alfa;
+FETCH alfa BULK COLLECT into cod1, titlu1;
+CLOSE alfa;
+END;
+*/
+
+
+
+DECLARE
+    v_angajat employees%ROWTYPE;  -- RECORD %ROWTYPE = contine toate coloanele unui tabel ( 
+BEGIN
+    SELECT *
+    INTO v_angajat
+    FROM employees
+    WHERE employee_id = 1;
+    DBMS_OUTPUT.PUT_LINE('Nume: ' || v_angajat.first_name || ' ' || v_angajat.last_name);
+END;
+
+
+/*
+
+Exercitii
+
+1.1
+
+Să se scrie un bloc PL/SQL care crește comisionul angajaților din departamentul 80 cu 5%, dar numai dacă salariul lor este mai mare de 3000.
+Codurile angajaților care îndeplinesc condiția se vor salva într-un VARRAY.
+Apoi, salariile acestora se vor actualiza folosind o buclă care parcurge vectorul.
+
+1.2
+Să se creeze un bloc PL/SQL care definește un RECORD de tipul unei linii din tabela DEPT_PNU, îl inițializează cu valori, îl inserează în tabel, apoi afișează valorile componentei department_name și location.
+
+*/
+
+
+-- 1.1
+
+DECLARE
+    TYPE t_tabel IS VARRAY(50) OF employees.employee_id%TYPE;
+    v_id t_tabel := t_tabel();
+BEGIN
+    
+END;
+
