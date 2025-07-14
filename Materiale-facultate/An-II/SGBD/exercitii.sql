@@ -219,7 +219,6 @@ SELECT * FROM DEPT_PNU;
 
 
 /*
-
 8. Sa se creeze un bloc PL/SQL care reactualizeaza locatia pentru un departament existent (în tabelul
 DEPT_PNU).  Se  vor  folosi  parametri  de  substitutie  pentru  numarul  departamentului  si  locatia
 acestuia. Sa se listeze codul, numele si locatia pentru departamentul reactualizat.
@@ -250,7 +249,6 @@ parametru  de  substitutie  pentru  numarul  departamentului.  Se  va  tipari  p
 afectate. Ce se intampla daca se introduce un cod de departament care nu exista?
 
 - cursor implicit SQL % ROWCOUNT = nr linii incarcate de cursor 
-
 */
 
 DECLARE
@@ -275,7 +273,7 @@ Curs 4 - Tipuri de date
     RECORD - mecanism pentru prelucrarea inregistrarilor
 inregistrarile = campuri cu date diferite dar legate logic
 inregistrarile trebuie definite in doi pasi
-> se defineste tipul de RECOR
+> se defineste tipul de RECORD
 > se declara inregistrarile de acest tip 
 
 OBSERVATII
@@ -335,9 +333,7 @@ constrângerile NOT NULL definite asupra tabelului EMP_PNU.
 b)  Modificati  valoarea  unei  componente  a  variabilei  definite  anterior  si  actualizati  continutul  liniei
 introduse în tabel.
 
-
 v_emp emp_pnu%ROWTYPE;
-
 */
 
 CREATE TABLE emp_pnu (
@@ -393,7 +389,6 @@ ROLLBACK;
 
 /*
 Analizati si comentati exemplul următor. Afisati valorile variabilelor definite.
-
 
 DECLARE
   TYPE  tab_index IS TABLE OF NUMBER
@@ -521,14 +516,12 @@ END;
 */
 
 /*
-
 14.    a) Să se declare un tip proiect_pnu care poate retine maxim 50 de valori de tip VARCHAR2(15).
        b)  Să  se  creeze  un  tabel test_pnu  având  o  coloana cod_ang  de  tip  NUMBER(4)  úi  o  coloană
 proiecte_alocate de tip proiect_pnu. Ce relaĠie se modelează în acest fel?
        c)  Să  se  creeze  un  bloc  PL/SQL  care  declară  o  variabilă  (un  vector)  de  tip proiect_pnu,
 introduce  valori  în  aceasta  iar  apoi  valoarea  vectorului  respectiv  este  introdusă  pe  una  din  liniile
 tabelului test_pnu.
-
 */
 
 CREATE TYPE proiect_pnu AS VARRAY(50) OF VARCHAR2(15)
@@ -556,7 +549,7 @@ DECLARE
     TYPE t_id is VARRAY(100) OF emp_pnu.employee_id%TYPE;
     v_id t_id := t_id();
 BEGIN
-    FOR contor IN ( SELECT * FROM emp_pnu) LOOP
+    FOR contor IN (SELECT * FROM emp_pnu) LOOP
     IF contor.DEPARTMENT_id = 50 AND contor.salary < 5000 THEN
         v_id.extend;
         v_id(v_id.COUNT) := contor.employee_id;
@@ -608,7 +601,6 @@ Tablouri imbricate
 
 16.  Să  se  declare  un  tip  tablou  imbricat si  o  variabilă  de  acest  tip. Initializati  variabila  si  afisati
 continutul  tabloului, de la primul la ultimul element si invers.
-
 */
 
 DECLARE
@@ -664,8 +656,6 @@ CLOSE alfa;
 END;
 */
 
-
-
 DECLARE
     v_angajat employees%ROWTYPE;  -- RECORD %ROWTYPE = contine toate coloanele unui tabel ( 
 BEGIN
@@ -678,7 +668,6 @@ END;
 
 
 /*
-
 Exercitii
 
 1.1
@@ -687,18 +676,260 @@ Să se scrie un bloc PL/SQL care crește comisionul angajaților din departament
 Codurile angajaților care îndeplinesc condiția se vor salva într-un VARRAY.
 Apoi, salariile acestora se vor actualiza folosind o buclă care parcurge vectorul.
 
+SAVEPOINT test_savepoint;
+ROLLBACK TO SAVEPOINT test_savepoint;
+
+SELECT * FROM EMPLOYEES;
+
+UPDATE EMPLOYEES SET comision = 20 WHERE EMPLOYEE_ID = 3 ;
+
+UPDATE EMPLOYEES SET DEPARTMENT_ID = 80 WHERE DEPARTMENT_ID = 100;
+
 1.2
-Să se creeze un bloc PL/SQL care definește un RECORD de tipul unei linii din tabela DEPT_PNU, îl inițializează cu valori, îl inserează în tabel, apoi afișează valorile componentei department_name și location.
+Să se creeze un bloc PL/SQL care definește un RECORD de tipul unei linii din tabela DEPT_PNU, îl inițializează cu valori, 
+îl inserează în tabel, apoi afișează valorile componentei department_name și location.
+
+Linie din DEPT_PNU:
+
+DEPARTMENT_NAME DEPARTMENT_ID LOCATION
+
+*/
+-- 1.1
+DECLARE
+    TYPE t_ceva IS VARRAY(50) OF employees.department_id%TYPE;
+    v_tabel t_ceva := t_ceva();
+    v_com NUMBER;
+BEGIN
+    FOR contor IN ( SELECT * FROM EMPLOYEES ) LOOP
+    IF contor.DEPARTMENT_ID = 80 AND contor.SALARY > 3000 THEN
+        v_tabel.extend;
+        v_tabel(v_tabel.COUNT) := contor.employee_id;
+    END IF;
+    END LOOP;
+    FOR contor IN 1..v_tabel.COUNT LOOP
+        UPDATE employees
+        SET comision = comision + (comision * 0.05)
+        WHERE employee_id = v_tabel(contor);
+    END LOOP; 
+END;
+SELECT * FROM EMPLOYEES;
+ROLLBACK TO SAVEPOINT test_savepoint;
+
+-- 1.2
+
+/*
+    TYPE info_ang_pnu IS RECORD (
+        cod_ang NUMBER(4),
+        nume VARCHAR(20),
+        salariu NUMBER(8),
+        cod_dep NUMBER(4)
+    );
+    v_info_ang info_ang_pnu;
 
 */
 
-
--- 1.1
+SELECT * FROM DEPT_PNU;
 
 DECLARE
-    TYPE t_tabel IS VARRAY(50) OF employees.employee_id%TYPE;
-    v_id t_tabel := t_tabel();
+    -- RECORD ( se declara ) -- varianta 1 complet - se poate folosi INSERT INTO <TABEL> VALUES <RECORD>
+    -- varianta 2 - la INSERT se declara coloanele care se vor updata atat in TABEL cat si in RECORD ( INSERT INTO <TABEL>(coloana1,coloan2.. ) VALUES <RECORD>(coloana1,coloana2.. )
+    TYPE r_tabel IS RECORD (
+        nume_d dept_pnu.department_name%TYPE := 'SSG',
+        id_d dept_pnu.department_id%TYPE := 2,
+        loc_d dept_pnu.location%TYPE := 'Michigan'
+    );
+    v_tabel r_tabel ;
 BEGIN
-    
+    INSERT INTO DEPT_PNU
+    VALUES v_tabel;
+    dbms_output.put_line('Numele departamentului este: ' ||  v_tabel.nume_d   || ' Locatia departamentului este: ' || v_tabel.loc_d  );
 END;
 
+SELECT * FROM DEPT_PNU;
+
+/*
+
+1.3
+
+Să se creeze un bloc PL/SQL care definește un RECORD de tipul unei linii din tabelul EMP_PNU,
+îl inițializează cu valori valide și îl inserează în tabel. Apoi, valoarea câmpului salary se modifică
+în acel RECORD, iar rândul din tabel este actualizat cu întregul RECORD folosind SET ROW =.
+La final, se afișează noul salariu.
+
+1.4
+
+Să se creeze un bloc PL/SQL care definește un VARRAY ce conține codurile angajaților din departamentul 60
+cu salarii sub 2000. Se vor parcurge codurile salvate în vector și se va șterge din tabelul EMPLOYEES fiecare angajat
+care are commission_pct NULL. La final, se afișează câți angajați au fost șterși.
+
+*/
+
+SAVEPOINT test_savepoint;
+SELECT * FROM EMP_PNU;
+
+SET SERVEROUTPUT ON -- seteare pentru afisarea output-ului ( dbms_output )
+DECLARE
+    TYPE r_tabel IS RECORD (
+           cod emp_pnu.COD_ANG%TYPE := 1,
+           nume emp_pnu.NUME%TYPE := 'Marco',
+           prenume emp_pnu.PRENUME%TYPE := 'Polo',
+           email emp_pnu.EMAIL%TYPE := 'marco@polo.com',
+           phone emp_pnu.PHONE_NUMBER%TYPE := 123456789,
+           hire emp_pnu.HIRE_DATE%TYPE := TO_DATE('10-11-2025' , 'DD-MM-YYYY'),
+           job emp_pnu.JOB_ID%TYPE := 32,
+           salariu emp_pnu.SALARIU%TYPE := 1500,
+           comision emp_pnu.COMMISION_PCT%TYPE := 10,
+           manager emp_pnu.MANAGER_ID%TYPE := 22,
+           cod_dep emp_pnu.COD_DEP%TYPE := 80
+    );
+    v_tabel r_tabel;
+BEGIN
+    -- insert line into EMP_PNU
+    INSERT INTO EMP_PNU
+    VALUES v_tabel;
+    
+    -- SET ROW salary
+    v_tabel.salariu := 2000;
+    UPDATE EMP_PNU
+    SET ROW = v_tabel
+    WHERE cod_ang = v_tabel.cod;
+    -- afiseaza salary (dbms_output)
+    dbms_output.put_line('Noul salariu este: ' || v_tabel.salariu);
+END;
+/
+ROLLBACK TO SAVEPOINT test_savepoint;
+
+DELETE FROM EMP_PNU;
+
+
+-- 1.4
+SELECT * FROM EMP_PNU;
+
+DECLARE
+    -- initializare varray cu - cod ang din dep 60, salarii sub 2000
+    TYPE t_varray IS VARRAY(50) OF EMP_PNU.cod_ang%TYPE;
+    v_tabel t_varray := t_varray();
+    v_total_deleted NUMBER := 0;
+BEGIN
+    -- Se colecteaza codurile angajatilor din dep 60 cu salarii sub 2000
+    FOR contor IN (SELECT * FROM emp_pnu) LOOP
+    IF contor.cod_dep = 60 AND contor.salariu < 2000 THEN
+        v_tabel.extend;
+        v_tabel(v_tabel.COUNT) := contor.cod_ang;
+    END IF;
+    END LOOP;
+    
+    -- stergere angajat din EMP_PNU unde com_pct = null
+    FOR contor IN 1..v_tabel.COUNT LOOP
+        DELETE FROM EMP_PNU
+        WHERE cod_ang = v_tabel(contor) AND commision_pct IS NULL;
+        v_total_deleted := v_total_deleted + SQL%ROWCOUNT;
+    END LOOP;
+    
+--    DELETE FROM EMP_PNU WHERE v_tabel.commision_pct = NULL;
+    IF v_total_deleted = 0 THEN
+        dbms_output.put_line('Niciun angajat nu a fost sters. Codul nu exista.');
+    ELSE
+        dbms_output.put_line('Numar linii(angajati stersi):  ' || v_total_deleted );
+    END IF;
+END;
+
+INSERT INTO EMP_PNU(COD_ANG,NUME,PRENUME,EMAIL,PHONE_NUMBER,HIRE_DATE,JOB_ID,SALARIU,MANAGER_ID,COD_DEP) 
+VALUES(3,'Jenna','Smith','jenna.smith@email.com','0723456789',SYSDATE,22,3000,'43',85);
+
+
+UPDATE EMP_PNU SET COD_DEP = 60 WHERE COD_ANG = 2;
+
+SELECT * FROM EMP_PNU;
+DELETE FROM EMP_PNU WHERE commision_pct = NULL;
+
+/*
+1.5
+Să se creeze un bloc PL/SQL care definește un RECORD de tipul unei linii din EMP_PNU. ( RECORD = date asemanatoare o linie ) 
+În funcție de valoarea salariului (dacă este sub 2500), să i se seteze un comision de 0.1, altfel 0.2. 
+Apoi, recordul se inserează în tabel și se afișează salariul și comisionul. ( insereaza => INSERT INTO x VALUES RECORD
+
+IF sal < 2500 - comm 0.1
+ELSE 
+comm - 02
+
+INSERARE IN TABEL
+AFISARE SAL + COMISION
+
+1.6
+Să se creeze un bloc PL/SQL care încarcă într-un VARRAY codurile angajaților din EMP_PNU
+care nu au manager (manager_id IS NULL).
+Apoi, să li se seteze manager_id := 100, iar modificările să fie raportate pe ecran.
+*/
+
+SELECT * FROM EMP_PNU;
+
+DECLARE
+    -- definirea RECORD
+    TYPE r_record IS RECORD(
+       cod emp_pnu.cod_ang%TYPE := 6,
+       nume emp_pnu.nume%TYPE := 'Someone',
+       prenume emp_pnu.prenume%TYPE := 'Someoneelse',
+       email emp_pnu.email%TYPE := 'someone@email.com',
+       phone emp_pnu.phone_number%TYPE := '214532',
+       data emp_pnu.hire_date%TYPE := SYSDATE,
+       j_id emp_pnu.job_id%TYPE := 11,
+       sal emp_pnu.salariu%TYPE := 5000,
+       com emp_pnu.commision_pct%TYPE := 10,
+       man emp_pnu.manager_id%TYPE := 31,
+       cod_dep emp_pnu.cod_dep%TYPE := 102
+    );
+    v_record r_record := r_record();
+    
+--    com_mic  NUMBER := 0.1;
+--    com_mare NUMBER := 0.2;
+BEGIN 
+    -- INSERT in db
+    IF v_record.sal < 2500 THEN 
+        v_record.com := 0.1;
+        
+        INSERT INTO EMP_PNU
+        VALUES v_record;
+    ELSE
+        v_record.com := 0.2;
+        
+        INSERT INTO EMP_PNU
+        VALUES v_record;
+    END IF;
+    dbms_output.put_line( 'Salariul este: ' || v_record.sal || ' Comisionul este: ' || v_record.com );
+END;
+
+SELECT * FROM EMP_PNU;
+SELECT * FROM EMP_PNU WHERE salariu < 2500;
+ROLLBACK TO SAVEPOINT test_savepoint;
+
+UPDATE EMP_PNU SET MANAGER_ID = NULL WHERE COD_ANG = 4;
+
+
+-- 1.6
+-- cod ang EMP_PNU
+-- doar cei cu manager_id = NULL
+-- le seteaza manager_id = 100 
+-- modificari raportate pe ecran 
+DECLARE
+    -- VARRAY care primeste toate codurile ang din EMP_PNU
+    TYPE var_table IS VARRAY(50) OF EMP_PNU.cod_ang%TYPE;
+    v_table var_table := var_table();
+BEGIN
+    -- populare varray cu date
+    FOR contor in ( SELECT * FROM EMP_PNU ) LOOP
+        IF contor.manager_id IS NULL THEN
+            v_table.extend;
+            v_table(v_table.COUNT) := contor.cod_ang;
+        END IF;
+    END LOOP;
+    -- inserare date ?
+    FORALL contor IN 1..v_table.COUNT
+        UPDATE EMP_PNU
+        SET MANAGER_ID = 100
+        WHERE COD_ANG = v_table(contor);
+END;
+
+
+SELECT * FROM EMP_PNU;
+SAVEPOINT test_savepoint;
