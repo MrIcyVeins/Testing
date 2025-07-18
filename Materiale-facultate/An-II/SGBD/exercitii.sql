@@ -1224,3 +1224,464 @@ BEGIN
 END;
 
 ROLLBACK TO SAVEPOINT test;
+
+/*
+CURSOARE
+- implicite SQL%ROWCOUNT / COUNT / ISOPEN / NOTFOUND / FOUND
+- explicite <nume-cursor>%ATRIBUT
+
+Declarare cursor explicit 
+> se face in DECLARE
+> CURSOR <nume-cursor> IS <comanda select>   !! FARA INTO
+> se deschide in BEGIN cu OPEN <nume-cursor>
+
+
+Incarcarea datelor dintr-un cursor explicit 
+FETCH <nume-cursor> INTO <nume-variabila>
+
+Exemplu de incarcare date dintr-un cursor in 2 colectii
+
+DECLARE
+    TYPE ccopera IS TABLE OF opera.cod_opera%TYPE;
+    TYPE ctopera IS TABLE OF opera.cod_titlu%TYPE;
+    cod1 ccopera; titlu1 ctopera;
+    CURSOR alfa IS SELECT cod_opera, titlu FROM opera WHERE stil = 'impresionism';
+BEGIN
+    OPEN alfa;
+    FETCH alfa BULK COLLECT into cod1, titlu1;
+    CLOSE alfa;
+END;
+
+*/
+
+/*
+Pentru toti arti§tii care au opere de arta expuse in muzeu sa se insereze in tabelul
+temp informatii referitoare la numele acestora §i anul na§terii.
+
+DECLARE
+    v_nume artist.nume%TYPE;
+    v_an_nas artist.an_nastere%TYPE;
+    CURSOR info IS SELECT DISTINCT nume, an_nastere FROM artist;
+BEGIN
+    OPEN info;
+        LOOP
+            FETCH info INTO v_nume, v_an_nas;
+            EXIT WHEN info%NOTFOUND;
+            INSERT INTO temp
+            VALUES(v_nme || TO_CHAR(v_an_nas));
+        END LOOP;
+    CLOSE info;
+    COMMIT;
+END;
+*/
+
+/*
+
+Insert pentru cursoare
+
+CREATE TABLE OPERA_EXT (
+    cod_opera NUMBER PRIMARY KEY,
+    titlu VARCHAR2(100),
+    stil VARCHAR2(50),
+    valoare NUMBER,
+    material VARCHAR2(50),
+    cod_artist NUMBER,
+    cod_sala NUMBER,
+    cod_galerie NUMBER,
+    data_achizitie DATE
+);
+
+-- Ex: populare rapidă
+INSERT INTO OPERA_EXT VALUES (1, 'Venus', 'clasicism', 1500, 'piatra', 101, 10, 1, TO_DATE('1885-01-01','YYYY-MM-DD'));
+INSERT INTO OPERA_EXT VALUES (2, 'Apolo', 'renastere', 3000, 'panza', 101, 10, 1, TO_DATE('1950-01-01','YYYY-MM-DD'));
+INSERT INTO OPERA_EXT VALUES (3, 'Marte', 'modernism', 900, 'piatra', 102, 11, 2, TO_DATE('1800-01-01','YYYY-MM-DD'));
+
+*/
+
+SELECT * FROM OPERA_EXT;
+
+/*
+2.1 - cursor explicit simplu
+
+Se cere să se afle numărul total de opere din tabelul opera care au fost realizate înainte de anul 1900 și să se afișeze codul și titlul fiecărei opere. 
+Folosește un cursor explicit cu FETCH.
+*/
+
+SET SERVEROUTPUT ON;
+DECLARE
+    -- creem cursorul 'c'
+    CURSOR c IS SELECT cod_opera,titlu FROM OPERA_EXT WHERE DATA_ACHIZITIE < TO_DATE('1900','YYYY');
+    v_cod OPERA_EXT.cod_opera%TYPE;
+    v_tit OPERA_EXT.titlu%TYPE;
+BEGIN
+    -- deschidem cursorul
+    OPEN c;
+    LOOP
+        FETCH c into v_cod, v_tit;
+        EXIT WHEN c%NOTFOUND;
+        dbms_output.put_line('Codul operei este: ' || v_cod || ' si titlul operei este ' || v_tit);
+    END LOOP;
+    CLOSE c;
+END;
+
+/*
+2.2 - cursor parametrizat
+> cod introdus de la tastatura 
+> afiseaza titlul si valoarea fiecarei opere 
+> la final afiseaza valoarea totala a operelor acelui artist
+
+Scrie un bloc PL/SQL care declară un cursor parametrizat pentru a selecta operele unui artist al cărui cod este introdus de la tastatură. 
+Se vor afișa titlul și valoarea fiecărei opere. La final, se va afișa valoarea totală a operelor acelui artist.
+*/
+
+SELECT * FROM OPERA_EXT;
+ACCEPT cod NUMBER PROMPT 'Introdu codul artistului: '
+DECLARE
+    v_cod   OPERA_EXT.cod_artist%TYPE := &cod;
+    cursor c is select titlu,valoare from opera_ext where cod_artist = v_cod;
+    v_titlu OPERA_EXT.titlu%TYPE;
+    v_valoare OPERA_EXT.valoare%TYPE;
+    v_total NUMBER := 0;
+BEGIN
+    OPEN c;
+    LOOP
+        FETCH c INTO v_titlu, v_valoare;
+        EXIT WHEN c%NOTFOUND;
+        dbms_output.put_line('Titlu: ' || v_titlu || ' valoare: ' || v_valoare);
+        v_total := v_total + v_valoare;
+    END LOOP;
+    CLOSE c;
+    dbms_output.put_line('Valoarea totala este: ' || v_total);
+END;
+
+/*
+2.3 -- cursor explicit
+Pentru toate operele realizate din materialul 'piatra' și având valoare sub 2000, dublează valoarea acestora. 
+Folosește un cursor explicit cu FOR UPDATE OF valoare NOWAIT și actualizează folosind WHERE CURRENT OF.
+*/
+
+SELECT * FROM opera_ext;
+SAVEPOINT test;
+DECLARE
+    CURSOR c IS SELECT cod_opera,valoare from opera_ext WHERE material = 'piatra' AND valoare < 2000 FOR UPDATE OF valoare NOWAIT;
+BEGIN
+--    OPEN c;
+    FOR contor IN c LOOP
+    dbms_output.put_line('Opera cu codul ' || contor.cod_opera || ' are valoarea initiala: ' || contor.valoare);
+    UPDATE opera_ext
+    SET valoare = contor.valoare * 2
+    WHERE CURRENT OF c;
+    dbms_output.put_line('Valoarea a fost dublata la: ' || (contor.valoare *2));
+    END LOOP;
+--    CLOSE c;
+END;
+ROLLBACK to savepoint test;
+
+
+/*
+2.4 - cursor implicit cu subcerere ( FOR ) 
+Scrie un bloc care, pentru fiecare galerie din tabelul galerie, afișează numele galeriei și numărul de opere expuse în acea galerie (din tabelul opera), folosind un ciclu FOR cu subcerere.
+*/
+
+SELECT * FROM OPERA_EXT;
+DECLARE
+    v_numar NUMBER;
+BEGIN
+    FOR contor IN (SELECT cod_galerie,titlu FROM OPERA_EXT) LOOP
+        SELECT COUNT(*) INTO v_numar
+        FROM opera_ext
+        WHERE cod_galerie = contor.cod_galerie;
+        dbms_output.put_line('Numele galeriei este: ' || contor.titlu || ' ' || v_numar );
+    END LOOP;
+END;
+
+/*
+2.5 - cursor imbricat
+Să se scrie un bloc PL/SQL care afișează toate galeriile distincte din tabelul OPERA_EXT. 
+Pentru fiecare galerie se vor afișa sălile distincte în care sunt expuse opere, iar pentru fiecare sală se vor afișa operele expuse. 
+Se vor folosi cursoare imbricate (clasice), de tip FOR, pentru parcurgerea ierarhică: galerie → sală → opere.
+
+CREATE TABLE SALA (
+    cod_sala NUMBER PRIMARY KEY,
+    denumire VARCHAR2(50),
+    cod_galerie NUMBER
+);
+
+INSERT INTO SALA VALUES (10, 'Sala Sculptura', 1);
+INSERT INTO SALA VALUES (11, 'Sala Pictura', 2);
+*/
+
+SAVEPOINT test;
+
+SELECT * FROM SALA;
+SELECT * FROM OPERA_EXT;
+SET SERVEROUTPUT ON;
+
+DECLARE
+    CURSOR c_galerii IS
+        SELECT DISTINCT cod_galerie FROM OPERA_EXT;
+
+    CURSOR c_sali(p_galerie NUMBER) IS
+        SELECT DISTINCT cod_sala FROM OPERA_EXT
+        WHERE cod_galerie = p_galerie;
+
+    CURSOR c_opere(p_sala NUMBER) IS
+        SELECT titlu FROM OPERA_EXT
+        WHERE cod_sala = p_sala;
+BEGIN
+    FOR galerie IN c_galerii LOOP
+        dbms_output.put_line('Galerie: ' || galerie.cod_galerie);
+
+        FOR sala IN c_sali(galerie.cod_galerie) LOOP
+            dbms_output.put_line('  Sala: ' || sala.cod_sala);
+
+            FOR opera IN c_opere(sala.cod_sala) LOOP
+                dbms_output.put_line('    Opera: ' || opera.titlu);
+            END LOOP;
+        END LOOP;
+    END LOOP;
+END;
+
+ROLLBACK TO SAVEPOINT test;
+
+/*
+Exercitii generale
+
+1.1
+Să se creeze un bloc anonim în care să se afle media salariilor pentru angajaĠii al căror departament
+este 50. Se vor folosi variabilele v_media_sal de tipul coloanei salary úi v_dept (de tip NUMBER).
+*/
+
+DECLARE
+    v_media_sal employees.salary%TYPE;
+    v_dept NUMBER := 50;
+BEGIN
+    SELECT AVG(salary)
+    INTO v_media_sal
+    FROM employees
+    WHERE department_id = v_dept;
+    DBMS_OUTPUT.PUT_LINE('Media salariilor este: ' || v_media_sal);
+END;
+
+/*
+1.2
+Să  se  specifice  dacă un  departament  este  mare,  mediu  sau  mic  după  cum  numărul  angajaĠilor  săi
+este  mai mare ca  30, cuprins între 10 úi 30  sau mai mic decât  10. Codul departamentului va  fi cerut
+utilizatorului.
+*/
+
+SELECT * FROM EMPLOYEES;
+
+ACCEPT cod PROMPT 'Ceva';
+DECLARE
+    v_cod_dep employees.department_id%TYPE := &cod;
+    v_numar NUMBER(3) := 0;
+BEGIN
+    SELECT COUNT(*) INTO v_numar FROM EMPLOYEES WHERE department_id = v_cod_dep;
+    IF v_numar < 4 THEN
+        dbms_output.put_line('Mic');
+    ELSIF v_numar BETWEEN 10 AND 30 THEN
+        dbms_output.put_line('Mediu');
+    ELSE
+        dbms_output.put_line('Mare');
+    END IF; 
+END;
+/
+
+/*
+1.3
+  Să  se  creeze  un  bloc  anonim  în  care  se  declară  o  variabilă  v_oras  de  tipul  coloanei  city
+(locations.city%TYPE).  AtribuiĠi acestei  variabile numele  oraúului  în  care  se  află  departamentul  având
+codul 30. AfiúDĠi în cele două moduri descrise anterior
+*/
+
+-- varianta 1
+DECLARE
+   v_oras locations.city%TYPE;
+BEGIN
+    SELECT nume INTO v_oras FROM departments d, locations l WHERE d.location_id = l.location_id AND dep_id = 30;
+    dbms_output.put_line(v_oras);
+END;
+
+-- varianta 2
+VARIABLE g_oras VARCHAR(20);
+BEGIN
+    SELECT city
+    INTO :g_oras
+    FROM departments d, locations l WHERE d.location_id=l.location_id AND department_id=30;
+END;
+
+/*
+1.4
+ StocaĠi  într-o  variabilă  de  substituĠie  p_cod_dep  valoarea  unui  cod  de  departament.  DefiniĠi  úi  o
+variabilă  p_com  care  reĠine  un  număr  din  intervalul  [0,  100].  Pentru  angajaĠii  din  departamentul
+respectiv  care  nu  au  comision,  să  se  atribuie  valoarea  lui  p_com  câmpului  commission_pct.  AfiúDĠi
+numărul  de  linii  afectate  de  această  actualizare.  Dacă  acest  număr  este  0,  să  se  scrie  « Nici  o  linie
+actualizata »
+
+*/
+
+SAVEPOINT test;
+
+SELECT * FROM EMP_PNU;
+
+SET SERVER OUTPUT ON;
+SET VERIFY OFF;
+DEFINE p_cod_dep = 82;
+DEFINE p_com = 10;
+
+--ACCEPT PROMPT cod_dep 'Introduceti codul departamentului'
+DECLARE
+    v_cod_dep emp_pnu.cod_dep%TYPE := &p_cod_dep;
+    v_com NUMBER(3);
+BEGIN
+    -- cu for loop
+    FOR contor IN (SELECT cod_ang,commision_pct FROM emp_pnu WHERE cod_dep = v_cod_dep AND commision_pct IS NULL) LOOP
+        UPDATE EMP_PNU
+        SET commision_pct = &p_com
+        WHERE cod_ang = contor.cod_ang;
+    END LOOP;
+    IF SQL%ROWCOUNT = 0 THEN
+        dbms_output.put_line('Nici o linie actualizata');
+    ELSE dbms_output.put_line(SQL%ROWCOUNT || ' linii actualizate');
+    END IF;
+END;
+
+
+-- fara for loop 
+UPDATE emp_pnu
+SET commision_pct = &p_com
+WHERE department_id = v_cod_dep;
+
+ROLLBACK TO SAVEPOINT test;
+
+SELECT cod_ang FROM emp_pnu WHERE cod_dep = 82 AND commision_pct IS NULL;
+
+/*
+1.5 - exercitiu folosind CASE
+ În  funcĠie  de  o  valoare  introdusă  de  utilizator,  utilizând  comanda CASE  se  va  afiúa  un  mesaj  prin
+care este specificată ziua săptămânii (a cărei abreviere este chiar valoarea respectivă). UtilizaĠi cele
+2 forme ale comenzii CASE
+*/
+
+DEFINE p_zi = C
+
+DECLARE
+    v_zi CHAR(2) := UPPER('&p_zi');
+    v_comentariu VARCHAR(20);
+BEGIN
+    -- VARIANTA 1 variabila declarata in CASE
+    CASE v_zi
+        WHEN 'L' THEN v_comentariu := 'Luni';
+        WHEN 'M' THEN v_comentariu := 'Marti';
+        WHEN 'MI' THEN v_comentariu := 'Miercuri';
+        WHEN 'J' THEN v_comentariu := 'Joi';
+        WHEN 'V' THEN v_comentariu := 'Vineri';
+        WHEN 'S' THEN v_comentariu := 'Sambata';
+        WHEN 'D' THEN v_comentariu := 'Duminica';
+        ELSE v_comentariu := 'eroare';
+    END CASE;
+    dbms_output.put_line('Ziua este ' || v_comentariu);
+    
+    -- VARIANTA 2 variabila declarata in WHEN
+    CASE
+        WHEN v_zi = 'L' THEN v_comentariu := 'Luni';
+        WHEN
+        WHEN
+        ...
+    END case;
+END;
+
+/*
+1.6
+
+CreaĠi  structura  tabelului org_tab_pnu  constând  din  două  coloane, cod_tab  de  tip INTEGER  ce
+conĠine  un  contor  al  înregistrărilor  úi text_tab de tip VARCHAR2  ce  conĠine  un  text  asociat  fiecărei
+înregistrări. Să se introducă 70 de înregistrări în acest tabel. Se cer 2 metode.
+*/
+
+
+CREATE TABLE org_tab_pnu (cod_tab NUMBER, text_tab VARCHAR2(50));
+INSERT INTO org_tab_pnu (cod_tab,text_tab)
+VALUES ();
+
+SELECT * FROM org_tab_pnu;
+
+DEFINE p_text org_tab_pnu.text_tab%TYPE := 'Acesta este un text pentru inregistrarea numarul ';
+DEFINE p_cod org_tab_pnu.cod_tab%TYPE;
+
+DECLARE
+    v_text_nou org_tab_pnu.text_tab%TYPE;
+    v_text org_tab_pnu.text_tab%TYPE := 'Text pentru inregistrarea cu numarul ';
+    v_cod org_tab_pnu.cod_tab%TYPE;
+    v_count NUMBER := 0;
+BEGIN
+    FOR i IN 0..69 LOOP
+        v_cod := i + 1;
+        v_text_nou := v_text || ' ' || TO_CHAR(i+1);
+        v_count := i + 1;
+        INSERT INTO org_tab_pnu(cod_tab,text_tab)
+        VALUES(v_cod,v_text_nou);
+    END LOOP;
+    dbms_output.put_line(v_count || ' linii introduse');
+END;
+
+DELETE FROM org_tab_pnu;
+
+/*
+1.7
+ScrieĠi un bloc PL/SQL care actualizează conĠinutul tabelului anterior, indicând pe coloana text_tab
+dacă numărul cod_tab este par sau impar
+*/
+
+SAVEPOINT test;
+SELECT * FROM org_tab_pnu;
+
+BEGIN
+    FOR contor in (SELECT cod_tab FROM org_tab_pnu) LOOP
+        IF MOD(contor.cod_tab, 2) = 0 THEN
+            UPDATE org_tab_pnu
+            SET text_tab = 'Even'
+            WHERE cod_tab = contor.cod_tab;
+        ELSE
+            UPDATE org_tab_pnu
+            SET text_tab = 'Odd'
+            WHERE cod_tab = contor.cod_tab;
+        END IF;
+    END LOOP;
+END;
+
+ROLLBACK TO SAVEPOINT test; 
+
+/*
+1.8
+n structura tabelului emp_pnu se va introduce un nou câmp (stea de tip VARCHAR2(200)). Să se
+creeze un bloc PL/SQL care va reactualiza acest câmp, introducând o steluĠă pentru fiecare 100$ din
+salariul unui angajat al cărui cod este specificat de către utilizator
+*/
+
+SELECT * FROM emp_pnu;
+
+-- adauga coloana stea
+ALTER TABLE emp_pnu
+ADD (stea VARCHAR2(200));
+
+-- prompt
+ACCEPT PROMPT cod_introdus 'Introduceti codul angajatului';
+DECLARE
+    v_cod emp_pnu.cod_ang%TYPE := &cod_introdus;
+    v_stelute emp_pnu.stea%TYPE := '';
+    v_contor NUMBER := 0;
+    v_salary emp_pnu.salariu%TYPE;
+BEGIN
+    SELECT salariu INTO v_salary FROM EMP_PNU WHERE cod_ang = v_cod; 
+    v_contor := v_salary / 100;
+    dbms_output.put_line(v_contor);
+    FOR i IN 0..v_contor - 1 LOOP
+        v_stelute := v_stelute || '*';
+    END LOOP;
+    dbms_output.put_line(v_stelute);
+    UPDATE emp_pnu
+    SET stea = v_stelute
+    WHERE cod_ang = v_cod;
+END;
