@@ -1685,3 +1685,87 @@ BEGIN
     SET stea = v_stelute
     WHERE cod_ang = v_cod;
 END;
+
+
+INSERT INTO EMP_PNU(COD_ANG,NUME,PRENUME,EMAIL,PHONE_NUMBER,HIRE_DATE,JOB_ID,SALARIU,MANAGER_ID,COD_DEP) 
+VALUES(1,'John','Smith','john.smith@email.com','072345244',SYSDATE,101,10000,'1',100);
+
+INSERT INTO EMP_PNU(COD_ANG,NUME,PRENUME,EMAIL,PHONE_NUMBER,HIRE_DATE,JOB_ID,SALARIU,MANAGER_ID,COD_DEP) 
+VALUES(2,'Randy','Orton','randy.orton@email.com','0723442789',SYSDATE,22,1500,'47',100);
+
+INSERT INTO EMP_PNU(COD_ANG,NUME,PRENUME,EMAIL,PHONE_NUMBER,HIRE_DATE,JOB_ID,SALARIU,MANAGER_ID,COD_DEP) 
+VALUES(4,'Jenna','Ortega','jenna.ortega@email.com','0723456789',SYSDATE,25,2000,'1',21);
+
+-- CAP 6 - SUBPROGRAME
+
+/*
+Exercițiul 1 – Procedură cu parametru IN și IF-ELSE
+
+Cerință:
+Să se scrie o procedură care primește ca parametru codul unui angajat și afișează salariul acestuia. 
+Dacă salariul este sub 2000, se va afișa „Mic”, între 2000 și 4000 inclusiv „Mediu”, iar peste 4000 „Mare”.
+
+SET SERVEROUTPUT ON -- seteare pentru afisarea output-ului ( dbms_output )
+*/
+
+SELECT * FROM EMP_PNU;
+CREATE OR REPLACE PROCEDURE afisare_salariu (
+    p_cod_ang IN EMP_PNU.cod_ang%TYPE
+) IS
+    v_salariu EMP_PNU.salariu%TYPE;
+BEGIN
+    SELECT salariu INTO v_salariu FROM EMP_PNU WHERE cod_ang = p_cod_ang;
+    
+    IF v_salariu < 2000 THEN
+        DBMS_OUTPUT.PUT_LINE('Mic');
+    ELSIF v_salariu <= 4000 THEN
+        DBMS_OUTPUT.PUT_LINE('Mediu');
+    ELSE
+        DBMS_OUTPUT.PUT_LINE('Mare');
+    END IF;
+END;
+
+EXECUTE afisare_salariu(1);
+
+/* TIPURI DE EXERCITII
+1. Bloc PL/SQL cu variabile declarate + user input
+2. Bloc PL/SQL cu records (RECORD)
+3. Bloc PL/SQL cu varrays (VARRAY)
+4. Bloc PL/SQL cu cursoare implicite/explicite (is CURSOR)
+5. Supbrograme (PROCEDURE, FUNCTION)
+6. Pachete 
+7. Triggeri
+*/
+
+/*
+Exercițiul 2 – Funcție care returnează o valoare
+
+Cerință:
+Scrie o funcție care primește codul unui departament și returnează numărul de angajați din acel departament.
+*/
+
+SELECT * FROM EMP_PNU;
+CREATE OR REPLACE FUNCTION nr_angajati (
+    p_cod_dep In EMP_PNU.cod_dep%TYPE
+) RETURN NUMBER IS
+    v_nr NUMBER := 0;
+BEGIN
+    SELECT COUNT(*) INTO v_nr FROM EMP_PNU WHERE cod_dep = p_cod_dep;
+    RETURN v_nr;
+END;
+
+-- apelare directa a functiei in SELECT ( from dual tabel fictiv ) 
+SELECT nr_angajati(100) FROM dual;
+
+-- apelare intr-un bloc PL/SQL a functiei
+DECLARE
+    v_nr NUMBER;
+BEGIN
+    v_nr := nr_angajati(100);
+    dbms_output.put_line('Numar angajati: ' || v_nr);
+END;
+
+/*
+
+
+*/
