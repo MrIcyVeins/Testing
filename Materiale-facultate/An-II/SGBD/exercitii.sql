@@ -1765,7 +1765,128 @@ BEGIN
     dbms_output.put_line('Numar angajati: ' || v_nr);
 END;
 
+
 /*
 
+PROCEDURA
+
+1.
+
+Scrie o procedură mareste_salariu_dep care primește ca parametri codul departamentului și procentul de mărire. 
+Procedura trebuie să actualizeze salariile tuturor angajaților din acel departament și să afișeze numărul de angajați modificați.
 
 */
+
+-- Linii importante mereu
+SET SERVEROUTPUT ON; -- setam output
+SAVEPOINT test; -- cream un savepoint
+ROLLBACK to savepoint test; -- new intoarcem la acel savepoint
+
+SELECT * FROM EMP_PNU;
+-- 1.
+-- procedura - primeste parametrii cod dep si % de marire; procedura actualizeaza salariile tuturor angajatilor din acel departament si sa afiseze numarul de angajati modificati
+
+-- cream procedura 
+    
+-- v1
+--CREATE OR REPLACE PROCEDURE mareste_salariu_dep ( 
+--    p_cod IN EMP_PNU.cod_dep%TYPE
+--) IS 
+--    v_sal EMP_PNU.salariu%TYPE;
+
+
+-- v2
+SELECT * FROM EMP_PNU;
+CREATE OR REPLACE PROCEDURE mareste_salariu_dep (
+    p_cod EMP_PNU.cod_dep%TYPE,
+    p_proc NUMBER
+) IS
+BEGIN
+    UPDATE EMP_PNU
+    SET salariu = salariu + ( salariu * p_proc/100 ) 
+    WHERE cod_dep = p_cod;
+    dbms_output.put_line('Randuri modificate: ' || SQL%ROWCOUNT);
+END;
+
+EXECUTE mareste_salariu_dep(100, 10);
+
+-- 2.
+
+/*
+Scrie o funcție nr_angajati care primește codul unui departament și returnează numărul de angajați din acel departament.
+*/
+SELECT * FROM EMP_PNU;
+CREATE OR REPLACE FUNCTION nr_angajati (
+    f_cod EMP_PNU.cod_dep%TYPE
+) RETURN NUMBER IS
+    v_nr NUMBER := 0;
+BEGIN
+    SELECT COUNT(*) cod_ang into v_nr
+    FROM emp_pnu
+    WHERE cod_dep = f_cod;
+    RETURN v_nr;
+END;
+
+SELECT nr_angajati(0) from dual;
+
+/*
+Cerință:
+Scrie o procedură detalii_angajat care primește employee_id și afișează numele, prenumele, salariul și codul departamentului.
+*/
+
+SELECT * FROM EMP_PNU;
+CREATE OR REPLACE PROCEDURE detalii_angajat(
+    p_cod_ang emp_pnu.cod_ang%TYPE
+)
+IS
+    v_nume EMP_PNU.nume%TYPE;
+    v_prenume EMP_PNU.prenume%TYPE;
+    v_salariu EMP_PNU.salariu%TYPE;
+    v_cod_dep EMP_PNU.cod_dep%TYPE;
+BEGIN
+    SELECT nume, prenume, salariu, cod_dep
+    INTO v_nume, v_prenume, v_salariu, v_cod_dep
+    FROM emp_pnu
+    WHERE cod_ang = p_cod_ang;
+    
+    dbms_output.put_line(v_nume);
+    dbms_output.put_line(v_prenume);
+    dbms_output.put_line(v_salariu);
+    dbms_output.put_line(v_cod_dep);
+END;
+
+EXECUTE detalii_angajat(1);
+
+/*
+Scrie o funcție total_salariu_dep care primește codul unui departament și returnează suma salariilor din acel departament.
+*/
+
+SELECT * FROM EMP_PNU;
+CREATE OR REPLACE FUNCTION total_salariu_dep (
+    p_cod emp_pnu.cod_dep%TYPE
+)
+RETURN NUMBER IS
+    v_sal emp_pnu.salariu%TYPE;
+BEGIN
+    SELECT SUM(salariu) into v_sal FROM EMP_PNU WHERE cod_dep = p_cod;
+    RETURN v_sal;
+END;
+
+SELECT total_salariu_dep(85) FROM dual;
+
+/*
+Scrie o procedură sterge_angajati_sal_mic care primește un salariu minim și șterge toți angajații care au salariul mai mic decât acea valoare. Afișează numărul angajaților șterși.
+*/
+
+SAVEPOINT test;
+SELECT * FROM emp_pnu;
+CREATE OR REPLACE PROCEDURE sterge_angajati_sal_mic (
+     p_sal emp_pnu.salariu%TYPE
+)
+IS
+BEGIN
+    DELETE FROM EMP_PNU WHERE salariu < p_sal;
+    dbms_output.put_line('Numarul angajatilor stersi este ' || SQL%ROWCOUNT);
+END;
+ROLLBACK TO SAVEPOINT test;
+EXECUTE sterge_angajati_sal_mic(2200);
