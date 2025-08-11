@@ -422,7 +422,7 @@ FROM projects p
 WHERE p.delivery_date > p.deadline
 ORDER BY zile_intarziate
 
---24) Afi?a?i **angaja?ii** care au lucrat pe **proiecte** în **cel pu?in dou? luni calendaristice diferite** (pe baza intervalelor din `works_on`).
+--24) Afi?a?i **angajatii** care au lucrat pe **proiecte** în **cel putin doua luni calendaristice diferite** (pe baza intervalelor din `works_on`).
 
 SELECT 
   e.employee_id,
@@ -433,6 +433,158 @@ GROUP BY e.employee_id, e.first_name, e.last_name
 HAVING MIN(TRUNC(w.start_date, 'MM')) 
     <> MAX(TRUNC(NVL(w.end_date, w.start_date), 'MM'))
 ORDER BY e.employee_id;
+
+
+--25)  Afișați **top 3 țări** cu cele mai multe **angajări** (număr de angajați), apoi – pentru fiecare astfel de țară – afișați **departamentul** cu **cel mai mare salariu mediu**.
+
+--SELECT * FROM countries;
+--SELECT * FROM locations;
+--SELECT * FROM departments;
+--SELECT * FROM employees;
+
+-- v1
+SELECT 
+    count(emp.employee_id) AS numar_angajati,
+    cou.country_id,
+    cou.country_name,
+    round(avg(emp.salary), 2) AS salariu_mediu
+FROM employees emp
+JOIN departments dep on dep.department_id = emp.department_id
+JOIN locations loc on loc.location_id = dep.location_id
+JOIN countries cou on cou.country_id = loc.country_id
+GROUP BY cou.country_id, cou.country_name
+ORDER BY salariu_mediu
+FETCH FIRST 3 ROWS WITH TIES -- primele 3 
+
+
+-- v2
+WITH country_counts AS (                         -- nr. angajați pe țară
+  SELECT c.country_id, c.country_name,
+         COUNT(e.employee_id) AS numar_angajati
+  FROM employees e
+  JOIN departments d ON d.department_id = e.department_id
+  JOIN locations  l ON l.location_id   = d.location_id
+  JOIN countries  c ON c.country_id    = l.country_id
+  GROUP BY c.country_id, c.country_name
+),
+top_countries AS (                               -- top 3 țări (cu ties)
+  SELECT *
+  FROM country_counts
+  ORDER BY numar_angajati DESC
+  FETCH FIRST 3 ROWS WITH TIES
+),
+dept_avg AS (                                    -- media pe departament, pe țară
+  SELECT c.country_id, c.country_name,
+         d.department_id, d.department_name,
+         AVG(e.salary) AS salariu_mediu
+  FROM employees e
+  JOIN departments d ON d.department_id = e.department_id
+  JOIN locations  l  ON l.location_id   = d.location_id
+  JOIN countries  c  ON c.country_id    = l.country_id
+  GROUP BY c.country_id, c.country_name,
+           d.department_id, d.department_name
+),
+dept_rank AS (                                   -- departamentul cu media maximă, pe țară
+  SELECT da.*,
+         DENSE_RANK() OVER (
+           PARTITION BY da.country_id
+           ORDER BY da.salariu_mediu DESC
+         ) AS rnk
+  FROM dept_avg da
+)
+SELECT
+  tc.country_name,
+  tc.numar_angajati,
+  dr.department_id,
+  dr.department_name,
+  ROUND(dr.salariu_mediu, 2) AS salariu_mediu
+FROM top_countries tc
+JOIN dept_rank dr
+  ON dr.country_id = tc.country_id
+WHERE dr.rnk = 1
+ORDER BY tc.numar_angajati DESC, tc.country_name, dr.department_name;
+
+--v3
+
+SELECT
+  tc.country_name,
+  tc.numar_angajati,
+  bd.department_id,
+  bd.department_name,
+  ROUND(bd.avg_salary, 2) AS salariu_mediu
+FROM (
+  -- top 3 țări după numărul de angajați (cu ties)
+  SELECT c.country_id, c.country_name,
+         COUNT(e.employee_id) AS numar_angajati
+  FROM employees e
+  JOIN departments d ON d.department_id = e.department_id
+  JOIN locations  l ON l.location_id   = d.location_id
+  JOIN countries  c ON c.country_id    = l.country_id
+  GROUP BY c.country_id, c.country_name
+  ORDER BY COUNT(e.employee_id) DESC
+  FETCH FIRST 3 ROWS WITH TIES
+) tc
+CROSS APPLY (
+  -- departamentul(ele) cu cea mai mare medie în țara respectivă (cu ties)
+  SELECT d.department_id, d.department_name,
+         AVG(e.salary) AS avg_salary
+  FROM employees e
+  JOIN departments d ON d.department_id = e.department_id
+  JOIN locations  l  ON l.location_id   = d.location_id
+  WHERE l.country_id = tc.country_id
+  GROUP BY d.department_id, d.department_name
+  ORDER BY AVG(e.salary) DESC
+  FETCH FIRST 1 ROW WITH TIES
+) bd
+ORDER BY tc.numar_angajati DESC, tc.country_name, bd.department_name;
+
+--26) Pentru fiecare **job**, afișați **distribuția pe intervale** în `JOB_GRADES` (în ce **grade** cade salariul fiecărui angajat); numărați câți angajați are fiecare job în fiecare grade.
+
+SELECT * FROM JOBS;
+SELECT * FROM EMPLOYEES;
+SELECT * FROM job_grades;
+
+-- fara tabel job_grades ( setare manuala )
+SELECT 
+    jb.job_id,
+    e.employee_id,
+    CASE
+      WHEN e.salary > jb.min_salary AND e.salary < jb.min_salary + (jb.max_salary - jb.min_salary) THEN 'Grad min'
+      WHEN e.salary = jb.min_salary + (jb.max_salary - jb.min_salary)   THEN 'Grad Mid'
+      WHEN e.salary < jb.max_salary AND e.salary >= jb.min_salary + (jb.max_salary - jb.min_salary) THEN 'Grad Mare'
+      ELSE 'Nu a fost gasit'
+    END                                AS job_grade
+FROM employees e
+JOIN jobs jb on jb.job_id = e.job_id
+ORDER BY e.employee_id, jb.job_id
+
+-- cu tabel job_grades
+
+SELECT 
+    jb.job_id,
+    jb.job_title,
+    g.grade_level,
+    COUNT(*) AS nr_angajati
+FROM employees e
+JOIN jobs jb on jb.job_id = e.job_id
+JOIN job_grades g on e.salary BETWEEN g.lowest_sal AND g.highest_sal
+GROUP BY jb.job_id, jb.job_title, g.grade_level
+ORDER BY jb.job_id, g.grade_level
+
+--27) Pentru fiecare **țară**, afișați **numărul de orașe** (locations) și **numărul de departamente** din acea țară.
+
+SELECT * FROM countries;
+SELECT * FROM locations;
+SELECT * FROM departments;
+
+SELECT
+    loc.country_id,
+    count(loc.location_id) as numar_orase,
+    count(dep.department_id) as numar_departamente
+FROM locations loc
+LEFT JOIN departments dep on dep.location_id = loc.location_id 
+GROUP BY loc.country_id
+ORDER BY numar_departamente
 
 /*
 --1) Pentru fiecare oras sa se afiseze numele tarii in care se afla si numarul de angajati din cadrul sau.

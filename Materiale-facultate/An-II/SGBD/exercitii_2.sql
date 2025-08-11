@@ -45,3 +45,56 @@
 
 ---
 
+Mai multe exercitii
+
+## Join & agregări
+
+1. Pentru fiecare **țară**, afișați **numărul de orașe** (locations) și **numărul de departamente** din acea țară.
+2. Pentru fiecare **oraș**, afișați **numărul de angajați** și **media salariilor**, ordonat descrescător după numărul de angajați (cu ties).
+3. Afișați **top 5 job-uri** cu cel mai mare **salariu mediu** (cu ties).
+4. Pentru fiecare **departament**, afișați **salariul minim, maxim și mediu** și numărul de angajați; excludeți departamentele fără angajați.
+
+## Subinterogări & EXISTS
+
+5. Afișați angajații care câștigă **peste media pe țara lor**.
+6. Afișați **departamentele fără angajați** (anti-join/NOT EXISTS).
+7. Afișați angajații care **nu** au avut niciodată în `job_history` un **job diferit** de cel curent.
+8. Afișați angajații care lucrează în **aceeași țară** cu **managerul** lor.
+
+## Date & șiruri
+
+9. Pentru fiecare **lună (1..12)**, afișați câți angajați au fost angajați în acea lună (indiferent de an) și procentul din total.
+10. Afișați angajații al căror **email** are exact **6 caractere** înainte de `@` (sau exact 6 caractere dacă e fără domeniu).
+11. Afișați angajații angajați într-o **zi de vineri**, cu `TO_CHAR(hire_date, 'FMDAY', 'NLS_DATE_LANGUAGE=ENGLISH')`.
+12. Afișați angajații care au aceeași **zi a lunii** la `hire_date` ca și **managerul** lor.
+
+## Ferestre analitice (window functions)
+
+13. Pentru fiecare **job**, marcați angajații cu “**Peste medie**/Nu” față de media pe job (AVG OVER PARTITION BY).
+14. Pentru fiecare **departament**, afișați **top 2 salarii** (includeți toate egalitățile la poziția 2) — `DENSE_RANK()`.
+15. Afișați **top 3 orașe** după numărul de angajați, folosind `FETCH FIRST 3 ROWS WITH TIES` după agregare.
+16. Pentru fiecare **job**, afișați **percentila 90** a salariului (`PERCENTILE_CONT(0.9) WITHIN GROUP (ORDER BY salary)`), apoi angajații peste această valoare.
+
+## Istoric & carieră
+
+17. Afișați angajații care au ocupat **de mai multe ori același job** (doar `JOB_HISTORY`).
+18. Afișați angajații care au avut în `JOB_HISTORY` un **job din altă familie** decât cel curent (prefix de 2 litere).
+19. Afișați angajații care au revenit la **același job** după un alt job (tipar **A → B → A**).
+20. Afișați angajații al căror salariu **nu se încadrează** în niciun interval din `JOB_GRADES`.
+
+## Proiecte (`PROJECTS`, `WORKS_ON`)
+
+21. Pentru fiecare **proiect**, afișați **numărul de angajați** și **totalul de zile** lucrate (suma `end_date - start_date`), ignorând intervalele invalide (`end_date < start_date`).
+22. Afișați angajații care au lucrat pe **cel puțin două proiecte diferite**.
+23. Afișați **proiectele întârziate** (`delivery_date > deadline`) și **numărul de zile** de întârziere (TRUNC la zile întregi).
+24. Afișați **managerii de proiect** care **nu** sunt alocați ca resursă pe propriul proiect (anti-join pe `WORKS_ON`).
+25. Afișați angajații care au lucrat pe proiecte în **cel puțin 3 luni calendaristice diferite** (expandați lunile sau folosiți min/max de lună).
+26. Afișați, pentru fiecare **proiect**, **primii 2** angajați cu cele mai multe **zile** lucrate la acel proiect (includeți ties) — `DENSE_RANK()` peste `SUM(end_date - start_date)`.
+
+## Bonus (gândire/interviu)
+
+27. Afișați **top 3 țări** după numărul de angajați și, pentru fiecare, **departamentul(ele)** cu **salariul mediu maxim** (folosiți `WITH TIES` sau `DENSE_RANK`).
+28. Afișați angajații care au **subordonați** ce câștigă **mai mult** decât ei (self-join pe manager).
+29. Afișați, pentru fiecare **regiune**, **top 1 oraș** după numărul de angajați (cu ties) — vedeți lanțul `employees → departments → locations → countries → regions`.
+30. Afișați **media vechimii** (în ani) pe departament, calculată din `MONTHS_BETWEEN(SYSDATE, hire_date)`.
+
