@@ -586,6 +586,193 @@ LEFT JOIN departments dep on dep.location_id = loc.location_id
 GROUP BY loc.country_id
 ORDER BY numar_departamente
 
+--28) Pentru fiecare **oraș**, afișați **numărul de angajați** și **media salariilor**, ordonat descrescător după numărul de angajați (cu ties).
+
+SELECT * FROM countries;
+SELECT * FROM EMPLOYEES;
+SELECT * FROM departments;
+SELECT * FROM LOCATIONS;
+
+SELECT 
+    loc.city,
+    count(emp.employee_id) as numar_angajati,
+    ROUND(avg(emp.salary),2) as media_salariilor
+FROM employees emp
+LEFT JOIN departments dep on dep.department_id = emp.department_id
+JOIN locations loc on loc.location_id = dep.location_id
+GROUP BY loc.city
+ORDER by numar_angajati DESC
+FETCH FIRST 3 ROWS WITH TIES;   -- WITH TIES = cu egalitati / ONLY = fara egalitati
+
+
+--29) Afișați **top 5 job-uri** cu cel mai mare **salariu mediu** (cu ties)
+
+SELECT * FROM JOBS;
+SELECT * FROM employees;
+SELECT * FROM job_grades;
+
+-- varianta 1 
+SELECT 
+    jb.job_title,
+    ROUND(avg(emp.salary),2) as salariu_mediu
+FROM employees emp 
+JOIN jobs jb ON jb.job_id = emp.job_id
+GROUP BY jb.job_title
+ORDER BY salariu_mediu DESC
+FETCH FIRST 5 ROWS WITH TIES;
+
+-- varianta 2
+SELECT 
+  x.job_id,
+  x.job_title,
+  ROUND(x.avg_salary, 2) AS salariu_mediu
+FROM (
+  SELECT j.job_id, j.job_title, AVG(e.salary) AS avg_salary
+  FROM employees e
+  JOIN jobs j ON j.job_id = e.job_id
+  GROUP BY j.job_id, j.job_title
+) x
+ORDER BY x.avg_salary DESC
+FETCH FIRST 5 ROWS WITH TIES;
+
+--30) Subiecte EXAMEN
+/*
+Varianta 2
+AGENTIE_IMOBILIARA ( id_agentie, denumire, clasificare )
+TRANZACTIONEAZA(cod_agentie, cod_imobil, data_tranzactiei, tip, valoare_comision, pret)      // unde tip inseamna vanzare sau inchiriere
+IMOBIL(id_imobil, adresa, cod_proprietar, tip)                                               // unde tip inseamna casa, teren sau apartament
+PROPRIETAR(id_proprietar, nume)
+
+2. Adaugati o coloana de tip colectie la AGENTIE_IMOBILIARA care sa contina numarul de
+tranzactii de tip vanzare si numarul de inchirieri efectuate de
+fiecare agentie. 
+    Presupunand ca acesteau au fost actualizate, modificati clasificarea fiecarei
+agentii in functie de numarul de preponderent in 'rent', daca
+numarul de inchirieri efectuate este mai mare, sau in 'sales' in caz contrar.
+
+3. Creati un subprogram pentru care ii transmiteti un an transmis ca parametru, afisati pentru
+fiecare agentie : denumirea ei, adresa tuturor imobilelor pe care
+le-a tranzactionat si totalul care l-a obtinut din acestea.
+
+4. Creati un trigger care micsoreaza valoarea comisionului cu 25% pentru proprietarii care au
+facut cel putin 3 tranzactii. Triggerul se va declansa atunci cand
+se va insera o noua tranzactie.
+
+5. Creati un subprogram care pentru un nume de proprietar dat ca parametru, intoarce numarul
+de apartamente care acesta le-a tranzactionat cu firmele care au cele mai
+multe de tranzactii incheiate. Tratati exceptiile ce pot aparea.
+*/
+
+-- 1)
+SET SERVEROUTPUT ON
+DROP TABLE AGENTIE_IMOBILIARA
+
+SELECT * FROM AGENTIE_IMOBILIARA;
+-----------------------------------------
+-- creaza tabelul daca nu este deja creat
+CREATE TABLE AGENTIE_IMOBILIARA(id_agentie NUMBER, denumire VARCHAR(50), clasificare VARCHAR(50));
+CREATE TABLE TRANZACTIONEAZA(cod_agentie NUMBER, cod_imobil NUMBER, data_tranzactiei date, tip VARCHAR(10), valoare_comision NUMBER, pret NUMBER);
+
+-- populeaza cu date dummy
+-- AGENȚII
+INSERT INTO AGENTIE_IMOBILIARA (id_agentie, denumire, clasificare) VALUES (1, 'Alpha Imob',   NULL);
+INSERT INTO AGENTIE_IMOBILIARA (id_agentie, denumire, clasificare) VALUES (2, 'Beta Realty',  NULL);
+INSERT INTO AGENTIE_IMOBILIARA (id_agentie, denumire, clasificare) VALUES (3, 'CasaLux',      NULL);
+
+-- PROPRIETARI
+INSERT INTO PROPRIETAR (id_proprietar, nume) VALUES (10, 'Popescu Ion');
+INSERT INTO PROPRIETAR (id_proprietar, nume) VALUES (11, 'Ionescu Maria');
+INSERT INTO PROPRIETAR (id_proprietar, nume) VALUES (12, 'Georgescu Ana');
+
+-- IMOBILE (tip: 'casa' | 'teren' | 'apartament')
+INSERT INTO IMOBIL (id_imobil, adresa, cod_proprietar, tip) VALUES (100, 'Str. Lalelelor 10',        10, 'apartament');
+INSERT INTO IMOBIL (id_imobil, adresa, cod_proprietar, tip) VALUES (101, 'Str. Trandafirilor 5',     11, 'casa');
+INSERT INTO IMOBIL (id_imobil, adresa, cod_proprietar, tip) VALUES (102, 'Bd. Libertatii 1',         12, 'apartament');
+INSERT INTO IMOBIL (id_imobil, adresa, cod_proprietar, tip) VALUES (103, 'Splaiul Independentei 50', 10, 'teren');
+INSERT INTO IMOBIL (id_imobil, adresa, cod_proprietar, tip) VALUES (104, 'Calea Victoriei 100',      11, 'casa');
+
+-- TRANZACȚII (tip: 'vanzare' | 'inchiriere')
+INSERT INTO TRANZACTIONEAZA (cod_agentie, cod_imobil, data_tranzactiei, tip, valoare_comision, pret)
+VALUES (1, 100, DATE '2024-01-15', 'vanzare',    3000, 100000);
+INSERT INTO TRANZACTIONEAZA (cod_agentie, cod_imobil, data_tranzactiei, tip, valoare_comision, pret)
+VALUES (1, 101, DATE '2024-02-10', 'inchiriere',  500,   2500);
+INSERT INTO TRANZACTIONEAZA (cod_agentie, cod_imobil, data_tranzactiei, tip, valoare_comision, pret)
+VALUES (1, 102, DATE '2024-03-05', 'inchiriere',  400,   2200);
+
+INSERT INTO TRANZACTIONEAZA (cod_agentie, cod_imobil, data_tranzactiei, tip, valoare_comision, pret)
+VALUES (2, 103, DATE '2024-02-20', 'vanzare',    2500,  80000);
+INSERT INTO TRANZACTIONEAZA (cod_agentie, cod_imobil, data_tranzactiei, tip, valoare_comision, pret)
+VALUES (2, 104, DATE '2024-02-28', 'vanzare',    3500, 120000);
+
+INSERT INTO TRANZACTIONEAZA (cod_agentie, cod_imobil, data_tranzactiei, tip, valoare_comision, pret)
+VALUES (3, 100, DATE '2024-01-30', 'inchiriere',  450,   2300);
+INSERT INTO TRANZACTIONEAZA (cod_agentie, cod_imobil, data_tranzactiei, tip, valoare_comision, pret)
+VALUES (3, 104, DATE '2024-03-12', 'inchiriere',  550,   2700);
+INSERT INTO TRANZACTIONEAZA (cod_agentie, cod_imobil, data_tranzactiei, tip, valoare_comision, pret)
+VALUES (3, 103, DATE '2024-04-01', 'inchiriere',  600,   3000);
+
+COMMIT;
+
+/* 1) Tipurile: element și colecția [sales, rent] */
+CREATE OR REPLACE TYPE tranz_stat_elem AS OBJECT (
+  tip VARCHAR2(10),
+  cnt NUMBER
+);
+/
+CREATE OR REPLACE TYPE tranz_stat_arr AS VARRAY(2) OF tranz_stat_elem;
+/
+
+/* 2) Adaugă coloana colecție (o singură dată) */
+ALTER TABLE AGENTIE_IMOBILIARA ADD (statistici tranz_stat_arr);
+
+/* 3) Populează STATISTICI pentru agențiile care AU tranzacții */
+UPDATE AGENTIE_IMOBILIARA a
+SET    a.statistici = (
+  SELECT tranz_stat_arr(
+           tranz_stat_elem('sales',
+             SUM(CASE WHEN LOWER(TRIM(t.tip)) = 'vanzare'    THEN 1 ELSE 0 END)),
+           tranz_stat_elem('rent',
+             SUM(CASE WHEN LOWER(TRIM(t.tip)) = 'inchiriere' THEN 1 ELSE 0 END))
+         )
+  FROM   TRANZACTIONEAZA t
+  WHERE  t.cod_agentie = a.id_agentie
+)
+WHERE EXISTS (SELECT 1 FROM TRANZACTIONEAZA t WHERE t.cod_agentie = a.id_agentie);
+
+/* 4) Inițializează cu 0/0 agențiile fără tranzacții (ca să nu fie NULL) */
+UPDATE AGENTIE_IMOBILIARA a
+SET    a.statistici = tranz_stat_arr(
+         tranz_stat_elem('sales', 0),
+         tranz_stat_elem('rent',  0)
+       )
+WHERE  a.statistici IS NULL;
+
+/* 5) Setează CLASIFICARE pe baza preponderenței (folosind conținutul colecției) */
+UPDATE AGENTIE_IMOBILIARA a
+SET    a.clasificare =
+       (SELECT CASE
+                 WHEN NVL(MAX(CASE WHEN s.tip = 'rent'  THEN s.cnt END),  0) >
+                      NVL(MAX(CASE WHEN s.tip = 'sales' THEN s.cnt END), 0)
+                 THEN 'rent' ELSE 'sales'
+               END
+          FROM TABLE(a.statistici) s);
+
+COMMIT;
+
+SELECT * FROM AGENTIE_IMOBILIARA
+
+/* 6) Verificare (best practice: “desfacem” colecția și pivotăm pe un rând/agenție) */
+SELECT
+  a.id_agentie,
+  a.denumire,
+  NVL((SELECT MAX(s.cnt) FROM TABLE(a.statistici) s WHERE s.tip='sales'),0) AS sales_cnt,
+  NVL((SELECT MAX(s.cnt) FROM TABLE(a.statistici) s WHERE s.tip='rent'), 0) AS rent_cnt,
+  a.clasificare
+FROM AGENTIE_IMOBILIARA a
+ORDER BY a.id_agentie;
+
+
+
 /*
 --1) Pentru fiecare oras sa se afiseze numele tarii in care se afla si numarul de angajati din cadrul sau.
 
