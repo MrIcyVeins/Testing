@@ -423,8 +423,44 @@ JOIN tranzactioneaza t ON t.cod_imobil = i.id_imobil
 --WHERE p.id_proprietar = 3
 GROUP BY t.cod_agentie, p.nume
 
+/*
+Varianta 3 
+Schemele relaţionale ale modelului folosit sunt:   
+PREZENTARE (cod_pr, data, oras, nume)   
+SPONSOR (cod_sponsor, nume, info ,tara_origine)   
+SUSTINE (cod_pr, cod_sp, suma)   
+VESTIMENTATIE(cod_vestimentatie, denumire, valoare, cod_prezentare)  
 
+Exerciţii:  
+1. Adăugaţi constrângerea de cheie externă dintre tabelele PREZENTARE şi VESTIMENTATIE. 
+Implementaţi comportamentul ON DELETE CASCADE cu ajutorul unui trigger. Testaţi trigger-ul. 
+(3p)  
+2. Să se creeze un subprogram prin care se obţine media valorilor oferite de un sponsor al cărui 
+cod este introdus ca parametru, pentru prezentările în care au existat minim x vestimentatii. 
+Parametrul x va avea valoarea implicita  
+3. Să se apeleze subprogramul. (3p) 3. Să se creeze un trigger prin care la inserarea unei noi 
+vestimentații pentru o prezentare, suma valorilor vestimentațiilor rămâne mai mică decât suma 
+sponsorizărilor. Altfel, apare o excepție. (3p) 
 
+PREZENTARE (cod_pr, data, oras, nume)   
+SPONSOR (cod_sponsor, nume, info ,tara_origine)   
+SUSTINE (cod_pr, cod_sp, suma)   
+VESTIMENTATIE(cod_vestimentatie, denumire, valoare, cod_prezentare)
+*/
 
+-- 1. constraint
+
+ALTER TABLE VESTIMENTATIE
+  ADD CONSTRAINT fk_vest_prez
+  FOREIGN KEY (cod_prezentare)
+  REFERENCES PREZENTARE(cod_pr);
+
+CREATE OR REPLACE TRIGGER trg_prezentare_del_cascade
+BEFORE DELETE ON PREZENTARE
+FOR EACH ROW
+BEGIN
+  DELETE FROM VESTIMENTATIE
+  WHERE cod_prezentare = :OLD.cod_pr;
+END;
 
 
