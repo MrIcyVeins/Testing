@@ -464,3 +464,200 @@ BEGIN
 END;
 
 
+-- 08.29
+
+-- CREAREA TABELELOR
+SET SERVEROUTPUT ON;
+CREATE TABLE FORMATIE (
+    id_formatie   NUMBER PRIMARY KEY,
+    nume          VARCHAR2(100) NOT NULL,
+    data_lansare  DATE,
+    data_retragere DATE,
+    website       VARCHAR2(200),
+    tara_prov     VARCHAR2(50)
+);
+
+CREATE TABLE PREMIU (
+    id_premiu   NUMBER PRIMARY KEY,
+    concurs     VARCHAR2(100) NOT NULL,
+    sectiune    VARCHAR2(100),
+    frecventa   VARCHAR2(50),
+    tara_prov   VARCHAR2(50)
+);
+
+CREATE TABLE CASTIGA (
+    id_premiu    NUMBER,
+    id_formatie  NUMBER,
+    data_d       DATE,
+    loc_ocupat   NUMBER,
+    recompensa   VARCHAR2(100),
+    PRIMARY KEY (id_premiu, id_formatie, data_d),
+    FOREIGN KEY (id_premiu) REFERENCES PREMIU(id_premiu),
+    FOREIGN KEY (id_formatie) REFERENCES FORMATIE(id_formatie)
+);
+
+CREATE TABLE ALBUM (
+    id_album     NUMBER PRIMARY KEY,
+    id_formatie  NUMBER,
+    gen          VARCHAR2(50),
+    nume         VARCHAR2(100),
+    data_l       DATE,
+    pret         NUMBER(8,2),
+    FOREIGN KEY (id_formatie) REFERENCES FORMATIE(id_formatie)
+);
+
+-- INSERARE VALORI DEMO
+
+-- FORMATIE
+INSERT INTO FORMATIE VALUES (1, 'Metallica', TO_DATE('1981-10-01','YYYY-MM-DD'), NULL, 'https://www.metallica.com', 'USA');
+INSERT INTO FORMATIE VALUES (2, 'ABBA', TO_DATE('1972-01-01','YYYY-MM-DD'), TO_DATE('1982-12-31','YYYY-MM-DD'), 'https://www.abbasite.com', 'Sweden');
+INSERT INTO FORMATIE VALUES (3, 'Phoenix', TO_DATE('1962-01-01','YYYY-MM-DD'), NULL, 'https://www.phoenix.ro', 'Romania');
+
+-- PREMIU
+INSERT INTO PREMIU VALUES (1, 'Grammy Awards', 'Best Metal Performance', 'Anual', 'USA');
+INSERT INTO PREMIU VALUES (2, 'Eurovision', 'Best Song', 'Anual', 'Europe');
+INSERT INTO PREMIU VALUES (3, 'MTV Music Awards', 'Best Band', 'Anual', 'USA');
+
+-- CASTIGA
+INSERT INTO CASTIGA VALUES (1, 1, TO_DATE('1992-02-20','YYYY-MM-DD'), 1, 'Trofeu + 10.000$');
+INSERT INTO CASTIGA VALUES (2, 2, TO_DATE('1974-04-06','YYYY-MM-DD'), 1, 'Trofeu');
+INSERT INTO CASTIGA VALUES (3, 3, TO_DATE('2010-11-07','YYYY-MM-DD'), 2, 'Diploma + promovare');
+
+-- ALBUM
+INSERT INTO ALBUM VALUES (1, 1, 'Metal', 'Master of Puppets', TO_DATE('1986-03-03','YYYY-MM-DD'), 19.99);
+INSERT INTO ALBUM VALUES (2, 2, 'Pop', 'Waterloo', TO_DATE('1974-04-04','YYYY-MM-DD'), 15.50);
+INSERT INTO ALBUM VALUES (3, 3, 'Rock', 'Mugur de fluier', TO_DATE('1974-01-01','YYYY-MM-DD'), 12.00);
+INSERT INTO ALBUM VALUES (4, 1, 'Metal', 'Black Album', TO_DATE('1991-08-12','YYYY-MM-DD'), 21.50);
+
+
+/*
+
+FORMATIE ( id_formatie, nume, data_lansare, data_retragere, website, tara_prov );
+PREMIU ( id_premiu, concurs, sectiune, frecventa, tara_prov );
+CASTIGA ( id_Premiu, id_formatie, data_d, loc_ocupat, recompensa);
+ALBUM ( id_album, id_formatie, gen, nume, data_l, pret);
+
+1. subprogram ( functie/procedura ) - primeste cod de formatie 
+> returneaza lista albumelor lansate de formatie + lista premiilor castigate dupa fiecare album lansat  // data_l < data_d 
+testare cu bloc anonim (PL/SQL)
+*/
+
+SELECT * FROM formatie;
+SELECT * FROM premiu;
+SELECT * FROM castiga;
+SELECT * FROM album;
+
+
+CREATE OR REPLACE TYPE l_lista AS OBJECT(
+    nume_album VARCHAR2(100),
+    gen        VARCHAR2(50),
+    recompensa VARCHAR2(100)
+);
+
+CREATE OR REPLACE TYPE tabel AS TABLE OF l_lista;
+
+CREATE OR REPLACE FUNCTION f_functie (p_cod IN formatie.id_formatie%TYPE)
+RETURN tabel
+IS
+    v_tab tabel := tabel(); --colectie goala
+BEGIN
+    SELECT l_lista(a.nume, a.gen, c.recompensa)
+    BULK COLLECT INTO v_tab
+    FROM formatie f
+    LEFT JOIN album a ON a.id_formatie = f.id_formatie
+    LEFT JOIN castiga c ON c.id_formatie = f.id_formatie
+                        AND c.data_d > a.data_l -- conditie
+    WHERE f.id_formatie = p_cod;
+    RETURN v_tab;
+END;
+
+-- bloc anonim cu for loop
+BEGIN
+  FOR r IN (SELECT * FROM TABLE(f_functie(1))) LOOP  -- 1 = id_formatie de test
+    DBMS_OUTPUT.PUT_LINE(
+      'Album: ' || NVL(r.nume_album,'-') || ' | Gen: ' ||r.gen || ' | Recompensa: ' || r.recompensa);
+  END LOOP;
+END;
+
+/*
+
+2. Definiti un tabel care sa contina o coloana de tip obiect si o coloana de tip tablou
+Folositi un subprogram care sa populeze tabelul definit anterior cu cel putin 3 linii
+
+*/
+
+-- creare tip obiect
+CREATE OR REPLACE TYPE un_obiect AS OBJECT(
+    altceva NUMBER
+);
+
+-- creare tip tablou
+CREATE OR REPLACE TYPE t_tablou AS TABLE OF VARCHAR2(20);
+
+-- creare tabel cu tip obiect si tip tablou
+CREATE TABLE nume_tabel(coloana_obiect un_obiect,coloana_tablou t_tablou) NESTED TABLE coloana_tablou STORE AS coloana_tablou_nt;
+
+-- creare subprogram ( procedura ) cu inserare in tabel 
+CREATE OR REPLACE PROCEDURE p_populare IS
+BEGIN
+    INSERT INTO nume_tabel(coloana_obiect, coloana_tablou)
+    VALUES(un_obiect(1), t_tablou('ceva'));
+    INSERT INTO nume_tabel(coloana_obiect, coloana_tablou)
+    VALUES(un_obiect(2), t_tablou('altceva'));
+    INSERT INTO nume_tabel(coloana_obiect, coloana_tablou)
+    VALUES(un_obiect(3), t_tablou('incaceva'));
+END;
+
+-- executare procedura 
+EXEC p_populare;
+
+-- afisare obiect
+SELECT t.coloana_obiect.altceva
+FROM nume_tabel t;
+
+-- afisare obiect si tablou din tabel
+SELECT t.coloana_obiect.altceva,
+    x.COLUMN_VALUE AS elem_tablou
+FROM nume_tabel t 
+CROSS JOIN TABLE(t.coloana_tablou) x;
+
+/*
+3. Implementati constrangerea conform careia o formatie nu poate castiga premii daca nu a lansat cel putin un album inainte de data decernarii
+premiului. Comentati
+*/
+
+/*
+4. Definiti un tip de date stocat care sa va permita sa salvati continutul tabelului ALBUM.
+Afisati continutul unei variabile de acest tip dupa initializarea acesteia cu informatiile care se regasesc in tabelul ALBUM 
+*/
+
+-- creare tip de date stocte ( obiect ) 
+CREATE OR REPLACE TYPE t_album AS OBJECT(
+    id_album NUMBER,
+    id_formatie NUMBER,
+    gen          VARCHAR2(50),
+    nume         VARCHAR2(100),
+    data_l      DATE,
+    pret        NUMBER(8,2)
+);
+-- tip tablou
+CREATE OR REPLACE TYPE unalt_tablou AS TABLE OF t_album;
+
+DECLARE
+    v_alb unalt_tablou;
+BEGIN
+    SELECT t_album(id_album, id_formatie, gen, nume, data_l, pret)
+    BULK COLLECT INTO v_alb
+    FROM album
+    ORDER BY data_l NULLS LAST, id_album;
+    
+    IF v_alb IS NULL OR v_alb.COUNT = 0 THEN
+        DBMS_OUTPUT.PUT_LINE('Albumul este gol.');
+    ELSE
+        FOR i in 1 .. v_alb.COUNT LOOP
+            dbms_output.put_line( v_alb(i).id_album || ' ' || v_alb(i).id_formatie || ' ' || v_alb(i).gen );
+        END LOOP;
+    END IF;
+END;
+
+
