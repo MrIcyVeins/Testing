@@ -256,8 +256,47 @@ END;
 exec p_medie(1);
 
 
+/*
 
+Adauati constragerea de cheie externa dintre tabelele PREZENTARE SI VESTIMENTATIE. Implementati comportamentil ON DELETE CASCADE cu ajutorul unui trigger. Testati trigger-ul
 
+*/
 
+-- constrangerea de cheie externa
+-- explicatie: la stergerea unui rand din prezentare, triggerul sterge intai toate randurile copil din vestimentatie cu acelasi cod_prezentare
+-- astfel stergerea parintelui nu mai incalca FK si se comporta ca un DELETE CASCADE 
+
+ALTER TABLE VESTIMENTATIE
+    ADD CONSTRAINT fk_vestimentatie_prezentare
+    FOREIGN KEY (cod_prezentare)
+    REFERENCES PREZENTARE(cod_pr);
+    
+CREATE OR REPLACE TRIGGER trg_prezentare_del_cascade
+BEFORE DELETE ON PREZENTARE
+FOR EACH ROW
+BEGIN
+    DELETE FROM VESTIMENTATIE
+    WHERE cod_prezentare = :OLD.cod_pr;
+END;
+    
+INSERT INTO PREZENTARE (cod_pr, data, oras, nume)
+VALUES (100, DATE '2024-05-10', 'Paris', 'Test Show');
+
+INSERT INTO VESTIMENTATIE (cod_vestimentatie, denumire, valoare, cod_prezentare)
+VALUES (1001, 'Rochie test', 12000, 100);
+
+INSERT INTO VESTIMENTATIE (cod_vestimentatie, denumire, valoare, cod_prezentare)
+VALUES (1002, 'Sacou test', 8000, 100);
+
+COMMIT;
+
+SELECT * FROM PREZENTARE     WHERE cod_pr = 100;
+SELECT * FROM VESTIMENTATIE  WHERE cod_prezentare = 100;
+
+DELETE FROM PREZENTARE WHERE cod_pr = 100;
+COMMIT;
+
+SELECT * FROM PREZENTARE     WHERE cod_pr = 100; 
+SELECT * FROM VESTIMENTATIE  WHERE cod_prezentare = 100;
 
 
