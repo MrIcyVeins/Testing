@@ -661,3 +661,656 @@ BEGIN
 END;
 
 
+/*
+
+Varianta 8 - 11:21 - 1:00
+
+PERSONAL (id_salariat, nume, prenume, adresa, data_nastere, salariu, id_functie, id_specializare)
+PACIENTI (id_pacient, nume, prenume, data_nastere)
+TRATEAZA (id_salariat, id_pacient, data_internare, data_externare)
+FUNCTII (id_functie, nume_functie, salariu_minim, salariu_maxim)
+SPECIALIZARE (id_specializare, nume_specializare, id_manager)
+
+1. Subprogram care primeste ca parametru un cod de angajat si returneaza lista pacientilor de care acesta a avut grija, impreuna
+cu numarul de zile de internare pentru fiecare. Apelati
+
+*/
+SET SERVEROUTPUT ON;
+
+SELECT  * FROM personal;
+SELECT * FROM TRATEAZA;
+
+SELECT
+    p.id_salariat,
+    p.nume,
+    p.prenume,
+    pp.nume as nume_pacient,
+    pp.prenume as prenume_pacient,
+--    LISTAGG(pp.nume || ' ' || pp.prenume, ', ')
+--        WITHIN GROUP (ORDER BY pp.nume, pp.prenume),
+    sum(t.data_externare - t.data_internare)
+FROM personal p
+JOIN TRATEAZA t ON t.id_salariat = p.id_salariat
+JOIN pacienti pp ON pp.id_pacient = t.id_pacient
+WHERE p.id_salariat = 102
+GROUP BY p.id_salariat, p.nume, p.prenume, pp.nume, pp.prenume
+
+CREATE OR REPLACE TYPE o_pacient_obiect AS OBJECT (
+    id_salariat     NUMBER,
+    nume_salariat   VARCHAR2(50),
+    prenume_salariat    VARCHAR2(50),
+    nume_pacient    VARCHAR2(50),
+    prenume_pacient VARCHAR2(50),
+    numar_zile_internare    NUMBER
+);
+
+CREATE OR REPLACE TYPE t_pacient_tabel AS TABLE OF o_pacient_obiect;
+
+CREATE OR REPLACE PROCEDURE p_pacienti_procedura(p_cod_angajat IN personal.id_salariat%TYPE)
+IS
+    v_tabel_pacient t_pacient_tabel := t_pacient_tabel();
+BEGIN
+    SELECT  o_pacient_obiect(
+            p.id_salariat,
+            p.nume,
+            p.prenume,
+            pp.nume,
+            pp.prenume,
+            sum(t.data_externare - t.data_internare)
+          )
+        BULK COLLECT INTO v_tabel_pacient
+        FROM personal p
+        JOIN TRATEAZA t ON t.id_salariat = p.id_salariat
+        JOIN pacienti pp ON pp.id_pacient = t.id_pacient
+        WHERE p.id_salariat = p_cod_angajat
+        GROUP BY p.id_salariat, p.nume, p.prenume, pp.nume, pp.prenume;
+        
+        FOR i in 1 .. v_tabel_pacient.COUNT LOOP
+            DBMS_OUTPUT.PUT_LINE('Pacient: ' || v_tabel_pacient(i).nume_pacient || ' ' || v_tabel_pacient(i).prenume_pacient || ' Zile internare: ' || v_tabel_pacient(i).numar_zile_internare );
+        END LOOP; 
+END;
+
+EXEC p_pacienti_procedura(101);
+
+/*
+
+2. Subprogram care afiseaza pentru fiecare functie denumirea acesteia impreuna cu lista angajatilor care au salariul mai mare decat media sal
+colegilor ( aceeasi functie ) si care au avut cel putin 2 pacienti. Tratati erorile
+
+*/
+
+SELECT* FROM FUNCTII;
+SELECT * FROM PACIENTI;
+SELECT * FROM PERSONAL;
+
+
+WITH medie AS (
+    SELECT 
+        p.id_functie,
+        ROUND(avg(p.salariu),2) AS MEDIE
+    FROM personal p    
+    GROUP BY id_functie
+),
+numar AS (
+    SELECT 
+        p.id_salariat,
+        count(t.id_pacient) AS NUMAR
+    FROM personal p
+    JOIN trateaza t ON t.id_salariat = p.id_salariat
+    GROUP BY p.id_salariat
+)
+SELECT 
+    f.id_functie,
+    f.nume_functie,
+    LISTAGG(DISTINCT p.nume || ' ' || p.prenume, ', ')
+        WITHIN GROUP (ORDER BY p.nume, p.prenume),
+    m.medie
+FROM FUNCTII f
+JOIN PERSONAL p ON p.id_functie = f.id_functie
+JOIN TRATEAZA t ON t.id_salariat = p.id_salariat
+JOIN medie m ON m.id_functie = f.id_functie
+JOIN numar n ON n.id_salariat = p.id_salariat
+WHERE p.salariu > m.medie AND n.numar >= 3
+GROUP BY f.id_functie, f.nume_functie, m.medie
+
+
+CREATE OR REPLACE TYPE o_functie_denumire AS OBJECT (
+        id_functie NUMBER,
+        nume_functie VARCHAR2(50),
+        nume_angajat VARCHAR2(10000),
+        medie NUMBER
+);
+
+CREATE OR REPLACE TYPE t_functie_denumire AS TABLE OF o_functie_denumire;
+
+CREATE OR REPLACE PROCEDURE p_functie_denumire
+IS
+    v_fct t_functie_denumire := t_functie_denumire();
+BEGIN
+    WITH medie AS (
+    SELECT 
+        p.id_functie,
+        ROUND(avg(p.salariu),2) AS MEDIE
+    FROM personal p    
+    GROUP BY id_functie
+    ),
+    numar AS (
+        SELECT 
+            p.id_salariat,
+            count(t.id_pacient) AS NUMAR
+        FROM personal p
+        JOIN trateaza t ON t.id_salariat = p.id_salariat
+        GROUP BY p.id_salariat
+    )
+    SELECT o_functie_denumire (
+        f.id_functie,
+        f.nume_functie,
+        LISTAGG(DISTINCT p.nume || ' ' || p.prenume, ', ')
+            WITHIN GROUP (ORDER BY p.nume, p.prenume),
+        m.medie
+    ) 
+    BULK COLLECT INTO v_fct
+    FROM FUNCTII f
+    JOIN PERSONAL p ON p.id_functie = f.id_functie
+    JOIN TRATEAZA t ON t.id_salariat = p.id_salariat
+    JOIN medie m ON m.id_functie = f.id_functie
+    JOIN numar n ON n.id_salariat = p.id_salariat
+    WHERE p.salariu > m.medie AND n.numar >= 3
+    GROUP BY f.id_functie, f.nume_functie, m.medie;
+    
+    IF v_fct IS NULL THEN
+        dbms_output.put_line('Nu exista angajati cu aceste criterii ');
+    ELSE 
+        FOR i IN 1 .. v_fct.COUNT LOOP
+            dbms_output.put_line('Denumire functie: ' || v_fct(i).nume_functie || '  ' || ' Lista angajatilor: ' || v_fct(i).nume_angajat );
+        END LOOP;
+    END IF;
+END;
+
+EXEC p_functie_denumire;
+
+
+
+SET SERVEROUTPUT ON;
+
+
+/*
+
+V9
+
+TURIST(id_turist, nume, prenume, data_nastere);
+AGENTIE(id_agentie, denumire, oras);
+EXCURSIE(id_excursie, denumire, pret, destinatie, durata, cod_agentie, nr_locuri)
+ACHIZITIONEAZA(cod_excursie,cod_turist,data_start,data_end,data_achizitie, discount);
+
+*/
+
+
+-- Subprogram care primeste ca parametru codul unei agentii si returneaza - lisa ordonata, in funtie de nr de locuri neocupate
+-- a excursiilor organizate. Apelati
+
+SELECT * FROM excursie;
+SELECT * FROM agentie;
+SELECT * FROM achizitioneaza;
+
+CREATE OR REPLACE TYPE o_nr_locuri AS OBJECT (
+    numar_locuri NUMBER,
+    id_excursie NUMBER,
+    numar_locuri_neocupate NUMBER
+);
+
+CREATE OR REPLACE TYPE t_nr_locuri AS TABLE OF o_nr_locuri;
+
+CREATE OR REPLACE PROCEDURE p_nr_locuri(p_cod_agentie IN agentie.id_agentie%TYPE)
+IS
+    v_nr_locuri t_nr_locuri := t_nr_locuri();
+BEGIN
+    WITH numar_locuri AS(
+        SELECT 
+            e.id_excursie,
+            e.nr_locuri - count(aa.cod_excursie) AS numar_locuri_neocupate
+        FROM achizitioneaza aa
+        JOIN excursie e ON e.id_excursie = aa.cod_excursie
+        JOIN agentie a ON a.id_agentie = e.cod_agentie
+        WHERE a.id_agentie =  p_cod_agentie
+        GROUP BY e.id_excursie, e.nr_locuri
+    )
+    SELECT o_nr_locuri(
+        e.nr_locuri,
+        e.id_excursie,
+        nr.numar_locuri_neocupate
+    )
+    BULK COLLECT INTO v_nr_locuri
+    FROM excursie e
+    JOIN agentie a ON a.id_agentie = e.cod_agentie
+    JOIN achizitioneaza aa ON aa.cod_excursie = e.id_excursie
+    JOIN numar_locuri nr ON nr.id_excursie = e.id_excursie
+    WHERE a.id_agentie = p_cod_agentie
+    GROUP BY e.id_excursie, e.nr_locuri, nr.numar_locuri_neocupate
+    ORDER BY nr.numar_locuri_neocupate;
+    
+    FOR i in 1 .. v_nr_locuri.COUNT LOOP
+        DBMS_OUTPUT.PUT_LINE('Agentie: ' || v_nr_locuri(i).id_excursie || ' ' || ' Numar locuri neocupate: ' || v_nr_locuri(i).numar_locuri_neocupate);
+    END LOOP;
+END;
+
+EXEC p_nr_locuri(10);
+
+
+/*
+Sa se defineasca tabelul INFO care sa permita stocarea urmatoarelor informatii:
+- pentru fiecare agentie(cod) se vor identifica top 3, in functie de durata, excursii(cod, denumire, numar_locuri) organizate
+- lista turistilor (cod,nume) care au achizitionat excursii de la fiecare agentie
+
+Dati exemplu de o comanda insert (fara null) care adauga o inregistrare in tabelul INFO
+*/
+
+CREATE OR REPLACE TYPE o_lista_top AS OBJECT(
+    id_agentie NUMBER,
+    cod_excursie VARCHAR2(1000),
+    denumire_excursie VARCHAR2(1000),
+    numar_locuri VARCHAR2(1000)
+);
+
+CREATE OR REPLACE TYPE o_lista_turisti AS OBJECT (
+    cod_turist NUMBER,
+    nume_turist VARCHAR2(1000)
+);
+
+DROP TYPE o_lista_turisti;
+
+CREATE TABLE INFO ( lista_top o_lista_top, lista_turisti o_lista_turisti);
+
+DROP TABLE INFO;
+
+INSERT INTO INFO ( lista_top, lista_turisti )
+VALUES(o_lista_top(1,1,'excursie1, excursie2',21), o_lista_turisti(1,'Ion, Marian'));
+
+SELECT * FROM INFO;
+
+
+/*
+Scrieti un subprogram care populeaza cu informatiile existente in baza de date tabelul INFO pentru fiecare agentie 
+*/
+
+SELECT * FROM AGENTIE;
+SELECT * FROM EXCURSIE;
+
+CREATE OR REPLACE TYPE t_lista_top AS TABLE OF o_lista_top;
+CREATE OR REPLACE TYPE t_lista_turisti AS TABLE OF o_lista_turisti;
+
+
+CREATE OR REPLACE PROCEDURE p_pop_info
+IS
+    v_lista_top t_lista_top := t_lista_top();
+--    v_lista_turisti t_lista_turisti := t_lista_turist();
+BEGIN
+    WITH ranked AS (
+      SELECT
+        a.id_agentie,
+        e.id_excursie,
+        e.denumire,
+        e.nr_locuri,
+        e.durata,
+        ROW_NUMBER() OVER (
+          PARTITION BY a.id_agentie
+          ORDER BY e.durata DESC, e.id_excursie
+        ) AS rn
+      FROM agentie a
+      JOIN excursie e ON e.cod_agentie = a.id_agentie
+    )
+    SELECT o_lista_top(
+      id_agentie,
+      LISTAGG(id_excursie, ', ')
+        WITHIN GROUP (ORDER BY durata DESC, id_excursie),
+      LISTAGG(denumire, ', ')
+        WITHIN GROUP (ORDER BY durata DESC, denumire),
+      LISTAGG(nr_locuri, ', ')
+        WITHIN GROUP (ORDER BY durata DESC, nr_locuri)
+    )
+    BULK COLLECT INTO v_lista_top
+    FROM ranked
+    WHERE rn <= 3
+    GROUP BY id_agentie;
+    
+    IF v_lista_top.COUNT > 0 THEN
+      FORALL i IN 1..v_lista_top.COUNT
+        INSERT INTO info (lista_top)
+        VALUES (v_lista_top(i));     -- vezi nota de mai jos pentru lista_turisti
+    END IF;
+END;
+
+BEGIN
+    p_pop_info;
+    COMMIT;
+END;
+
+SELECT
+  i.lista_top.id_agentie        AS id_agentie,
+  i.lista_top.cod_excursie      AS cod_excursie,
+  i.lista_top.denumire_excursie AS denumire_excursie,
+  i.lista_top.numar_locuri      AS numar_locuri
+FROM info i;
+
+
+-- 5:18 - 6:23 = ~1hr
+
+SELECT * FROM EMPLOYEES;
+
+/*
+V10
+FIRMA(cod_f, denumire, data_inf, capital, director)
+ANGAJAT(cod_ang, nume, data_nastere, salariu, cod_firma)
+LUCREAZA(cod_angajat, id_utilaj, nr_ore, data)
+UTILAJ(id_utilaj, denumire, data_achizitiei, valoare)
+*/
+
+--1) Definiti un tabel care sa contina o coloana de tip obiect si o coloana de tip tablou
+-- folositi un bloc anonim care sa populeze tabelul definit anterior cu cel putin 3 linii
+
+SET SERVEROUTPUT ON;
+
+CREATE OR REPLACE TYPE o_coloana_obiect_an AS OBJECT (
+    un_numar NUMBER
+);
+
+CREATE OR REPLACE TYPE o_coloana_tablou_an AS TABLE OF VARCHAR2(100);
+
+-- creare tabel 
+CREATE TABLE tabel_anonim (coloana_obiect o_coloana_obiect_an, coloana_tablou o_coloana_tablou_an) NESTED TABLE coloana_tablou STORE AS c_tab;
+
+-- bloc anonim pentru inserare 
+BEGIN
+    INSERT INTO tabel_anonim(coloana_obiect, coloana_tablou)
+    VALUES (o_coloana_obiect_an(1), o_coloana_tablou_an('ceva'));
+    INSERT INTO tabel_anonim(coloana_obiect, coloana_tablou)
+    VALUES (o_coloana_obiect_an(2), o_coloana_tablou_an('altceva'));
+    INSERT INTO tabel_anonim(coloana_obiect, coloana_tablou)
+    VALUES (o_coloana_obiect_an(3), o_coloana_tablou_an('inca ceva'));  
+END;
+
+SELECT 
+    t.coloana_obiect.un_numar
+FROM tabel_anonim t
+
+-- 2) Subprogam care populeaza tabelul info cu informatii 
+--  pentru fiecare cod de angajat se retin codurile utilajelor pe care le-a folosit si numarul total de ore de munca pe aceste utilaje
+
+SELECT * FROM INFO;
+DROP TABLE INFO;
+
+CREATE TABLE info(
+    id_angajat NUMBER,
+    coduri_utilaje VARCHAR2(1000),
+    ore_per_utilaj VARCHAR2(1000)
+);
+
+
+SELECT 
+    a.cod_ang,
+    LISTAGG(l.id_utilaj, ', ')
+        WITHIN GROUP (ORDER BY l.id_utilaj),
+    LISTAGG(l.nr_ore, ', ')
+        WITHIN GROUP (ORDER BY l.nr_ore)
+FROM angajat a
+JOIN lucreaza l ON l.cod_angajat = a.cod_ang
+GROUP BY a.cod_ang
+    
+CREATE OR REPLACE TYPE o_tabel_info AS OBJECT(
+    id_angajat NUMBER,
+    lista_utilaje VARCHAR2(1000),
+    lista_ore VARCHAR2(1000)
+);
+CREATE OR REPLACE TYPE t_tabel_info AS TABLE OF o_tabel_info;
+
+CREATE OR REPLACE PROCEDURE p_tabel_info
+IS
+    v_tabel_info t_tabel_info := t_tabel_info();
+BEGIN
+    SELECT o_tabel_info(
+        a.cod_ang,
+        LISTAGG(l.id_utilaj, ', ')
+            WITHIN GROUP (ORDER BY l.id_utilaj),
+        LISTAGG(l.nr_ore, ', ')
+            WITHIN GROUP (ORDER BY l.nr_ore)
+    )
+    BULK COLLECT INTO v_tabel_info
+    FROM angajat a
+    JOIN lucreaza l ON l.cod_angajat = a.cod_ang
+    GROUP BY a.cod_ang;
+    
+    IF v_tabel_info.COUNT > 0 THEN 
+        FORALL i in 1..v_tabel_info.COUNT
+            INSERT INTO info(id_angajat, coduri_utilaje, ore_per_utilaj)
+            VALUES (v_tabel_info(i).id_angajat, v_tabel_info(i).lista_utilaje, v_tabel_info(i).lista_ore); 
+    ELSE
+         dbms_output.put_line('Nu exista valori');
+    END IF;
+END;
+
+EXEC p_tabel_info;
+
+SELECT * FROM INFO;
+
+-- 3) Procedura care pentru o luna si un cod de firma, transmise ca parametri, returneaza lista angajatilor care au lucrat mai mult 
+-- de 10 ore in luna respectiva
+
+
+--FIRMA(cod_f, denumire, data_inf, capital, director)
+--ANGAJAT(cod_ang, nume, data_nastere, salariu, cod_firma)
+--LUCREAZA(cod_angajat, id_utilaj, nr_ore, data)
+--UTILAJ(id_utilaj, denumire, data_achizitiei, valoare)
+
+SELECT * FROM angajat;
+SELECT * FROM firma;
+SELECT * FROM LUCREAZA;
+
+
+WITH numar_ore AS(
+    SELECT
+        f.cod_f,
+        a.cod_ang,
+        sum(l.nr_ore) as numar_ore
+    FROM angajat a 
+    JOIN firma f ON f.cod_f = a.cod_firma
+    JOIN lucreaza l ON l.cod_angajat = a.cod_ang
+    WHERE f.cod_f = 10 AND TO_CHAR(l.data, 'FMMonth') = 'November'
+    GROUP BY f.cod_f, a.cod_ang
+)
+SELECT
+    f.cod_f,
+    a.cod_ang,
+    n.numar_ore
+FROM angajat a 
+JOIN firma f ON f.cod_f = a.cod_firma
+JOIN lucreaza l ON l.cod_angajat = a.cod_ang
+JOIN numar_ore n ON n.cod_ang = a.cod_ang
+WHERE f.cod_f = 10 AND TO_CHAR(l.data, 'FMMonth') = 'November' AND n.numar_ore > 10
+GROUP BY f.cod_f, a.cod_ang, n.numar_ore;
+
+
+CREATE OR REPLACE TYPE o_numar_ore AS OBJECT(
+    cod_firma NUMBER,
+    cod_ang NUMBER,
+    numar_ore NUMBER
+);
+
+CREATE OR REPLACE TYPE t_numar_ore AS TABLE OF o_numar_ore;
+
+CREATE OR REPLACE PROCEDURE p_ore_luc(p_luna IN angajat.nume%TYPE, p_cod_firma IN firma.cod_f%TYPE)
+IS
+    v_numar_ore t_numar_ore := t_numar_ore();
+BEGIN
+    WITH numar_ore AS(
+        SELECT
+            f.cod_f,
+            a.cod_ang,
+            sum(l.nr_ore) as numar_ore
+        FROM angajat a 
+        JOIN firma f ON f.cod_f = a.cod_firma
+        JOIN lucreaza l ON l.cod_angajat = a.cod_ang
+        WHERE f.cod_f = p_cod_firma AND TO_CHAR(l.data, 'FMMonth') = p_luna
+        GROUP BY f.cod_f, a.cod_ang
+    )
+    SELECT o_numar_ore(
+        f.cod_f,
+        a.cod_ang,
+        n.numar_ore
+    )
+    BULK COLLECT INTO v_numar_ore
+    FROM angajat a 
+    JOIN firma f ON f.cod_f = a.cod_firma
+    JOIN lucreaza l ON l.cod_angajat = a.cod_ang
+    JOIN numar_ore n ON n.cod_ang = a.cod_ang
+    WHERE f.cod_f = p_cod_firma AND TO_CHAR(l.data, 'FMMonth') = p_luna AND n.numar_ore > 10
+    GROUP BY f.cod_f, a.cod_ang, n.numar_ore;
+    
+    FOR i in 1 .. v_numar_ore.COUNT LOOP
+        DBMS_OUTPUT.PUT_LINE('Angajat cu peste 10 ore lucrate: ' || v_numar_ore(i).cod_ang );
+    END LOOP;
+END;
+
+EXEC p_ore_luc('November', 10);
+
+/*
+V11
+
+PRODUS(cod_produs, denumire, pret_vanzare)
+COMPANIE(cod, denumire, capital, presedinte)
+STATIE(cod_statie, denumire, nr_angajati, cod_companie, capacitate, oras)
+ACHIZITIE( cod_st, cod_prod, data_achizitiei, cantitate, pre_achizitie)
+*/
+
+-- 1) Subprogram care primeste prin intermediul unui parametru codul unei statii si returneaza lista ordonata - in fcts de cant totala achizitionata
+-- produselor comercializate
+
+SELECT * FROM statie;
+
+SELECT
+    p.cod_produs,
+    p.denumire
+FROM produs p
+JOIN achizitie a ON a.cod_prod = p.cod_produs
+JOIN statie s ON s.cod_statie = a.cod_st
+WHERE s.cod_statie = 1001
+ORDER BY a.cantitate;
+
+CREATE OR REPLACE TYPE o_cant_prod AS OBJECT(
+    id_produs NUMBER,
+    denumire VARCHAR2(1000)
+);
+
+CREATE OR REPLACE TYPE t_cant_prod AS TABLE OF o_cant_prod;
+
+CREATE OR REPLACE PROCEDURE p_cant_prod(p_cod_statie IN statie.cod_statie%TYPE)
+IS
+    v_cant_prod t_cant_prod := t_cant_prod();
+BEGIN
+    SELECT o_cant_prod(
+        p.cod_produs,
+        p.denumire
+    )
+    BULK COLLECT INTO v_cant_prod
+    FROM produs p
+    JOIN achizitie a ON a.cod_prod = p.cod_produs
+    JOIN statie s ON s.cod_statie = a.cod_st
+    WHERE s.cod_statie = p_cod_statie
+    ORDER BY a.cantitate;
+    
+    FOR i in 1..v_cant_prod.COUNT LOOP
+        dbms_output.put_line('Lista produse: ' || v_cant_prod(i).id_produs || ' ' || v_cant_prod(i).denumire );
+    END LOOP;
+END;
+
+EXEC p_cant_prod(1001);
+
+
+-- 2) Def tabel RAPORT, pentru fiecare campanie (cod) - top 3 in fct de nr angajati, statii (cod, denumire, nr angajati) si lista produselor ( cod,denumire) achizitionate
+-- adaugati o inregistrare fara null
+
+PRODUS(cod_produs, denumire, pret_vanzare)
+COMPANIE(cod, denumire, capital, presedinte)
+STATIE(cod_statie, denumire, nr_angajati, cod_companie, capacitate, oras)
+ACHIZITIE( cod_st, cod_prod, data_achizitiei, cantitate, pre_achizitie)
+
+SELECT * FROM statie;
+
+SELECT 
+    c.cod,
+    sum(distinct s.nr_angajati),
+    LISTAGG(DISTINCT s.cod_statie || ' ' || s.denumire || ' ' || s.nr_angajati, ', ')
+        WITHIN GROUP  (  ORDER BY s.cod_statie, s.denumire, s.nr_angajati ),
+    LISTAGG(DISTINCT a.cod_prod || ' ' || p.denumire , ', ')
+        WITHIN GROUP ( ORDER BY a.cod_prod, p.denumire )
+FROM companie c 
+JOIN statie s ON s.cod_companie = c.cod
+JOIN achizitie a ON a.cod_st = s.cod_statie
+JOIN produs p ON p.cod_produs = a.cod_prod
+GROUP BY c.cod
+ORDER BY sum(s.nr_angajati) DESC 
+FETCH FIRST 3 ROWS WITH TIES
+
+
+ORDER BY s.nr_angajati DESC
+FETCH FIRST 3 ROWS WITH TIES
+
+
+CREATE TABLE RAPORT( 
+    cod_companie NUMBER,
+    numar_angajati NUMBER,
+    lista_statii VARCHAR2(1000),
+    lista_produse VARCHAR2(1000)
+);
+
+DROP TABLE RAPORT;
+SELECT * FROM PRODUS;
+
+INSERT INTO RAPORT (top_statii, lista_statii, lista_produse)
+VALUES('companie 1, companie 2, companie 3','1, Statia 1, 100','101, Benzina 95, 102 Benzina 98');
+
+
+-- 3) subprogram ca sa populeze RAPORT
+
+CREATE OR REPLACE TYPE o_raport AS OBJECT (
+    cod_companie NUMBER,
+    numar_angajati NUMBER,
+    lista_statii VARCHAR2(1000),
+    lista_produse VARCHAR2(1000)
+);
+
+CREATE OR REPLACE TYPE t_raport AS TABLE OF o_raport;
+
+DROP TYPE t_raport;
+
+CREATE OR REPLACE PROCEDURE p_raport
+IS
+    v_raport t_raport := t_raport();
+BEGIN
+    SELECT o_raport(
+        c.cod,
+        sum(distinct s.nr_angajati),
+        LISTAGG(DISTINCT s.cod_statie || ' ' || s.denumire || ' ' || s.nr_angajati, ', ')
+            WITHIN GROUP  (  ORDER BY s.cod_statie, s.denumire, s.nr_angajati ),
+        LISTAGG(DISTINCT a.cod_prod || ' ' || p.denumire , ', ')
+            WITHIN GROUP ( ORDER BY a.cod_prod, p.denumire )
+    )
+    BULK COLLECT INTO v_raport
+    FROM companie c 
+    JOIN statie s ON s.cod_companie = c.cod
+    JOIN achizitie a ON a.cod_st = s.cod_statie
+    JOIN produs p ON p.cod_produs = a.cod_prod
+    GROUP BY c.cod
+    ORDER BY sum(s.nr_angajati) DESC 
+    FETCH FIRST 3 ROWS WITH TIES;
+    
+    IF v_raport.COUNT > 0 THEN
+        FORALL i in 1..v_raport.COUNT
+            INSERT INTO RAPORT(cod_companie,numar_angajati,lista_statii,lista_produse)
+            VALUES(v_raport(i).cod_companie, v_raport(i).numar_angajati, v_raport(i).lista_statii, v_raport(i).lista_produse );
+    END IF;
+END;
+
+EXEC P_RAPORT;
+
+
+
