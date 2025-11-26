@@ -1,114 +1,140 @@
-
 #include <GL/glut.h>
 #include <cmath>
 
-GLuint texID;
-const float side = 30.0f; // latura
+GLuint idTextura;
+const float latura = 30.0f; // latura pătratului
 
-// Textura simpla
-void createTexture()
+// Textur simpla - tabla de sah
+void creeazaTextura()
 {
-    const int W = 64, H = 64;
-    unsigned char data[W * H * 3];
+    const int LATIME = 64;
+    const int INALTIME = 64;
 
-    for (int y = 0; y < H; ++y)
+    // tabla
+    unsigned char date[INALTIME][LATIME][3];
+
+    for (int y = 0; y < INALTIME; ++y)
     {
-        for (int x = 0; x < W; ++x)
+        for (int x = 0; x < LATIME; ++x)
         {
-            int idx = (y * W + x) * 3;
-            bool checker = ((x / 8) % 2) ^ ((y / 8) % 2);
-            unsigned char c = checker ? 255 : 80;
-            data[idx + 0] = c;
-            data[idx + 1] = checker ? 80 : 255;
-            data[idx + 2] = 160;
+            // 1. Patrat din 8 in 8 pixeli
+            int tileX = x / 8;  // coloana patrat
+            int tileY = y / 8;  // linie patrat
+
+            // 2. Suma para = culoare verde / suma impara culoare rosie
+            bool patratAlb = ((tileX + tileY) % 2 == 0);
+
+            // 3. Culoare in functie de patrat
+            unsigned char r, g, b;
+
+            if (patratAlb)
+            {
+                r = 255; // rosu
+                g = 80;  // verde
+                b = 160; // albastru
+            }
+            else
+            {
+                r = 80;
+                g = 255;
+                b = 160;
+            }
+
+            // 4. Punem valorile în tablou
+            date[y][x][0] = r;
+            date[y][x][1] = g;
+            date[y][x][2] = b;
         }
     }
 
-    glGenTextures(1, &texID);
-    glBindTexture(GL_TEXTURE_2D, texID);
+    // Variabile de textura
+    glGenTextures(1, &idTextura);
+    glBindTexture(GL_TEXTURE_2D, idTextura);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB,
-        W, H, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+        LATIME, INALTIME, 0, GL_RGB, GL_UNSIGNED_BYTE, date);
 }
 
-// Patrat centrat in origine ( l = 30 )
-void drawSquareColored()
+// Patrat centrat in origine (l = 30)
+void deseneazaPatratColorat()
 {
-    float h = side / 2.0f;
+    float jumatateLatura = latura / 2.0f;
 
     glBegin(GL_QUADS);
     // Culori diferite pe varfuri
-    glColor3f(1.0f, 0.0f, 0.0f);  glVertex2f(-h, -h);
-    glColor3f(0.0f, 1.0f, 0.0f);  glVertex2f(h, -h);
-    glColor3f(0.0f, 0.0f, 1.0f);  glVertex2f(h, h);
-    glColor3f(1.0f, 1.0f, 0.0f);  glVertex2f(-h, h);
+    glColor3f(1.0f, 0.0f, 0.0f);  glVertex2f(-jumatateLatura, -jumatateLatura);
+    glColor3f(0.0f, 1.0f, 0.0f);  glVertex2f(jumatateLatura, -jumatateLatura);
+    glColor3f(0.0f, 0.0f, 1.0f);  glVertex2f(jumatateLatura, jumatateLatura);
+    glColor3f(1.0f, 1.0f, 0.0f);  glVertex2f(-jumatateLatura, jumatateLatura);
     glEnd();
 }
 
-void drawSquareTextured()
+// Patrat texturat
+void deseneazaPatratTexturat()
 {
-    float h = side / 2.0f;
+    float jumatateLatura = latura / 2.0f;
 
-    glBindTexture(GL_TEXTURE_2D, texID);
+    glBindTexture(GL_TEXTURE_2D, idTextura);
     glEnable(GL_TEXTURE_2D);
     glColor3f(1.0f, 1.0f, 1.0f);
 
     glBegin(GL_QUADS);
-    glTexCoord2f(0.0f, 0.0f); glVertex2f(-h, -h);
-    glTexCoord2f(1.0f, 0.0f); glVertex2f(h, -h);
-    glTexCoord2f(1.0f, 1.0f); glVertex2f(h, h);
-    glTexCoord2f(0.0f, 1.0f); glVertex2f(-h, h);
+    glTexCoord2f(0.0f, 0.0f); glVertex2f(-jumatateLatura, -jumatateLatura);
+    glTexCoord2f(1.0f, 0.0f); glVertex2f(jumatateLatura, -jumatateLatura);
+    glTexCoord2f(1.0f, 1.0f); glVertex2f(jumatateLatura, jumatateLatura);
+    glTexCoord2f(0.0f, 1.0f); glVertex2f(-jumatateLatura, jumatateLatura);
     glEnd();
 
     glDisable(GL_TEXTURE_2D);
 }
 
-void display()
+void afisare()
 {
     glClear(GL_COLOR_BUFFER_BIT);
 
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
 
-    // 1) Patratul de baza
+    // 1) Patrat de referinta
     glPushMatrix();
     glColor3f(1.0f, 1.0f, 1.0f);
-    float h = side / 2.0f;
+    float jumatateLatura = latura / 2.0f;
     glBegin(GL_LINE_LOOP);
-    glVertex2f(-h, -h);
-    glVertex2f(h, -h);
-    glVertex2f(h, h);
-    glVertex2f(-h, h);
+    glVertex2f(-jumatateLatura, -jumatateLatura);
+    glVertex2f(jumatateLatura, -jumatateLatura);
+    glVertex2f(jumatateLatura, jumatateLatura);
+    glVertex2f(-jumatateLatura, jumatateLatura);
     glEnd();
     glPopMatrix();
 
-    // Factori ceruti
-    float sx = 2.0f, sy = 0.5f;
-    float tx = 40.0f, ty = 40.0f;
+    // Factori de transformare
+    float factorScalareX = 2.0f, factorScalareY = 0.5f;
+    float translatieX = 40.0f, translatieY = 40.0f;
 
     // 2) Varianta cu amestec de culori:
-    //    Scalare > Translatie
+    // Ordine: Scalare > Translatie (în spatiul obiectului: întai S, apoi T)
     glPushMatrix();
-    glTranslatef(tx, ty, 0.0f);  // translatia T
-    glScalef(sx, sy, 1.0f);      // scalarea S
-    drawSquareColored();
+    glTranslatef(translatieX, translatieY, 0.0f);   // translatia T
+    glScalef(factorScalareX, factorScalareY, 1.0f); // scalarea S
+    deseneazaPatratColorat();
     glPopMatrix();
 
     // 3) Varianta texturata:
-    //    Translatie > Scalare
+    // Ordine: Translatie > Scalare (aplicate invers în matrice)
     glPushMatrix();
-    glScalef(sx, sy, 1.0f);      // scalarea S
-    glTranslatef(tx, ty, 0.0f);  // translația T
-    drawSquareTextured();
+    glScalef(factorScalareX, factorScalareY, 1.0f); // scalarea S
+    glTranslatef(translatieX, translatieY, 0.0f);   // translatia T
+    deseneazaPatratTexturat();
     glPopMatrix();
 
     glutSwapBuffers();
 }
 
-void reshape(int w, int h)
+void redimensionare(int latime, int inaltime)
 {
-    glViewport(0, 0, w, h);
+    glViewport(0, 0, latime, inaltime);
 
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
@@ -118,10 +144,10 @@ void reshape(int w, int h)
     glLoadIdentity();
 }
 
-void init()
+void initializare()
 {
     glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-    createTexture();
+    creeazaTextura();
 }
 
 int main(int argc, char** argv)
@@ -131,10 +157,10 @@ int main(int argc, char** argv)
     glutInitWindowSize(800, 600);
     glutCreateWindow("Tema 3 - Transformari");
 
-    init();
+    initializare();
 
-    glutDisplayFunc(display);
-    glutReshapeFunc(reshape);
+    glutDisplayFunc(afisare);
+    glutReshapeFunc(redimensionare);
 
     glutMainLoop();
     return 0;
