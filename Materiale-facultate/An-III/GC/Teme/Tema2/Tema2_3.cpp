@@ -5,10 +5,10 @@
 int winWidth = 900, winHeight = 600;
 
 // display lists
-GLuint buildingList;
-GLuint lampFarList;
+GLuint listaCladire;
+GLuint listaLampa;
 
-// ----------------- text (optional) -----------------
+// functie text
 void drawText(float x, float y, const char* t)
 {
     glRasterPos2f(x, y);
@@ -16,216 +16,300 @@ void drawText(float x, float y, const char* t)
         glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, *t++);
 }
 
-// ----------------- DISPLAY LIST: CLĂDIRE ÎN DEPARTARE -----------------
-void buildBuildingList()
+// functie ajutatoare: cerc 2D (TRIANGLE_FAN)
+void drawCircle(float cx, float cy, float r, int segments)
 {
-    buildingList = glGenLists(1);
-    glNewList(buildingList, GL_COMPILE);
-
-    // corpul cladirii (un dreptunghi ingust)
-    glColor3f(0.06f, 0.06f, 0.10f);
-    glBegin(GL_QUADS);
-    glVertex2f(-0.04f, 0.0f);
-    glVertex2f( 0.04f, 0.0f);
-    glVertex2f( 0.04f, 0.5f);
-    glVertex2f(-0.04f, 0.5f);
-    glEnd();
-
-    // ferestre luminate (puncte/quads mici)
-    glColor3f(1.0f, 0.9f, 0.5f);
-    float w = 0.015f, h = 0.03f;
-    for (float y = 0.05f; y < 0.48f; y += 0.08f)
-    {
-        for (float x = -0.03f; x <= 0.03f; x += 0.03f)
-        {
-            glBegin(GL_QUADS);
-            glVertex2f(x,       y);
-            glVertex2f(x + w,   y);
-            glVertex2f(x + w,   y + h);
-            glVertex2f(x,       y + h);
-            glEnd();
-        }
-    }
-
-    glEndList();
-}
-
-// ----------------- DISPLAY LIST: FELINAR ÎN DEPARTARE -----------------
-void buildLampFarList()
-{
-    lampFarList = glGenLists(1);
-    glNewList(lampFarList, GL_COMPILE);
-
-    // stâlp simplu
-    glColor3f(0.7f, 0.7f, 0.8f);
-    glBegin(GL_LINES);
-    glVertex2f(0.0f, -0.1f);
-    glVertex2f(0.0f,  0.1f);
-    glEnd();
-
-    // o bara mica orizontala
-    glBegin(GL_LINES);
-    glVertex2f(-0.03f, 0.09f);
-    glVertex2f( 0.03f, 0.09f);
-    glEnd();
-
-    // bec mic
-    glColor3f(1.0f, 0.9f, 0.6f);
     glBegin(GL_TRIANGLE_FAN);
-    glVertex2f(0.0f, 0.11f);
-    float R = 0.015f;
-    for (int i = 0; i <= 16; ++i)
+    glVertex2f(cx, cy);
+    for (int i = 0; i <= segments; ++i)
     {
-        float a = 2.0f * 3.1415926f * i / 16;
-        glVertex2f(0.0f + R * cosf(a), 0.11f + R * sinf(a));
+        float a = 2.0f * 3.1415926f * i / segments;
+        glVertex2f(cx + r * cosf(a), cy + r * sinf(a));
     }
     glEnd();
+}
+
+// lista pentru cladire
+void buildlistaCladire()
+{
+    listaCladire = glGenLists(1);
+    glNewList(listaCladire, GL_COMPILE);
+
+    // corp cladire
+    glColor3f(0.25f, 0.28f, 0.40f);
+    glBegin(GL_QUADS);
+        glVertex2f(-0.04f, 0.0f);
+        glVertex2f( 0.04f, 0.0f);
+        glVertex2f( 0.04f, 0.5f);
+        glVertex2f(-0.04f, 0.5f);
+    glEnd();
+
+    // ferestre
+    glColor3f(1.0f, 0.95f, 0.7f);
+    float w = 0.015f, h = 0.03f;
+
+    for (float y = 0.08f; y < 0.45f; y += 0.10f)
+    {
+        glBegin(GL_QUADS);
+            glVertex2f(-0.03f, y);
+            glVertex2f(-0.03f + w, y);
+            glVertex2f(-0.03f + w, y + h);
+            glVertex2f(-0.03f, y + h);
+        glEnd();
+
+        glBegin(GL_QUADS);
+            glVertex2f(0.03f - w, y);
+            glVertex2f(0.03f, y);
+            glVertex2f(0.03f, y + h);
+            glVertex2f(0.03f - w, y + h);
+        glEnd();
+    }
 
     glEndList();
 }
 
-// ----------------- CER + STELE + LUNĂ -----------------
-void drawSky()
+// lista pentru felinar
+void buildlistaLampa()
 {
-    // cer gradient
+    listaLampa = glGenLists(1);
+    glNewList(listaLampa, GL_COMPILE);
+
+    // stalp
+    glColor3f(0.8f, 0.8f, 0.9f);
+    glBegin(GL_LINES);
+        glVertex2f(0.0f, -0.1f);
+        glVertex2f(0.0f,  0.1f);
+    glEnd();
+
+    // bara orizontala
+    glBegin(GL_LINES);
+        glVertex2f(-0.03f, 0.09f);
+        glVertex2f( 0.03f, 0.09f);
+    glEnd();
+
+    // bec
+    glColor3f(1.0f, 0.95f, 0.8f);
+    drawCircle(0.0f, 0.11f, 0.015f, 20);
+
+    glEndList();
+}
+
+// cer + stele + luna
+void desenCer()
+{
+    // Cer
     glBegin(GL_QUADS);
-    glColor3f(0.04f, 0.03f, 0.15f); // jos, aproape de orizont
-    glVertex2f(-1.0f, 0.0f);
-    glVertex2f( 1.0f, 0.0f);
-    glColor3f(0.01f, 0.01f, 0.05f); // sus, foarte inchis
-    glVertex2f( 1.0f, 1.0f);
-    glVertex2f(-1.0f, 1.0f);
+        glColor3f(0.20f, 0.25f, 0.45f); // jos
+        glVertex2f(-1.0f, 0.0f);
+        glVertex2f( 1.0f, 0.0f);
+        glColor3f(0.10f, 0.15f, 0.30f); // sus
+        glVertex2f( 1.0f, 1.0f);
+        glVertex2f(-1.0f, 1.0f);
     glEnd();
 
     // stele
     glPointSize(2.0f);
+    glColor3f(0.95f, 0.95f, 1.0f);
     glBegin(GL_POINTS);
-    glColor3f(0.9f, 0.9f, 1.0f);
-    float sx[] = {-0.9f,-0.8f,-0.7f,-0.5f,-0.3f,-0.1f,0.1f,0.3f,0.5f,0.7f,0.9f,
-                  -0.85f,-0.65f,-0.45f,-0.25f,-0.05f,0.15f,0.35f,0.55f,0.75f};
-    float sy[] = {0.9f,0.8f,0.85f,0.78f,0.82f,0.88f,0.86f,0.9f,0.83f,0.87f,0.84f,
-                  0.7f,0.65f,0.68f,0.72f,0.69f,0.66f,0.71f,0.67f,0.7f};
-    for (int i = 0; i < 20; ++i)
-        glVertex2f(sx[i], sy[i]);
+        glVertex2f(-0.9f, 0.9f);
+        glVertex2f(-0.7f, 0.8f);
+        glVertex2f(-0.5f, 0.85f);
+        glVertex2f(-0.2f, 0.82f);
+        glVertex2f( 0.0f, 0.88f);
+        glVertex2f( 0.3f, 0.86f);
+        glVertex2f( 0.6f, 0.9f);
+        glVertex2f( 0.8f, 0.83f);
+        glVertex2f( 0.9f, 0.87f);
     glEnd();
 
-    // lună
+    // luna
     glColor3f(0.98f, 0.97f, 0.85f);
-    glBegin(GL_TRIANGLE_FAN);
-    glVertex2f(-0.7f, 0.75f);
-    float R = 0.10f;
-    for (int i = 0; i <= 40; ++i)
-    {
-        float a = 2.0f * 3.1415926f * i / 40;
-        glVertex2f(-0.7f + R * cosf(a), 0.75f + R * sinf(a));
-    }
-    glEnd();
+    drawCircle(-0.7f, 0.75f, 0.10f, 40);
 }
 
-// ----------------- ORAȘ ÎN DEPARTARE -----------------
-void drawCity()
+// oras (teren + cladiri)
+void desenOras()
 {
-    // bandă de "teren" pe care stau cladirile
+    // banda
     glBegin(GL_QUADS);
-    glColor3f(0.02f, 0.02f, 0.05f);
-    glVertex2f(-1.0f, -0.05f);
-    glVertex2f( 1.0f, -0.05f);
-    glVertex2f( 1.0f,  0.0f);
-    glVertex2f(-1.0f,  0.0f);
+        glColor3f(0.15f, 0.15f, 0.25f);
+        glVertex2f(-1.0f, -0.05f);
+        glVertex2f( 1.0f, -0.05f);
+        glVertex2f( 1.0f,  0.0f);
+        glVertex2f(-1.0f,  0.0f);
     glEnd();
 
-    // clădiri repetate pe orizont
-    for (float x = -0.95f; x <= 0.95f; x += 0.12f)
+    // Sir cladiri
+    for (float x = -1.05f; x <= 1.05f; x += 0.12f)
     {
         glPushMatrix();
-        glTranslatef(x, -0.05f, 0.0f);
+            glTranslatef(x, -0.05f, 0.0f);
 
-        // inaltimi usor diferite
-        float hScale = 0.5f + 0.5f * (0.5f + 0.5f * sinf(5.0f * x));
-        glScalef(1.0f, hScale, 1.0f);
+            // inaltime usor variata
+            float hScale = 0.6f + 0.4f * (0.5f + 0.5f * sinf(5.0f * x));
+            glScalef(1.0f, hScale, 1.0f);
 
-        glCallList(buildingList);
+            glCallList(listaCladire);
         glPopMatrix();
     }
 }
 
-// ----------------- TROTUAR (BALUSTRADĂ) -----------------
-void drawSidewalk()
+// Trotuar
+void desenTrotuar()
 {
-    // bandă îngustă de trotuar
+    // banda trotuar
     glBegin(GL_QUADS);
-    glColor3f(0.10f, 0.10f, 0.18f);
-    glVertex2f(-1.0f, -0.35f);
-    glVertex2f( 1.0f, -0.35f);
-    glVertex2f( 1.0f, -0.25f);
-    glVertex2f(-1.0f, -0.25f);
+        glColor3f(0.5f, 0.5f, 0.6f);
+        glVertex2f(-1.0f, -0.35f);
+        glVertex2f( 1.0f, -0.35f);
+        glVertex2f( 1.0f, -0.25f);
+        glVertex2f(-1.0f, -0.25f);
     glEnd();
 
-    // balustradă (linie întunecată)
-    glColor3f(0.05f, 0.05f, 0.10f);
+    // balustrada
     glBegin(GL_QUADS);
-    glVertex2f(-1.0f, -0.25f);
-    glVertex2f( 1.0f, -0.25f);
-    glVertex2f( 1.0f, -0.20f);
-    glVertex2f(-1.0f, -0.20f);
+        glColor3f(0.35f, 0.35f, 0.45f);
+        glVertex2f(-1.0f, -0.25f);
+        glVertex2f( 1.0f, -0.25f);
+        glVertex2f( 1.0f, -0.20f);
+        glVertex2f(-1.0f, -0.20f);
     glEnd();
 }
 
-// ----------------- FELINARE LA DISTANȚĂ -----------------
-void drawFarLamps()
+// Felinare
+void desenLampi()
 {
-    // mici, repetate pe balustradă
-    for (float x = -0.9f; x <= 0.9f; x += 0.3f)
+    for (float x = -1.0f; x <= 1.0f; x += 0.25f)
     {
         glPushMatrix();
-        glTranslatef(x, -0.20f, 0.0f);   // „stau” pe balustradă
-        glScalef(0.4f, 0.4f, 1.0f);      // foarte mici, departe
-        glCallList(lampFarList);
+            glTranslatef(x, -0.20f, 0.0f);
+            glScalef(0.4f, 0.4f, 1.0f);
+            glCallList(listaLampa);
         glPopMatrix();
     }
 }
 
-// ----------------- APA -----------------
-void drawWater()
+// Apa
+void desenApa()
 {
     glBegin(GL_QUADS);
-    glColor3f(0.03f, 0.04f, 0.18f); // sus, langa trotuar
-    glVertex2f(-1.0f, -0.35f);
-    glVertex2f( 1.0f, -0.35f);
-    glColor3f(0.01f, 0.02f, 0.08f); // jos
-    glVertex2f( 1.0f, -1.0f);
-    glVertex2f(-1.0f, -1.0f);
+        glColor3f(0.10f, 0.20f, 0.40f); // sus
+        glVertex2f(-1.0f, -0.35f);
+        glVertex2f( 1.0f, -0.35f);
+        glColor3f(0.03f, 0.08f, 0.18f); // jos
+        glVertex2f( 1.0f, -1.0f);
+        glVertex2f(-1.0f, -1.0f);
+    glEnd();
+}
+
+
+void desenBarca()
+{
+    glPushMatrix();
+    // Pozitie pe apa
+    glTranslatef(0.3f, -0.55f, 0.0f);
+    glScalef(0.4f, 0.4f, 1.0f);
+
+    // Urme pe apa
+    glColor3f(0.9f, 0.95f, 1.0f);
+    glBegin(GL_TRIANGLES);
+    // Spuma
+    glVertex2f(-0.9f, -0.25f);
+    glVertex2f(-0.4f, -0.22f);
+    glVertex2f(-0.9f, -0.35f);
+    glVertex2f(-0.7f, -0.20f);
+    glVertex2f(-0.3f, -0.18f);
+    glVertex2f(-0.7f, -0.30f);
     glEnd();
 
-    // cateva reflexii aproximative de lumini pe apa
-    glColor3f(0.4f, 0.4f, 0.7f);
+    // Linii pe apa 
+    glLineWidth(2.0f);
     glBegin(GL_LINES);
-    for (float x = -0.8f; x <= 0.8f; x += 0.2f)
-    {
-        glVertex2f(x, -0.40f);
-        glVertex2f(x, -0.80f);
-    }
+    glVertex2f(-0.8f, -0.28f); glVertex2f(-0.5f, -0.26f);
+    glVertex2f(-0.75f, -0.32f); glVertex2f(-0.45f, -0.30f);
     glEnd();
+    glLineWidth(1.0f);
+
+    // Corp
+    glColor3f(0.70f, 0.75f, 0.82f);
+    glBegin(GL_POLYGON);
+    glVertex2f(-0.4f, -0.25f);  // spate jos
+    glVertex2f(0.5f, -0.25f);   // aproape de prova jos
+    glVertex2f(0.9f, -0.18f);   // varf prova
+    glVertex2f(0.5f, -0.10f);   // aproape de prova sus
+    glVertex2f(-0.4f, -0.10f);  // spate sus
+    glEnd();
+
+    // Banda lateral
+    glColor3f(0.45f, 0.50f, 0.60f);
+    glBegin(GL_QUADS);
+    glVertex2f(-0.35f, -0.22f);
+    glVertex2f(0.55f, -0.22f);
+    glVertex2f(0.55f, -0.19f);
+    glVertex2f(-0.35f, -0.19f);
+    glEnd();
+
+    // Punte
+    glColor3f(0.85f, 0.87f, 0.92f);
+    glBegin(GL_QUADS);
+    glVertex2f(-0.25f, -0.10f);
+    glVertex2f(0.45f, -0.10f);
+    glVertex2f(0.35f, 0.05f);
+    glVertex2f(-0.20f, 0.05f);
+    glEnd();
+
+    // Cabina
+    glColor3f(0.20f, 0.25f, 0.35f);
+    glBegin(GL_QUADS);
+    glVertex2f(-0.10f, -0.05f);
+    glVertex2f(0.30f, -0.05f);
+    glVertex2f(0.22f, 0.08f);
+    glVertex2f(-0.05f, 0.08f);
+    glEnd();
+
+    // Geamuri
+    glLineWidth(1.5f);
+    glColor3f(0.65f, 0.75f, 0.90f);
+    glBegin(GL_LINES);
+    glVertex2f(-0.05f, 0.00f); glVertex2f(0.25f, 0.00f);
+    glVertex2f(-0.03f, 0.03f); glVertex2f(0.23f, 0.03f);
+    glEnd();
+    glLineWidth(1.0f);
+
+    // Radar
+    glColor3f(0.8f, 0.8f, 0.9f);
+    glBegin(GL_LINES);
+    glVertex2f(0.05f, 0.08f);
+    glVertex2f(0.05f, 0.20f);
+    glEnd();
+
+    glBegin(GL_LINES);
+    glVertex2f(-0.02f, 0.20f);
+    glVertex2f(0.12f, 0.20f);
+    glEnd();
+
+    glPopMatrix();
 }
 
-// ----------------- DISPLAY -----------------
+
+// afisare
 void display()
 {
     glClear(GL_COLOR_BUFFER_BIT);
 
-    drawSky();
-    drawCity();
-    drawSidewalk();
-    drawFarLamps();
-    drawWater();
+    desenCer();
+    desenOras();
+    desenTrotuar();
+    desenLampi();
+    desenApa();
+    desenBarca();
 
     glColor3f(1.0f, 1.0f, 1.0f);
-    drawText(-0.95f, 0.9f, "Noapte la malul apei - oraș indepartat si felinare pe trotuar");
+    drawText(-0.95f, 0.9f, "Tema 2 - Oras 2D");
 
     glutSwapBuffers();
 }
 
-// ----------------- RESHAPE -----------------
 void reshape(int w, int h)
 {
     winWidth = w;
@@ -241,25 +325,21 @@ void reshape(int w, int h)
     glLoadIdentity();
 }
 
-// ----------------- INIT -----------------
 void init()
 {
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-    buildBuildingList();
-    buildLampFarList();
+    buildlistaCladire();
+    buildlistaLampa();
 }
 
-// ----------------- MAIN -----------------
+// main
 int main(int argc, char** argv)
 {
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB);
     glutInitWindowSize(winWidth, winHeight);
-    glutCreateWindow("Noapte - oras in departare si apa in prim-plan");
+    glutCreateWindow("Tema 2 - Oras 2D");
 
     init();
     glutDisplayFunc(display);
