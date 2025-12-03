@@ -61,10 +61,10 @@ int inaltimeFereastra = 900;
 GLuint incarcaBMP(const char* numeFisier)
 {
     FILE* f = NULL;
-#ifdef _MSC_VER
+#ifdef _MSC_VER // instructiune compilator C/C++ pentru VSCODE
     fopen_s(&f, numeFisier, "rb");
 #else
-    f = fopen(numeFisier, "rb");
+    f = fopen(numeFisier, "rb"); // pentru alte compilatoare (GCC)
 #endif
     if (!f)
     {
@@ -72,7 +72,7 @@ GLuint incarcaBMP(const char* numeFisier)
         return 0;
     }
 
-    unsigned char header[54];
+    unsigned char header[54]; // informatii din header ( inaltime, latime imagine )
     if (fread(header, 1, 54, f) != 54)
     {
         printf("Fisier BMP invalid (header prea scurt): %s\n", numeFisier);
@@ -81,7 +81,7 @@ GLuint incarcaBMP(const char* numeFisier)
     }
 
     // verificăm semnatura "BM"
-    if (header[0] != 'B' || header[1] != 'M')
+    if (header[0] != 'B' || header[1] != 'M') //bitmap
     {
         printf("Fisierul nu este BMP: %s\n", numeFisier);
         fclose(f);
@@ -95,7 +95,7 @@ GLuint incarcaBMP(const char* numeFisier)
 
     if (bitiPePixel != 24 && bitiPePixel != 32)
     {
-        printf("BMP cu %d bpp nu este suportat (doar 24 sau 32): %s\n",
+        printf("BMP cu %d bpp nu este suportat (doar 24 sau 32): %s\n",   // canale BGR 24 bpp / canale BGRA 32 bpp
             bitiPePixel, numeFisier);
         fclose(f);
         return 0;
@@ -103,7 +103,7 @@ GLuint incarcaBMP(const char* numeFisier)
 
     int bytesPerPixel = bitiPePixel / 8;
     int bytesPeRand = latime * bytesPerPixel;
-    int randCuPadding = (bytesPeRand + 3) & (~3);
+    int randCuPadding = (bytesPeRand + 3) & (~3); // fiecare rand trebuie aliniat la multiplu de 4 bytes
 
     unsigned char* randBMP = (unsigned char*)malloc(randCuPadding);
     unsigned char* sursa = (unsigned char*)malloc(latime * inaltime * bytesPerPixel);
@@ -156,7 +156,7 @@ GLuint incarcaBMP(const char* numeFisier)
             a = alphaOriginal;
         }
 
-        // daca pixelul este aproape negru => tranparent
+        // daca pixelul este aproape negru => opac
         if (r < 5 && g < 5 && b < 5)
         {
             a = 0;
@@ -177,7 +177,7 @@ GLuint incarcaBMP(const char* numeFisier)
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP); // se pastreaza ultimul pixel de pe margine daca se depasesc coord [0,1]
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
 
     glTexImage2D(
