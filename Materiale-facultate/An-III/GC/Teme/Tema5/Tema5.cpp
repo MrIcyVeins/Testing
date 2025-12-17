@@ -224,7 +224,7 @@ void aplicaIluminare()
         break;
 
     case 4: // Shininess mai mare
-        shininess = 96.0f;
+        shininess = 8.0f;
         break;
     }
 
