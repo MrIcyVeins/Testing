@@ -4,61 +4,133 @@
 #include <cmath>
 #include <cstdlib>
 
-// Camera orbit (alpha/beta + dist)
-float Refx = 0.0f, Refy = 0.0f, Refz = 0.0f;
-float alpha = 0.35f, beta = 0.0f;
-float dist = 30.0f;
-float Obsx, Obsy, Obsz;
+// ============================================================
+// Camera (orbit in jurul centrului scenei)
+// ============================================================
+float tintaX = 0.0f, tintaY = 0.0f, tintaZ = 0.0f;
+float alfaCamera = 0.35f, betaCamera = 0.0f;   // alfa = sus/jos, beta = stanga/dreapta
+float distCamera = 30.0f;
+float camX, camY, camZ;
 
-// Time (animatii: frunze, barca)
-float gTime = 0.0f;
+// Timp (secunde)
+float timpSec = 0.0f;
 
-// Scene params
+// ============================================================
+// Text overlay (stanga sus)
+// ============================================================
+int latimeFereastra = 900;
+int inaltimeFereastra = 650;
+
+const char* TEXT_L1 = "Scena 3D dinamica: Insula tropicala";
+const char* TEXT_L2 = "Georgescu Andrei";
+const char* TEXT_L3 = "Saftoiu Genica Liliana";
+
+// ============================================================
+// Parametri scena
+// ============================================================
 const float Z_OCEAN = 0.05f;
-const float R_ISLAND_BASE = 18.0f;
-const float R_SAND_BASE = 14.0f;
+const float R_INSULA_BAZA = 18.0f;
+const float R_NISIP_BAZA = 14.0f;
 
-// Coast shelf (smooth transition to ocean)
-const float COAST_WIDTH = 2.2f;
-const float COAST_UNDER_Z = Z_OCEAN - 0.03f;
+// Zona de tarm putin sub apa (pentru tranzitie)
+const float LATIME_TARM = 2.2f;
+const float Z_TARM = Z_OCEAN - 0.005f;
 
-// Light = sun position
-GLfloat lightPos[4] = { 42.0f, -34.0f, 30.0f, 1.0f };
+// Pozitia soarelui (si a luminii)
+GLfloat pozSoare[4] = { 42.0f, -34.0f, 30.0f, 1.0f };
 
-// Fog
-GLfloat fogColor[4] = { 0.70f, 0.92f, 0.98f, 1.0f };
+// Culoare ceata (mai neutra, ca sa nu coloreze nisipul in albastru)
+GLfloat culoareCeata[4] = { 0.88f, 0.92f, 0.95f, 1.0f };
 
-// Helpers
-static inline float clampf(float v, float lo, float hi)
+// ============================================================
+// Functii ajutatoare
+// ============================================================
+static inline float Limiteaza(float v, float minV, float maxV)
 {
-    if (v < lo) return lo;
-    if (v > hi) return hi;
+    if (v < minV) return minV;
+    if (v > maxV) return maxV;
     return v;
 }
 
-static inline float smoothstep(float edge0, float edge1, float x)
+static inline float SmoothStep(float e0, float e1, float x)
 {
-    float t = clampf((x - edge0) / (edge1 - edge0), 0.0f, 1.0f);
+    float t = Limiteaza((x - e0) / (e1 - e0), 0.0f, 1.0f);
     return t * t * (3.0f - 2.0f * t);
 }
 
-static inline void setMatColor(float r, float g, float b, float a = 1.0f)
+// Setare culoare material (folosit cand LIGHTING este activ)
+static inline void SeteazaMaterial(float r, float g, float b, float a = 1.0f)
 {
     GLfloat col[4] = { r, g, b, a };
     glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, col);
 }
 
-// Deterministic random [0,1)
-static inline float rand01(unsigned int& s)
+// Random [0..1] folosind rand() (mai usor de explicat)
+static inline float Random01()
 {
-    s = 1664525u * s + 1013904223u;
-    return (float)(s & 0x00FFFFFF) / (float)0x01000000;
+    return (float)rand() / (float)RAND_MAX;
 }
 
-// Projection
-void reshapeAndProjection(int w, int h)
+static inline void InPolare(float x, float y, float& r, float& theta)
+{
+    r = std::sqrt(x * x + y * y);
+    theta = std::atan2(y, x);
+}
+
+// ============================================================
+// Text 2D (overlay)
+// ============================================================
+void DeseneazaText2D(int x, int y, const char* text)
+{
+    glRasterPos2i(x, y);
+    for (const char* p = text; *p; p++)
+        glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, *p);
+}
+
+void DeseneazaOverlayText()
+{
+    // Overlay 2D peste scena
+    glDisable(GL_LIGHTING);
+    glDisable(GL_FOG);
+    glDisable(GL_DEPTH_TEST);
+
+    glMatrixMode(GL_PROJECTION);
+    glPushMatrix();
+    glLoadIdentity();
+    gluOrtho2D(0, latimeFereastra, 0, inaltimeFereastra);
+
+    glMatrixMode(GL_MODELVIEW);
+    glPushMatrix();
+    glLoadIdentity();
+
+    glColor3f(0.0f, 0.0f, 0.0f);
+
+    int margin = 12;
+    int y = inaltimeFereastra - margin - 18;
+    DeseneazaText2D(margin, y, TEXT_L1);
+    y -= 22; DeseneazaText2D(margin, y, TEXT_L2);
+    y -= 22; DeseneazaText2D(margin, y, TEXT_L3);
+
+    glPopMatrix();
+    glMatrixMode(GL_PROJECTION);
+    glPopMatrix();
+    glMatrixMode(GL_MODELVIEW);
+
+    glEnable(GL_DEPTH_TEST);
+    glEnable(GL_LIGHTING);
+    glColor4f(1, 1, 1, 1);
+}
+
+// ============================================================
+// Proiectie
+// ============================================================
+void ReshapeSiProiectie(int w, int h)
 {
     if (h == 0) h = 1;
+
+    latimeFereastra = w;
+    inaltimeFereastra = h;
+
     float ratio = (float)w / (float)h;
 
     glMatrixMode(GL_PROJECTION);
@@ -69,40 +141,45 @@ void reshapeAndProjection(int w, int h)
     glMatrixMode(GL_MODELVIEW);
 }
 
-// Simple lighting (Light0)
-void aplicaIluminareSimpla()
+// ============================================================
+// Iluminare + ceata
+// ============================================================
+void AplicaIluminareFaraPozitie()
 {
     glEnable(GL_LIGHTING);
     glEnable(GL_LIGHT0);
     glShadeModel(GL_SMOOTH);
 
     GLfloat ambientL[4] = { 0.25f, 0.25f, 0.25f, 1.0f };
-    GLfloat diffuseL[4] = { 1.00f, 1.00f, 0.95f, 1.0f };
-    GLfloat specularL[4] = { 1.00f, 1.00f, 1.00f, 1.0f };
+    GLfloat difuzL[4] = { 1.00f, 1.00f, 0.95f, 1.0f };
+    GLfloat specL[4] = { 1.00f, 1.00f, 1.00f, 1.0f };
 
-    glLightfv(GL_LIGHT0, GL_POSITION, lightPos);
     glLightfv(GL_LIGHT0, GL_AMBIENT, ambientL);
-    glLightfv(GL_LIGHT0, GL_DIFFUSE, diffuseL);
-    glLightfv(GL_LIGHT0, GL_SPECULAR, specularL);
+    glLightfv(GL_LIGHT0, GL_DIFFUSE, difuzL);
+    glLightfv(GL_LIGHT0, GL_SPECULAR, specL);
 
     GLfloat matSpec[4] = { 0.30f, 0.30f, 0.30f, 1.0f };
     glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, matSpec);
     glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, 24.0f);
 }
 
-// Fog setup
-void aplicaCeata()
+void AplicaCeata()
 {
     glEnable(GL_FOG);
     glFogi(GL_FOG_MODE, GL_LINEAR);
-    glFogfv(GL_FOG_COLOR, fogColor);
-    glFogf(GL_FOG_START, 30.0f);
-    glFogf(GL_FOG_END, 140.0f);
+    glFogfv(GL_FOG_COLOR, culoareCeata);
+
+    // Ceata mai departe (sa nu coloreze insula)
+    glFogf(GL_FOG_START, 55.0f);
+    glFogf(GL_FOG_END, 220.0f);
+
     glHint(GL_FOG_HINT, GL_DONT_CARE);
 }
 
-// Sky gradient (drawn in screen space)
-void desenCerGradient()
+// ============================================================
+// Cer (gradient simplu)
+// ============================================================
+void DeseneazaCerGradient()
 {
     glDisable(GL_FOG);
     glDisable(GL_LIGHTING);
@@ -135,74 +212,68 @@ void desenCerGradient()
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_FOG);
     glEnable(GL_LIGHTING);
-    glColor3f(1, 1, 1);
+
+    glColor4f(1, 1, 1, 1);
 }
 
-// Irregular island outline
-static inline float islandRadius(float theta)
+// ============================================================
+// Contur insula neregulat
+// ============================================================
+static inline float RazaInsula(float theta)
 {
-    const float a1 = 1.6f, a2 = 0.9f, a3 = 0.5f;
+    float r = R_INSULA_BAZA
+        + 1.6f * std::sinf(3.0f * theta + 0.3f)
+        + 0.9f * std::sinf(7.0f * theta + 1.1f)
+        + 0.5f * std::cosf(11.0f * theta - 0.7f);
 
-    float r = R_ISLAND_BASE
-        + a1 * std::sinf(3.0f * theta + 0.3f)
-        + a2 * std::sinf(7.0f * theta + 1.1f)
-        + a3 * std::cosf(11.0f * theta - 0.7f);
-
-    return clampf(r, R_ISLAND_BASE - 3.0f, R_ISLAND_BASE + 3.0f);
+    return Limiteaza(r, R_INSULA_BAZA - 3.0f, R_INSULA_BAZA + 3.0f);
 }
 
-// Sand ring (inside shore)
-static inline float sandRadius(float theta)
+static inline float RazaNisip(float theta)
 {
-    const float b1 = 1.0f, b2 = 0.6f;
+    float r = R_NISIP_BAZA
+        + 1.0f * std::sinf(3.0f * theta + 0.8f)
+        + 0.6f * std::cosf(6.0f * theta - 0.4f);
 
-    float r = R_SAND_BASE
-        + b1 * std::sinf(3.0f * theta + 0.8f)
-        + b2 * std::cosf(6.0f * theta - 0.4f);
-
-    float maxAllowed = islandRadius(theta) - 2.0f;
-    return clampf(r, R_SAND_BASE - 2.5f, maxAllowed);
+    float maxAdmis = RazaInsula(theta) - 2.0f;
+    return Limiteaza(r, R_NISIP_BAZA - 2.5f, maxAdmis);
 }
 
-static inline void polar(float x, float y, float& r, float& theta)
-{
-    r = std::sqrt(x * x + y * y);
-    theta = std::atan2(y, x);
-}
-
-// Height field for island (hill + beach + coast shelf)
-float islandHeight(float x, float y)
+// Inaltimea insulei (deal + tranzitie spre nisip + tarm)
+float InaltimeInsula(float x, float y)
 {
     float r, theta;
-    polar(x, y, r, theta);
+    InPolare(x, y, r, theta);
 
-    float shore = islandRadius(theta);
-    float Sloc = sandRadius(theta);
+    float rTarm = RazaInsula(theta);
+    float rNisip = RazaNisip(theta);
 
-    float rn = r / shore;
+    float rn = r / rTarm;
     float h = 6.0f * std::exp(-(rn * rn) * 2.2f);
 
+    // mica rugozitate
     h += 0.18f * std::sinf(0.35f * x + 0.2f) * std::cosf(0.30f * y - 0.1f);
 
-    const float beachH = 0.20f;
+    // zona nisip
+    const float hPlaja = 0.20f;
+    float tNisip = SmoothStep(rNisip - 2.8f, rNisip, r);
+    h = h * (1.0f - tNisip) + hPlaja * tNisip;
 
-    float tBeach = smoothstep(Sloc - 2.8f, Sloc, r);
-    h = h * (1.0f - tBeach) + beachH * tBeach;
-
-    float tCoast = smoothstep(shore - COAST_WIDTH, shore, r);
-    h = h * (1.0f - tCoast) + COAST_UNDER_Z * tCoast;
+    // zona tarm (aproape de apa)
+    float tTarm = SmoothStep(rTarm - LATIME_TARM, rTarm, r);
+    h = h * (1.0f - tTarm) + Z_TARM * tTarm;
 
     return h;
 }
 
-// Approx normal from height field (finite differences)
-void islandNormal(float x, float y, float& nx, float& ny, float& nz)
+// Normala aproximata prin diferente finite
+void NormalaInsula(float x, float y, float& nx, float& ny, float& nz)
 {
     const float e = 0.2f;
-    float hL = islandHeight(x - e, y);
-    float hR = islandHeight(x + e, y);
-    float hD = islandHeight(x, y - e);
-    float hU = islandHeight(x, y + e);
+    float hL = InaltimeInsula(x - e, y);
+    float hR = InaltimeInsula(x + e, y);
+    float hD = InaltimeInsula(x, y - e);
+    float hU = InaltimeInsula(x, y + e);
 
     nx = -(hR - hL);
     ny = -(hU - hD);
@@ -213,98 +284,93 @@ void islandNormal(float x, float y, float& nx, float& ny, float& nz)
     nx /= len; ny /= len; nz /= len;
 }
 
-// Island mesh (triangle strips, clipped by outline)
-void desenInsula()
+// ============================================================
+// Insula (culori brute: verde + galben, fara iluminare)
+// ============================================================
+void DeseneazaInsulaCuloriSafe()
 {
     glDisable(GL_CULL_FACE);
+
+    glDisable(GL_LIGHTING);
+    glDisable(GL_COLOR_MATERIAL);
 
     const int N = 95;
     const float S = 22.0f;
-    const float step = (2.0f * S) / N;
+    const float pas = (2.0f * S) / N;
 
-    const float grassR = 0.18f, grassG = 0.62f, grassB = 0.24f;
-    const float sandR = 0.92f, sandG = 0.86f, sandB = 0.55f;
-    const float wetR = 0.84f, wetG = 0.78f, wetB = 0.54f;
+    const float verdeR = 0.12f, verdeG = 0.65f, verdeB = 0.18f;
+    const float galbenR = 0.98f, galbenG = 0.92f, galbenB = 0.45f;
 
     for (int j = 0; j < N; j++) {
-        float y0 = -S + j * step;
-        float y1 = y0 + step;
+        float y0 = -S + j * pas;
+        float y1 = y0 + pas;
 
-        bool stripOpen = false;
+        bool deschis = false;
 
         for (int i = 0; i <= N; i++) {
-            float x = -S + i * step;
+            float x = -S + i * pas;
 
-            float r0, th0; polar(x, y0, r0, th0);
-            float r1, th1; polar(x, y1, r1, th1);
+            float r0, th0; InPolare(x, y0, r0, th0);
+            float r1, th1; InPolare(x, y1, r1, th1);
 
-            float shore0 = islandRadius(th0);
-            float shore1 = islandRadius(th1);
+            float rTarm0 = RazaInsula(th0);
+            float rTarm1 = RazaInsula(th1);
 
-            bool inside = (r0 <= shore0) && (r1 <= shore1);
+            bool inInterior = (r0 <= rTarm0) && (r1 <= rTarm1);
 
-            if (inside) {
-                if (!stripOpen) { glBegin(GL_TRIANGLE_STRIP); stripOpen = true; }
+            if (inInterior) {
+                if (!deschis) { glBegin(GL_TRIANGLE_STRIP); deschis = true; }
 
-                float h0 = islandHeight(x, y0);
-                float h1 = islandHeight(x, y1);
+                float h0 = InaltimeInsula(x, y0);
+                float h1 = InaltimeInsula(x, y1);
+
+                float rNisip0 = RazaNisip(th0);
+                float rNisip1 = RazaNisip(th1);
+
+                float tNisip0 = SmoothStep(rNisip0 - 2.8f, rNisip0 + 0.2f, r0);
+                float tNisip1 = SmoothStep(rNisip1 - 2.8f, rNisip1 + 0.2f, r1);
 
                 float nx, ny, nz;
 
-                islandNormal(x, y0, nx, ny, nz);
+                // v0
+                NormalaInsula(x, y0, nx, ny, nz);
                 glNormal3f(nx, ny, nz);
 
-                float Sloc0 = sandRadius(th0);
-                float tSand0 = smoothstep(Sloc0 - 2.8f, Sloc0 + 0.2f, r0);
-                float tWet0 = smoothstep(shore0 - COAST_WIDTH, shore0, r0);
-
-                float baseR0 = grassR * (1.0f - tSand0) + sandR * tSand0;
-                float baseG0 = grassG * (1.0f - tSand0) + sandG * tSand0;
-                float baseB0 = grassB * (1.0f - tSand0) + sandB * tSand0;
-
-                float outR0 = baseR0 * (1.0f - tWet0) + wetR * tWet0;
-                float outG0 = baseG0 * (1.0f - tWet0) + wetG * tWet0;
-                float outB0 = baseB0 * (1.0f - tWet0) + wetB * tWet0;
-
-                setMatColor(outR0, outG0, outB0);
+                glColor3f(verdeR * (1.0f - tNisip0) + galbenR * tNisip0,
+                    verdeG * (1.0f - tNisip0) + galbenG * tNisip0,
+                    verdeB * (1.0f - tNisip0) + galbenB * tNisip0);
                 glVertex3f(x, y0, h0);
 
-                islandNormal(x, y1, nx, ny, nz);
+                // v1
+                NormalaInsula(x, y1, nx, ny, nz);
                 glNormal3f(nx, ny, nz);
 
-                float Sloc1 = sandRadius(th1);
-                float tSand1 = smoothstep(Sloc1 - 2.8f, Sloc1 + 0.2f, r1);
-                float tWet1 = smoothstep(shore1 - COAST_WIDTH, shore1, r1);
-
-                float baseR1 = grassR * (1.0f - tSand1) + sandR * tSand1;
-                float baseG1 = grassG * (1.0f - tSand1) + sandG * tSand1;
-                float baseB1 = grassB * (1.0f - tSand1) + sandB * tSand1;
-
-                float outR1 = baseR1 * (1.0f - tWet1) + wetR * tWet1;
-                float outG1 = baseG1 * (1.0f - tWet1) + wetG * tWet1;
-                float outB1 = baseB1 * (1.0f - tWet1) + wetB * tWet1;
-
-                setMatColor(outR1, outG1, outB1);
+                glColor3f(verdeR * (1.0f - tNisip1) + galbenR * tNisip1,
+                    verdeG * (1.0f - tNisip1) + galbenG * tNisip1,
+                    verdeB * (1.0f - tNisip1) + galbenB * tNisip1);
                 glVertex3f(x, y1, h1);
             }
-            else if (stripOpen) {
+            else if (deschis) {
                 glEnd();
-                stripOpen = false;
+                deschis = false;
             }
         }
 
-        if (stripOpen) glEnd();
+        if (deschis) glEnd();
     }
 
     glEnable(GL_CULL_FACE);
+    glColor4f(1, 1, 1, 1);
 }
 
-// Ocean plane
-void desenOceanSimplu()
+// ============================================================
+// Ocean simplu
+// ============================================================
+void DeseneazaOcean()
 {
     glDisable(GL_CULL_FACE);
 
-    setMatColor(0.10f, 0.45f, 0.75f, 1.0f);
+    SeteazaMaterial(0.10f, 0.45f, 0.75f, 1.0f);
     glNormal3f(0, 0, 1);
 
     const float S = 90.0f;
@@ -318,8 +384,10 @@ void desenOceanSimplu()
     glEnable(GL_CULL_FACE);
 }
 
-// Foam band on sand (alpha blending)
-void desenSpumaTarm()
+// ============================================================
+// Spuma la tarm (blending)
+// ============================================================
+void DeseneazaSpumaTarm()
 {
     const int K = 240;
 
@@ -328,7 +396,7 @@ void desenSpumaTarm()
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-    glColor4f(0.90f, 0.98f, 1.0f, 0.22f);
+    glColor4f(1.0f, 1.0f, 1.0f, 0.18f);
     glNormal3f(0, 0, 1);
 
     glBegin(GL_TRIANGLE_STRIP);
@@ -336,26 +404,26 @@ void desenSpumaTarm()
         float a = (2.0f * 3.1415926f) * (i / (float)K);
         float ca = std::cos(a), sa = std::sin(a);
 
-        float shore = islandRadius(a);
-        float sand = sandRadius(a);
+        float rTarm = RazaInsula(a);
+        float rNisip = RazaNisip(a);
 
-        float minR = sand + 0.25f;
-        float maxR = shore - 0.22f;
+        float minR = rNisip + 0.25f;
+        float maxR = rTarm - 0.22f;
 
-        float desired = 1.10f;
+        float dorit = 1.10f;
         float maxBand = maxR - minR;
-        float band = clampf(desired, 0.25f, maxBand * 0.90f);
+        float band = Limiteaza(dorit, 0.25f, maxBand * 0.90f);
 
-        float noise = 0.18f * std::sinf(5.0f * a + 0.6f) + 0.10f * std::cosf(9.0f * a - 1.1f);
-        float r0 = (shore - 0.95f) + noise;
-        r0 = clampf(r0, minR, maxR - band);
+        float zgomot = 0.18f * std::sinf(5.0f * a + 0.6f) + 0.10f * std::cosf(9.0f * a - 1.1f);
+        float r0 = (rTarm - 0.95f) + zgomot;
+        r0 = Limiteaza(r0, minR, maxR - band);
         float r1 = r0 + band;
 
         float x0 = r0 * ca, y0 = r0 * sa;
         float x1 = r1 * ca, y1 = r1 * sa;
 
-        float z0 = islandHeight(x0, y0) + 0.03f;
-        float z1 = islandHeight(x1, y1) + 0.03f;
+        float z0 = InaltimeInsula(x0, y0) + 0.03f;
+        float z1 = InaltimeInsula(x1, y1) + 0.03f;
 
         glVertex3f(x0, y0, z0);
         glVertex3f(x1, y1, z1);
@@ -365,95 +433,103 @@ void desenSpumaTarm()
     glDisable(GL_BLEND);
     glEnable(GL_CULL_FACE);
     glEnable(GL_LIGHTING);
-    glColor3f(1, 1, 1);
+    glColor4f(1, 1, 1, 1);
 }
 
-// Sun sphere (visual only)
-void desenSoare()
+// ============================================================
+// Soare (obiect vizual)
+// ============================================================
+void DeseneazaSoare()
 {
     glDisable(GL_LIGHTING);
     glColor3f(1.0f, 0.95f, 0.6f);
 
     glPushMatrix();
-    glTranslatef(lightPos[0], lightPos[1], lightPos[2]);
+    glTranslatef(pozSoare[0], pozSoare[1], pozSoare[2]);
     glutSolidSphere(1.4, 18, 18);
     glPopMatrix();
 
     glEnable(GL_LIGHTING);
+    glColor4f(1, 1, 1, 1);
 }
 
-// Palm tree (trunk + leaves with wind animation)
-void desenPalmierMic(float x, float y, unsigned int seed)
+// ============================================================
+// Palmieri (parametri generati o singura data)
+// ============================================================
+struct ParamFrunza
 {
-    float z = islandHeight(x, y);
+    float unghiDeg;
+    float faza;
+    float amp;
+    float pitchSus;
+    float L, W, cazatura;
+};
 
-    unsigned int s = seed;
-    float hTrunk = 1.4f + 0.6f * rand01(s);
-    float rTrunk = 0.10f + 0.04f * rand01(s);
-    float tiltX = -10.0f + 20.0f * rand01(s);
-    float tiltY = -10.0f + 20.0f * rand01(s);
-    float rotY = 360.0f * rand01(s);
+struct ParamPalmier
+{
+    float x, y;
+    float inaltimeTrunchi, razaTrunchi;
+    float inclinX, inclinY, rotZ;
+    float fazaVant, ampVant, vitezaVant;
+    float scala;
 
-    float windPhase = 6.2831853f * rand01(s);
-    float windAmp = 6.0f + 6.0f * rand01(s);
-    float windSpeed = 0.7f + 0.5f * rand01(s);
+    float razaPata;
+    float alfaPata;
 
-    float r, th; polar(x, y, r, th);
-    float shore = islandRadius(th);
-    float nearShore = smoothstep(shore - 2.0f, shore - 0.6f, r);
-    float scale = 1.0f - 0.35f * nearShore;
+    ParamFrunza frunze[7];
+};
+
+const int NR_PALMIERI = 10;
+ParamPalmier palmieri[NR_PALMIERI];
+
+void DeseneazaPalmier(const ParamPalmier& p)
+{
+    float z = InaltimeInsula(p.x, p.y);
 
     glPushMatrix();
-    glTranslatef(x, y, z + 0.02f);
-    glScalef(scale, scale, scale);
+    glTranslatef(p.x, p.y, z + 0.02f);
+    glScalef(p.scala, p.scala, p.scala);
 
-    glRotatef(rotY, 0, 0, 1);
-    glRotatef(tiltX, 1, 0, 0);
-    glRotatef(tiltY, 0, 1, 0);
+    glRotatef(p.rotZ, 0, 0, 1);
+    glRotatef(p.inclinX, 1, 0, 0);
+    glRotatef(p.inclinY, 0, 1, 0);
 
-    setMatColor(0.55f, 0.38f, 0.20f, 1.0f);
+    // Trunchi
+    SeteazaMaterial(0.55f, 0.38f, 0.20f, 1.0f);
     GLUquadric* q = gluNewQuadric();
-    gluCylinder(q, rTrunk * 1.05f, rTrunk * 0.75f, hTrunk, 10, 4);
+    gluCylinder(q, p.razaTrunchi * 1.05f, p.razaTrunchi * 0.75f, p.inaltimeTrunchi, 10, 4);
+    glTranslatef(0.0f, 0.0f, p.inaltimeTrunchi);
 
-    glTranslatef(0.0f, 0.0f, hTrunk);
+    // Vant global
+    float w1 = std::sinf(timpSec * p.vitezaVant + p.fazaVant);
+    float w2 = std::sinf(timpSec * (p.vitezaVant * 0.63f) + p.fazaVant * 1.7f);
+    float vant = 0.65f * w1 + 0.35f * w2;
+    float vantDeg = p.ampVant * vant;
 
-    float w = std::sinf(gTime * windSpeed + windPhase);
-    float w2 = std::sinf(gTime * (windSpeed * 0.63f) + windPhase * 1.7f);
-    float wind = 0.65f * w + 0.35f * w2;
-    float windDeg = windAmp * wind;
+    // Frunze
+    SeteazaMaterial(0.10f, 0.55f, 0.18f, 1.0f);
 
-    setMatColor(0.10f, 0.55f, 0.18f, 1.0f);
+    for (int i = 0; i < 7; i++) {
+        const ParamFrunza& f = p.frunze[i];
 
-    const int leaves = 7;
-    for (int i = 0; i < leaves; i++) {
-        float a = (360.0f / leaves) * i + 12.0f * rand01(s);
-
-        float leafPhase = 6.2831853f * rand01(s);
-        float leafAmp = 4.0f + 3.0f * rand01(s);
-        float leafTwist = 2.0f * std::sinf(gTime * (windSpeed * 1.2f) + leafPhase);
-
-        float pitchUp = 18.0f + 10.0f * rand01(s);
-        float L = 1.2f + 0.6f * rand01(s);
-        float W = 0.25f + 0.12f * rand01(s);
-        float droop = 0.55f + 0.25f * rand01(s);
+        float twist = 2.0f * std::sinf(timpSec * (p.vitezaVant * 1.2f) + f.faza);
+        float vantFrunza = f.amp * std::sinf(timpSec * (p.vitezaVant * 1.35f) + f.faza);
 
         glPushMatrix();
-        glRotatef(a, 0, 0, 1);
-
-        float leafWind = leafAmp * std::sinf(gTime * (windSpeed * 1.35f) + leafPhase);
-        glRotatef(pitchUp + windDeg + leafWind, 1, 0, 0);
-        glRotatef(leafTwist, 0, 0, 1);
+        glRotatef(f.unghiDeg, 0, 0, 1);
+        glRotatef(f.pitchSus + vantDeg + vantFrunza, 1, 0, 0);
+        glRotatef(twist, 0, 0, 1);
 
         glBegin(GL_TRIANGLES);
         glNormal3f(0.0f, 0.3f, 0.95f);
 
         glVertex3f(0.0f, 0.0f, 0.0f);
-        glVertex3f(-W, L * 0.55f, -droop * 0.55f);
-        glVertex3f(0.0f, L, -droop);
+        glVertex3f(-f.W, f.L * 0.55f, -f.cazatura * 0.55f);
+        glVertex3f(0.0f, f.L, -f.cazatura);
 
         glVertex3f(0.0f, 0.0f, 0.0f);
-        glVertex3f(W, L * 0.55f, -droop * 0.55f);
-        glVertex3f(0.0f, L, -droop);
+        glVertex3f(f.W, f.L * 0.55f, -f.cazatura * 0.55f);
+        glVertex3f(0.0f, f.L, -f.cazatura);
         glEnd();
 
         glPopMatrix();
@@ -463,99 +539,62 @@ void desenPalmierMic(float x, float y, unsigned int seed)
     glPopMatrix();
 }
 
-// Fake contact shadow (dark radial fan, alpha)
-void desenPataContact(float x, float y, float radius, float alphaCenter)
+void DeseneazaPalmieri()
 {
-    float z = islandHeight(x, y) + 0.04f;
+    for (int i = 0; i < NR_PALMIERI; i++)
+        DeseneazaPalmier(palmieri[i]);
+}
+
+// Pata de contact (umbra fake) sub palmieri
+void DeseneazaPataContact(float x, float y, float raza, float alfaCentru)
+{
+    float z = InaltimeInsula(x, y) + 0.04f;
 
     glBegin(GL_TRIANGLE_FAN);
-    glColor4f(0.0f, 0.0f, 0.0f, alphaCenter);
+    glColor4f(0, 0, 0, alfaCentru);
     glVertex3f(x, y, z);
 
     const int K = 26;
     for (int i = 0; i <= K; i++) {
         float a = (2.0f * 3.1415926f) * (i / (float)K);
-        float px = x + radius * std::cos(a);
-        float py = y + radius * std::sin(a);
-        float pz = islandHeight(px, py) + 0.04f;
+        float px = x + raza * std::cos(a);
+        float py = y + raza * std::sin(a);
+        float pz = InaltimeInsula(px, py) + 0.04f;
 
-        glColor4f(0.0f, 0.0f, 0.0f, 0.0f);
+        glColor4f(0, 0, 0, 0);
         glVertex3f(px, py, pz);
     }
     glEnd();
 }
 
-void desenContactPalmieri()
+void DeseneazaContactPalmieri()
 {
-    const int COUNT = 10;
-    unsigned int s = 1234567u;
-
     glDisable(GL_LIGHTING);
     glDisable(GL_CULL_FACE);
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glNormal3f(0, 0, 1);
 
-    for (int i = 0; i < COUNT; i++) {
-        float ang = 2.0f * 3.1415926f * rand01(s);
-        float ca = std::cos(ang), sa = std::sin(ang);
-
-        float shore = islandRadius(ang);
-        float sand = sandRadius(ang);
-
-        float rMin = sand - 1.8f;
-        float rMax = shore - 2.8f;
-        if (rMax < rMin + 0.5f) { rMax = rMin + 0.5f; }
-
-        float rr = rMin + (rMax - rMin) * rand01(s);
-        float x = rr * ca;
-        float y = rr * sa;
-
-        unsigned int local = s + i * 777u;
-        float radius = 0.55f + 0.25f * rand01(local);
-        float aCenter = 0.18f + 0.08f * rand01(local);
-
-        desenPataContact(x, y, radius * 1.15f, aCenter * 0.70f);
-        desenPataContact(x, y, radius * 0.75f, aCenter);
+    for (int i = 0; i < NR_PALMIERI; i++) {
+        const ParamPalmier& p = palmieri[i];
+        DeseneazaPataContact(p.x, p.y, p.razaPata * 1.15f, p.alfaPata * 0.70f);
+        DeseneazaPataContact(p.x, p.y, p.razaPata * 0.75f, p.alfaPata);
     }
 
     glDisable(GL_BLEND);
     glEnable(GL_CULL_FACE);
     glEnable(GL_LIGHTING);
-    glColor3f(1, 1, 1);
+    glColor4f(1, 1, 1, 1);
 }
 
-// Place palm trees on sand/grass band
-void desenPalmieri()
-{
-    const int COUNT = 10;
-    unsigned int s = 1234567u;
-
-    for (int i = 0; i < COUNT; i++) {
-        float ang = 2.0f * 3.1415926f * rand01(s);
-        float ca = std::cos(ang), sa = std::sin(ang);
-
-        float shore = islandRadius(ang);
-        float sand = sandRadius(ang);
-
-        float rMin = sand - 1.8f;
-        float rMax = shore - 2.8f;
-        if (rMax < rMin + 0.5f) { rMax = rMin + 0.5f; }
-
-        float rr = rMin + (rMax - rMin) * rand01(s);
-        float x = rr * ca;
-        float y = rr * sa;
-
-        desenPalmierMic(x, y, s + i * 100u);
-    }
-}
-
-// Fishing boat near shore
-void desenBarcaPescuit()
+// ============================================================
+// Barca de pescuit
+// ============================================================
+void DeseneazaBarcaPescuit()
 {
     float a = -0.65f;
-    float shore = islandRadius(a);
-    float r = shore + 4.0f;
+    float rTarm = RazaInsula(a);
+    float r = rTarm + 4.0f;
     float x = r * std::cos(a);
     float y = r * std::sin(a);
     float z = Z_OCEAN + 0.02f;
@@ -566,10 +605,10 @@ void desenBarcaPescuit()
     float yawDeg = (a * 180.0f / 3.1415926f) + 90.0f;
     glRotatef(yawDeg, 0, 0, 1);
 
-    float roll = 3.0f * std::sinf(gTime * 0.9f);
+    float roll = 3.0f * std::sinf(timpSec * 0.9f);
     glRotatef(roll, 1, 0, 0);
 
-    setMatColor(0.35f, 0.18f, 0.08f, 1.0f);
+    SeteazaMaterial(0.35f, 0.18f, 0.08f, 1.0f);
     glPushMatrix();
     glScalef(2.2f, 0.75f, 0.35f);
     glutSolidCube(1.0);
@@ -587,28 +626,37 @@ void desenBarcaPescuit()
     glutSolidCone(0.38, 0.7, 16, 4);
     glPopMatrix();
 
-    setMatColor(0.55f, 0.34f, 0.18f, 1.0f);
+    SeteazaMaterial(0.55f, 0.34f, 0.18f, 1.0f);
     glPushMatrix();
     glTranslatef(0, 0, 0.12f);
     glScalef(1.6f, 0.55f, 0.15f);
     glutSolidCube(1.0);
     glPopMatrix();
 
-    setMatColor(0.45f, 0.45f, 0.45f, 1.0f);
+    SeteazaMaterial(0.45f, 0.45f, 0.45f, 1.0f);
     GLUquadric* q = gluNewQuadric();
     glPushMatrix();
     glTranslatef(0.1f, 0.0f, 0.25f);
     gluCylinder(q, 0.04, 0.03, 0.9, 10, 2);
     glTranslatef(0, 0, 0.85f);
 
+    GLboolean wasCull = glIsEnabled(GL_CULL_FACE);
+    glDisable(GL_CULL_FACE);
+
     glDisable(GL_LIGHTING);
     glColor3f(0.95f, 0.15f, 0.15f);
-    glBegin(GL_TRIANGLES);
-    glVertex3f(0, 0, 0);
-    glVertex3f(0.55f, 0, 0.10f);
-    glVertex3f(0.55f, 0, -0.10f);
+
+    glBegin(GL_QUADS);
+    glVertex3f(0.0f, 0.0f, 0.12f);
+    glVertex3f(0.55f, 0.0f, 0.08f);
+    glVertex3f(0.55f, 0.0f, -0.08f);
+    glVertex3f(0.0f, 0.0f, -0.12f);
     glEnd();
+
     glEnable(GL_LIGHTING);
+    glColor4f(1, 1, 1, 1);
+
+    if (wasCull) glEnable(GL_CULL_FACE);
 
     glPopMatrix();
     gluDeleteQuadric(q);
@@ -616,166 +664,160 @@ void desenBarcaPescuit()
     glPopMatrix();
 }
 
-// Stone ruins on island peak
-void desenRuineVarf()
+// ============================================================
+// Ruine varf
+// ============================================================
+void DeseneazaRuineVarf()
 {
     float cx = 0.0f, cy = 0.0f;
 
     struct P { float x, y; };
-    P pts[] = {
-        {  0.0f,  0.0f },   // column 1
-        {  0.9f, -0.2f },   // column 2
-        { -0.6f,  0.7f },   // block 1
-        {  0.2f,  1.1f },   // block 2
-        { -1.0f, -0.6f },   // block 3
-    };
+    P pts[] = { {0,0},{0.9f,-0.2f},{-0.6f,0.7f},{0.2f,1.1f},{-1.0f,-0.6f} };
 
-    auto stone = [&](float k = 1.0f) {
-        setMatColor(0.55f * k, 0.56f * k, 0.58f * k, 1.0f);
+    auto Piatra = [&](float k = 1.0f) {
+        SeteazaMaterial(0.55f * k, 0.56f * k, 0.58f * k, 1.0f);
         };
 
     GLUquadric* q = gluNewQuadric();
     gluQuadricNormals(q, GLU_SMOOTH);
 
-    // Column 1
     {
         float x = cx + pts[0].x, y = cy + pts[0].y;
-        float z = islandHeight(x, y);
+        float z = InaltimeInsula(x, y);
 
         glPushMatrix();
         glTranslatef(x, y, z - 0.02f);
         glRotatef(10.0f, 1, 0, 0);
         glRotatef(-20.0f, 0, 1, 0);
 
-        stone(1.0f);
+        Piatra(1.0f);
         gluCylinder(q, 0.28, 0.24, 2.2, 16, 5);
 
-        stone(1.05f);
+        Piatra(1.05f);
         glTranslatef(0, 0, 2.15f);
         glScalef(0.75f, 0.75f, 0.25f);
         glutSolidCube(1.0);
         glPopMatrix();
     }
 
-    // Column 2
     {
         float x = cx + pts[1].x, y = cy + pts[1].y;
-        float z = islandHeight(x, y);
+        float z = InaltimeInsula(x, y);
 
         glPushMatrix();
         glTranslatef(x, y, z - 0.02f);
         glRotatef(-18.0f, 1, 0, 0);
         glRotatef(25.0f, 0, 1, 0);
 
-        stone(0.98f);
+        Piatra(0.98f);
         gluCylinder(q, 0.24, 0.20, 1.55, 16, 4);
 
-        stone(1.03f);
+        Piatra(1.03f);
         glTranslatef(0, 0, 1.50f);
         glScalef(0.65f, 0.65f, 0.22f);
         glutSolidCube(1.0);
         glPopMatrix();
     }
 
-    // Fallen beam
     {
         float x = cx + 0.45f, y = cy - 0.10f;
-        float z = islandHeight(x, y);
+        float z = InaltimeInsula(x, y);
 
         glPushMatrix();
         glTranslatef(x, y, z + 0.15f);
         glRotatef(35.0f, 0, 0, 1);
         glRotatef(12.0f, 1, 0, 0);
 
-        stone(0.95f);
+        Piatra(0.95f);
         glScalef(1.6f, 0.35f, 0.25f);
         glutSolidCube(1.0);
         glPopMatrix();
     }
 
-    // Blocks
-    auto bloc = [&](float x, float y, float sx, float sy, float sz, float rotZ)
+    auto Bloc = [&](float x, float y, float sx, float sy, float sz, float rotZ)
         {
-            float z = islandHeight(x, y);
+            float z = InaltimeInsula(x, y);
             glPushMatrix();
             glTranslatef(x, y, z - 0.01f);
             glRotatef(rotZ, 0, 0, 1);
-            stone(0.92f);
+            Piatra(0.92f);
             glScalef(sx, sy, sz);
             glutSolidCube(1.0);
             glPopMatrix();
         };
 
-    bloc(cx + pts[2].x, cy + pts[2].y, 0.65f, 0.45f, 0.35f, 22.0f);
-    bloc(cx + pts[3].x, cy + pts[3].y, 0.50f, 0.60f, 0.25f, -15.0f);
-    bloc(cx + pts[4].x, cy + pts[4].y, 0.80f, 0.40f, 0.30f, 40.0f);
+    Bloc(cx + pts[2].x, cy + pts[2].y, 0.65f, 0.45f, 0.35f, 22.0f);
+    Bloc(cx + pts[3].x, cy + pts[3].y, 0.50f, 0.60f, 0.25f, -15.0f);
+    Bloc(cx + pts[4].x, cy + pts[4].y, 0.80f, 0.40f, 0.30f, 40.0f);
 
     gluDeleteQuadric(q);
 }
 
-// Fishing hut (roof + ramp)
-void desenCabanaPescuit()
+// ============================================================
+// Cabana pescuit
+// ============================================================
+void DeseneazaCabanaPescuit()
 {
     float x = 10.0f;
     float y = -6.5f;
 
-    float r, th; polar(x, y, r, th);
-    float shore = islandRadius(th);
-    float sand = sandRadius(th);
-    float maxR = shore - 0.9f;
-    float minR = sand + 0.6f;
+    float r, th; InPolare(x, y, r, th);
+    float rTarm = RazaInsula(th);
+    float rNisip = RazaNisip(th);
+    float maxR = rTarm - 0.9f;
+    float minR = rNisip + 0.6f;
 
     if (r > maxR) { float k = maxR / r; x *= k; y *= k; }
     if (r < minR) { float k = minR / (r + 1e-6f); x *= k; y *= k; }
 
-    float z = islandHeight(x, y);
+    float zSol = InaltimeInsula(x, y);
 
     glPushMatrix();
-    glTranslatef(x, y, z + 0.02f);
+    glTranslatef(x, y, zSol + 0.02f);
     glRotatef(35.0f, 0, 0, 1);
 
-    const float floorZ = 1.00f;
-    const float floorT = 0.15f;
-    const float wallZ = 1.45f;
-    const float wallH = 0.90f;
-    const float wallTopZ = wallZ + 0.5f * wallH;
-    const float roofZ = wallTopZ + 0.02f;
+    const float zPodea = 1.00f;
+    const float tPodea = 0.15f;
+    const float zPereti = 1.45f;
+    const float hPereti = 0.90f;
+    const float zSusPereti = zPereti + 0.5f * hPereti;
+    const float zAcoperis = zSusPereti + 0.02f;
 
-    setMatColor(0.45f, 0.30f, 0.18f, 1.0f);
+    SeteazaMaterial(0.45f, 0.30f, 0.18f, 1.0f);
     GLUquadric* q = gluNewQuadric();
 
-    auto post = [&](float px, float py) {
+    auto Stalp = [&](float px, float py) {
         glPushMatrix();
         glTranslatef(px, py, -0.10f);
         gluCylinder(q, 0.10, 0.09, 1.10, 10, 3);
         glPopMatrix();
         };
 
-    post(-1.0f, -0.7f);
-    post(1.0f, -0.7f);
-    post(-1.0f, 0.7f);
-    post(1.0f, 0.7f);
+    Stalp(-1.0f, -0.7f);
+    Stalp(1.0f, -0.7f);
+    Stalp(-1.0f, 0.7f);
+    Stalp(1.0f, 0.7f);
 
-    setMatColor(0.55f, 0.38f, 0.22f, 1.0f);
+    SeteazaMaterial(0.55f, 0.38f, 0.22f, 1.0f);
     glPushMatrix();
-    glTranslatef(0, 0, floorZ);
-    glScalef(2.4f, 1.8f, floorT);
+    glTranslatef(0, 0, zPodea);
+    glScalef(2.4f, 1.8f, tPodea);
     glutSolidCube(1.0);
     glPopMatrix();
 
-    setMatColor(0.60f, 0.43f, 0.25f, 1.0f);
+    SeteazaMaterial(0.60f, 0.43f, 0.25f, 1.0f);
     glPushMatrix();
-    glTranslatef(0.0f, 0.0f, wallZ);
-    glScalef(1.8f, 1.3f, wallH);
+    glTranslatef(0.0f, 0.0f, zPereti);
+    glScalef(1.8f, 1.3f, hPereti);
     glutSolidCube(1.0);
     glPopMatrix();
 
     GLboolean wasCull = glIsEnabled(GL_CULL_FACE);
     glDisable(GL_CULL_FACE);
 
-    setMatColor(0.35f, 0.22f, 0.14f, 1.0f);
+    SeteazaMaterial(0.35f, 0.22f, 0.14f, 1.0f);
     glPushMatrix();
-    glTranslatef(0.0f, 0.0f, roofZ);
+    glTranslatef(0.0f, 0.0f, zAcoperis);
 
     float L = 2.20f;
     float W = 1.70f;
@@ -812,36 +854,37 @@ void desenCabanaPescuit()
     glEnd();
 
     glPopMatrix();
+
     if (wasCull) glEnable(GL_CULL_FACE);
 
-    // Ramp down to ground
-    setMatColor(0.52f, 0.36f, 0.20f, 1.0f);
+    SeteazaMaterial(0.52f, 0.36f, 0.20f, 1.0f);
 
-    const float rampLen = 3.0f;
-    const float rampWide = 0.65f;
-    const float rampThick = 0.10f;
+    const float lungRampa = 3.0f;
+    const float latRampa = 0.65f;
+    const float grosRampa = 0.10f;
     const float pitchDeg = 28.0f;
 
-    const float hingeX = 1.25f;
-    const float hingeY = -0.15f;
-    const float hingeZ = floorZ + 0.5f * floorT;
+    const float balamaX = 1.25f;
+    const float balamaY = -0.15f;
+    const float balamaZ = zPodea + 0.5f * tPodea;
 
     glPushMatrix();
-    glTranslatef(hingeX, hingeY, hingeZ);
+    glTranslatef(balamaX, balamaY, balamaZ);
     glRotatef(pitchDeg, 0, 1, 0);
-    glTranslatef(rampLen * 0.5f, 0.0f, -rampThick * 0.5f);
-    glScalef(rampLen, rampWide, rampThick);
+    glTranslatef(lungRampa * 0.5f, 0.0f, -grosRampa * 0.5f);
+    glScalef(lungRampa, latRampa, grosRampa);
     glutSolidCube(1.0);
     glPopMatrix();
 
-    setMatColor(0.45f, 0.30f, 0.18f, 1.0f);
+    SeteazaMaterial(0.45f, 0.30f, 0.18f, 1.0f);
+
     glPushMatrix();
-    glTranslatef(hingeX + 2.7f, hingeY - 0.25f, 0.25f);
+    glTranslatef(balamaX + 2.7f, balamaY - 0.25f, -0.02f);
     gluCylinder(q, 0.06, 0.05, 0.55, 10, 2);
     glPopMatrix();
 
     glPushMatrix();
-    glTranslatef(hingeX + 2.7f, hingeY + 0.25f, 0.25f);
+    glTranslatef(balamaX + 2.7f, balamaY + 0.25f, -0.02f);
     gluCylinder(q, 0.06, 0.05, 0.55, 10, 2);
     glPopMatrix();
 
@@ -849,75 +892,148 @@ void desenCabanaPescuit()
     glPopMatrix();
 }
 
-// Init
+// ============================================================
+// Generare palmieri (o singura data)
+// ============================================================
+void GenereazaPalmieri()
+{
+    for (int i = 0; i < NR_PALMIERI; i++) {
+        ParamPalmier& p = palmieri[i];
+
+        float ang = 2.0f * 3.1415926f * Random01();
+        float ca = std::cos(ang), sa = std::sin(ang);
+
+        float rTarm = RazaInsula(ang);
+        float rNisip = RazaNisip(ang);
+
+        float rMin = rNisip - 1.8f;
+        float rMax = rTarm - 2.8f;
+        if (rMax < rMin + 0.5f) rMax = rMin + 0.5f;
+
+        float rr = rMin + (rMax - rMin) * Random01();
+        p.x = rr * ca;
+        p.y = rr * sa;
+
+        float r, th; InPolare(p.x, p.y, r, th);
+        float aproapeTarm = SmoothStep(rTarm - 2.0f, rTarm - 0.6f, r);
+        p.scala = 1.0f - 0.35f * aproapeTarm;
+
+        p.inaltimeTrunchi = 1.4f + 0.6f * Random01();
+        p.razaTrunchi = 0.10f + 0.04f * Random01();
+        p.inclinX = -10.0f + 20.0f * Random01();
+        p.inclinY = -10.0f + 20.0f * Random01();
+        p.rotZ = 360.0f * Random01();
+
+        p.fazaVant = 6.2831853f * Random01();
+        p.ampVant = 6.0f + 6.0f * Random01();
+        p.vitezaVant = 0.7f + 0.5f * Random01();
+
+        p.razaPata = 0.55f + 0.25f * Random01();
+        p.alfaPata = 0.18f + 0.08f * Random01();
+
+        for (int k = 0; k < 7; k++) {
+            ParamFrunza& f = p.frunze[k];
+            f.unghiDeg = (360.0f / 7.0f) * k + 12.0f * Random01();
+            f.faza = 6.2831853f * Random01();
+            f.amp = 4.0f + 3.0f * Random01();
+            f.pitchSus = 18.0f + 10.0f * Random01();
+            f.L = 1.2f + 0.6f * Random01();
+            f.W = 0.25f + 0.12f * Random01();
+            f.cazatura = 0.55f + 0.25f * Random01();
+        }
+    }
+}
+
+// ============================================================
+// Init / Display
+// ============================================================
 void init()
 {
-    glClearColor(fogColor[0], fogColor[1], fogColor[2], 1.0f);
+    srand(1234567);
+    GenereazaPalmieri();
+
+    glClearColor(culoareCeata[0], culoareCeata[1], culoareCeata[2], 1.0f);
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_NORMALIZE);
     glEnable(GL_CULL_FACE);
 
-    aplicaCeata();
+    glDisable(GL_COLOR_MATERIAL);
+    glColor4f(1, 1, 1, 1);
+
+    AplicaCeata();
 }
 
-// Render frame
 void display()
 {
-    gTime = (float)glutGet(GLUT_ELAPSED_TIME) * 0.001f;
+    timpSec = (float)glutGet(GLUT_ELAPSED_TIME) * 0.001f;
 
-    // Draw sky first (no depth)
     glClear(GL_COLOR_BUFFER_BIT);
-    desenCerGradient();
+    DeseneazaCerGradient();
     glClear(GL_DEPTH_BUFFER_BIT);
 
-    // Orbit camera
-    Obsx = Refx + dist * std::cos(alpha) * std::cos(beta);
-    Obsy = Refy + dist * std::cos(alpha) * std::sin(beta);
-    Obsz = Refz + dist * std::sin(alpha);
+    camX = tintaX + distCamera * std::cos(alfaCamera) * std::cos(betaCamera);
+    camY = tintaY + distCamera * std::cos(alfaCamera) * std::sin(betaCamera);
+    camZ = tintaZ + distCamera * std::sin(alfaCamera);
 
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
-    gluLookAt(Obsx, Obsy, Obsz, Refx, Refy, Refz, 0, 0, 1);
+    gluLookAt(camX, camY, camZ, tintaX, tintaY, tintaZ, 0, 0, 1);
 
-    aplicaIluminareSimpla();
-    aplicaCeata();
+    glDisable(GL_COLOR_MATERIAL);
+    glColor4f(1, 1, 1, 1);
 
-    // Draw order
-    desenOceanSimplu();
-    desenInsula();
-    desenRuineVarf();
-    desenSpumaTarm();
-    desenBarcaPescuit();
-    desenCabanaPescuit();
-    desenContactPalmieri();
-    desenPalmieri();
-    desenSoare();
+    AplicaIluminareFaraPozitie();
+    glLightfv(GL_LIGHT0, GL_POSITION, pozSoare);
+
+    AplicaCeata();
+    glEnable(GL_FOG);
+    DeseneazaOcean();
+
+    glDisable(GL_FOG);
+    DeseneazaInsulaCuloriSafe();
+
+    glEnable(GL_LIGHTING);
+
+    DeseneazaRuineVarf();
+    DeseneazaSpumaTarm();
+    DeseneazaBarcaPescuit();
+    DeseneazaCabanaPescuit();
+
+    DeseneazaContactPalmieri();
+    DeseneazaPalmieri();
+
+    DeseneazaSoare();
+
+    // Text in stanga sus (peste scena)
+    DeseneazaOverlayText();
 
     glutSwapBuffers();
     glFlush();
 }
 
-// Input: camera orbit
+// ============================================================
+// Input
+// ============================================================
 void processSpecialKeys(int key, int, int)
 {
-    if (key == GLUT_KEY_LEFT)  beta -= 0.05f;
-    if (key == GLUT_KEY_RIGHT) beta += 0.05f;
-    if (key == GLUT_KEY_UP)    alpha = clampf(alpha + 0.05f, -1.55f, 1.55f);
-    if (key == GLUT_KEY_DOWN)  alpha = clampf(alpha - 0.05f, -1.55f, 1.55f);
-
+    if (key == GLUT_KEY_LEFT)  betaCamera -= 0.05f;
+    if (key == GLUT_KEY_RIGHT) betaCamera += 0.05f;
+    if (key == GLUT_KEY_UP)    alfaCamera = Limiteaza(alfaCamera + 0.05f, -1.55f, 1.55f);
+    if (key == GLUT_KEY_DOWN)  alfaCamera = Limiteaza(alfaCamera - 0.05f, -1.55f, 1.55f);
     glutPostRedisplay();
 }
 
-// Input: zoom + exit
 void processNormalKeys(unsigned char key, int, int)
 {
-    if (key == '+' || key == '=') dist = clampf(dist - 1.0f, 6.0f, 120.0f);
-    if (key == '-')               dist = clampf(dist + 1.0f, 6.0f, 120.0f);
+    if (key == '+' || key == '=') distCamera = Limiteaza(distCamera - 1.0f, 6.0f, 120.0f);
+    if (key == '-')               distCamera = Limiteaza(distCamera + 1.0f, 6.0f, 120.0f);
     if (key == 27) exit(0);
-
     glutPostRedisplay();
 }
 
+// ============================================================
+// Main
+// ============================================================
 int main(int argc, char** argv)
 {
     glutInit(&argc, argv);
@@ -929,7 +1045,7 @@ int main(int argc, char** argv)
 
     init();
 
-    glutReshapeFunc(reshapeAndProjection);
+    glutReshapeFunc(ReshapeSiProiectie);
     glutDisplayFunc(display);
     glutIdleFunc(display);
     glutSpecialFunc(processSpecialKeys);
