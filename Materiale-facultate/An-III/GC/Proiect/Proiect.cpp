@@ -1,12 +1,11 @@
-#define NOMINMAX
-#include <windows.h>
-#include <gl/freeglut.h>
-#include <cmath>
-#include <cstdlib>
+#define NOMINMAX // suport pentru partea de C++
+#include <windows.h> // pentru compatibilitte 
+#include <gl/freeglut.h> 
+#include <cmath> // sin, cos, sqrt
+#include <cstdlib> // pentru functiile rand, srand
+#include <cstring> // functii pentru siruri de caractere
 
-// ============================================================
 // Camera (orbit in jurul centrului scenei)
-// ============================================================
 float tintaX = 0.0f, tintaY = 0.0f, tintaZ = 0.0f;
 float alfaCamera = 0.35f, betaCamera = 0.0f;   // alfa = sus/jos, beta = stanga/dreapta
 float distCamera = 30.0f;
@@ -15,20 +14,13 @@ float camX, camY, camZ;
 // Timp (secunde)
 float timpSec = 0.0f;
 
-// ============================================================
-// Text overlay (stanga sus)
-// ============================================================
+// Dimensiuni fereastra (pentru text)
 int latimeFereastra = 900;
 int inaltimeFereastra = 650;
 
-const char* TEXT_L1 = "Scena 3D dinamica: Insula tropicala";
-const char* TEXT_L2 = "Georgescu Andrei";
-const char* TEXT_L3 = "Saftoiu Genica Liliana";
-
-// ============================================================
 // Parametri scena
-// ============================================================
 const float Z_OCEAN = 0.05f;
+
 const float R_INSULA_BAZA = 18.0f;
 const float R_NISIP_BAZA = 14.0f;
 
@@ -36,13 +28,15 @@ const float R_NISIP_BAZA = 14.0f;
 const float LATIME_TARM = 2.2f;
 const float Z_TARM = Z_OCEAN - 0.005f;
 
+// Tranzitie iarba->nisip (simpla)
+const float LATIME_TRANZITIE_NISIP = 2.5f;
+
 // Pozitia soarelui (si a luminii)
 GLfloat pozSoare[4] = { 42.0f, -34.0f, 30.0f, 1.0f };
 
-// Culoare ceata (mai neutra, ca sa nu coloreze nisipul in albastru)
+// Ceata (neutra ca sa nu "coloreze" mult scena)
 GLfloat culoareCeata[4] = { 0.88f, 0.92f, 0.95f, 1.0f };
 
-// ============================================================
 // Functii ajutatoare
 // ============================================================
 static inline float Limiteaza(float v, float minV, float maxV)
@@ -52,34 +46,33 @@ static inline float Limiteaza(float v, float minV, float maxV)
     return v;
 }
 
-static inline float SmoothStep(float e0, float e1, float x)
+// Interpolare liniara: t in [0..1]
+static inline float Lerp(float a, float b, float t)
 {
-    float t = Limiteaza((x - e0) / (e1 - e0), 0.0f, 1.0f);
-    return t * t * (3.0f - 2.0f * t);
+    return a + (b - a) * t;
 }
 
-// Setare culoare material (folosit cand LIGHTING este activ)
-static inline void SeteazaMaterial(float r, float g, float b, float a = 1.0f)
-{
-    GLfloat col[4] = { r, g, b, a };
-    glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, col);
-}
-
-// Random [0..1] folosind rand() (mai usor de explicat)
+// Random [0..1] - functie de randomizare pentru animatii
 static inline float Random01()
 {
     return (float)rand() / (float)RAND_MAX;
 }
 
+// Converteste (x,y) in (r,theta)
 static inline void InPolare(float x, float y, float& r, float& theta)
 {
     r = std::sqrt(x * x + y * y);
     theta = std::atan2(y, x);
 }
 
-// ============================================================
-// Text 2D (overlay)
-// ============================================================
+// Setare culoare material (cand LIGHTING este activ)
+static inline void SeteazaMaterial(float r, float g, float b, float a = 1.0f)
+{
+    GLfloat col[4] = { r, g, b, a };
+    glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, col);
+}
+
+// Deseneaza text bitmap (FreeGLUT)
 void DeseneazaText2D(int x, int y, const char* text)
 {
     glRasterPos2i(x, y);
@@ -87,9 +80,9 @@ void DeseneazaText2D(int x, int y, const char* text)
         glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, *p);
 }
 
+// Overlay text in stanga sus (2D)
 void DeseneazaOverlayText()
 {
-    // Overlay 2D peste scena
     glDisable(GL_LIGHTING);
     glDisable(GL_FOG);
     glDisable(GL_DEPTH_TEST);
@@ -103,13 +96,15 @@ void DeseneazaOverlayText()
     glPushMatrix();
     glLoadIdentity();
 
+    // culoare text (NEGRU)
     glColor3f(0.0f, 0.0f, 0.0f);
 
-    int margin = 12;
-    int y = inaltimeFereastra - margin - 18;
-    DeseneazaText2D(margin, y, TEXT_L1);
-    y -= 22; DeseneazaText2D(margin, y, TEXT_L2);
-    y -= 22; DeseneazaText2D(margin, y, TEXT_L3);
+    int x = 12;
+    int y = inaltimeFereastra - 28;
+
+    DeseneazaText2D(x, y, "Scena 3D dinamica: Insula tropicala");
+    DeseneazaText2D(x, y - 22, "Georgescu Andrei");
+    DeseneazaText2D(x, y - 44, "Saftoiu Genica Liliana");
 
     glPopMatrix();
     glMatrixMode(GL_PROJECTION);
@@ -117,17 +112,13 @@ void DeseneazaOverlayText()
     glMatrixMode(GL_MODELVIEW);
 
     glEnable(GL_DEPTH_TEST);
-    glEnable(GL_LIGHTING);
     glColor4f(1, 1, 1, 1);
 }
 
-// ============================================================
 // Proiectie
-// ============================================================
 void ReshapeSiProiectie(int w, int h)
 {
     if (h == 0) h = 1;
-
     latimeFereastra = w;
     inaltimeFereastra = h;
 
@@ -141,9 +132,7 @@ void ReshapeSiProiectie(int w, int h)
     glMatrixMode(GL_MODELVIEW);
 }
 
-// ============================================================
 // Iluminare + ceata
-// ============================================================
 void AplicaIluminareFaraPozitie()
 {
     glEnable(GL_LIGHTING);
@@ -169,16 +158,13 @@ void AplicaCeata()
     glFogi(GL_FOG_MODE, GL_LINEAR);
     glFogfv(GL_FOG_COLOR, culoareCeata);
 
-    // Ceata mai departe (sa nu coloreze insula)
     glFogf(GL_FOG_START, 55.0f);
     glFogf(GL_FOG_END, 220.0f);
 
     glHint(GL_FOG_HINT, GL_DONT_CARE);
 }
 
-// ============================================================
-// Cer (gradient simplu)
-// ============================================================
+// Cer (gradient)
 void DeseneazaCerGradient()
 {
     glDisable(GL_FOG);
@@ -210,36 +196,25 @@ void DeseneazaCerGradient()
     glMatrixMode(GL_MODELVIEW);
 
     glEnable(GL_DEPTH_TEST);
-    glEnable(GL_FOG);
     glEnable(GL_LIGHTING);
-
     glColor4f(1, 1, 1, 1);
 }
 
-// ============================================================
-// Contur insula neregulat
-// ============================================================
+// Contur insula
 static inline float RazaInsula(float theta)
 {
-    float r = R_INSULA_BAZA
-        + 1.6f * std::sinf(3.0f * theta + 0.3f)
-        + 0.9f * std::sinf(7.0f * theta + 1.1f)
-        + 0.5f * std::cosf(11.0f * theta - 0.7f);
-
+    float r = R_INSULA_BAZA + 2.0f * std::sinf(theta * 4.0f);
     return Limiteaza(r, R_INSULA_BAZA - 3.0f, R_INSULA_BAZA + 3.0f);
 }
 
 static inline float RazaNisip(float theta)
 {
-    float r = R_NISIP_BAZA
-        + 1.0f * std::sinf(3.0f * theta + 0.8f)
-        + 0.6f * std::cosf(6.0f * theta - 0.4f);
-
+    float r = R_NISIP_BAZA + 1.0f * std::sinf(theta * 3.0f + 0.6f);
     float maxAdmis = RazaInsula(theta) - 2.0f;
     return Limiteaza(r, R_NISIP_BAZA - 2.5f, maxAdmis);
 }
 
-// Inaltimea insulei (deal + tranzitie spre nisip + tarm)
+// Inaltime insula
 float InaltimeInsula(float x, float y)
 {
     float r, theta;
@@ -248,53 +223,35 @@ float InaltimeInsula(float x, float y)
     float rTarm = RazaInsula(theta);
     float rNisip = RazaNisip(theta);
 
-    float rn = r / rTarm;
-    float h = 6.0f * std::exp(-(rn * rn) * 2.2f);
+    // Deal simplu: max la centru, 0 la tarm
+    const float hMax = 6.0f;
+    float h = hMax * (1.0f - (r / (rTarm + 1e-6f)));
+    if (h < 0.0f) h = 0.0f;
 
-    // mica rugozitate
-    h += 0.18f * std::sinf(0.35f * x + 0.2f) * std::cosf(0.30f * y - 0.1f);
+    // Rugozitate foarte usoara
+    h += 0.25f * std::sinf(x * 0.35f) * std::cosf(y * 0.35f);
 
-    // zona nisip
+    // Tranzitie spre plaja (inaltime constanta)
     const float hPlaja = 0.20f;
-    float tNisip = SmoothStep(rNisip - 2.8f, rNisip, r);
-    h = h * (1.0f - tNisip) + hPlaja * tNisip;
+    float tNisip = Limiteaza((r - (rNisip - LATIME_TRANZITIE_NISIP)) / (LATIME_TRANZITIE_NISIP), 0.0f, 1.0f);
+    h = Lerp(h, hPlaja, tNisip);
 
-    // zona tarm (aproape de apa)
-    float tTarm = SmoothStep(rTarm - LATIME_TARM, rTarm, r);
-    h = h * (1.0f - tTarm) + Z_TARM * tTarm;
+    // Tranzitie spre tarm (usor sub nivelul apei)
+    float tTarm = Limiteaza((r - (rTarm - LATIME_TARM)) / (LATIME_TARM), 0.0f, 1.0f);
+    h = Lerp(h, Z_TARM, tTarm);
 
     return h;
 }
 
-// Normala aproximata prin diferente finite
-void NormalaInsula(float x, float y, float& nx, float& ny, float& nz)
-{
-    const float e = 0.2f;
-    float hL = InaltimeInsula(x - e, y);
-    float hR = InaltimeInsula(x + e, y);
-    float hD = InaltimeInsula(x, y - e);
-    float hU = InaltimeInsula(x, y + e);
-
-    nx = -(hR - hL);
-    ny = -(hU - hD);
-    nz = 2.0f * e;
-
-    float len = std::sqrt(nx * nx + ny * ny + nz * nz);
-    if (len < 1e-6f) { nx = 0; ny = 0; nz = 1; return; }
-    nx /= len; ny /= len; nz /= len;
-}
-
-// ============================================================
-// Insula (culori brute: verde + galben, fara iluminare)
-// ============================================================
+// Insula
 void DeseneazaInsulaCuloriSafe()
 {
     glDisable(GL_CULL_FACE);
 
     glDisable(GL_LIGHTING);
-    glDisable(GL_COLOR_MATERIAL);
+    glColor4f(1, 1, 1, 1);
 
-    const int N = 95;
+    const int N = 90;
     const float S = 22.0f;
     const float pas = (2.0f * S) / N;
 
@@ -327,27 +284,17 @@ void DeseneazaInsulaCuloriSafe()
                 float rNisip0 = RazaNisip(th0);
                 float rNisip1 = RazaNisip(th1);
 
-                float tNisip0 = SmoothStep(rNisip0 - 2.8f, rNisip0 + 0.2f, r0);
-                float tNisip1 = SmoothStep(rNisip1 - 2.8f, rNisip1 + 0.2f, r1);
+                float t0 = Limiteaza((r0 - (rNisip0 - LATIME_TRANZITIE_NISIP)) / (LATIME_TRANZITIE_NISIP), 0.0f, 1.0f);
+                float t1 = Limiteaza((r1 - (rNisip1 - LATIME_TRANZITIE_NISIP)) / (LATIME_TRANZITIE_NISIP), 0.0f, 1.0f);
 
-                float nx, ny, nz;
-
-                // v0
-                NormalaInsula(x, y0, nx, ny, nz);
-                glNormal3f(nx, ny, nz);
-
-                glColor3f(verdeR * (1.0f - tNisip0) + galbenR * tNisip0,
-                    verdeG * (1.0f - tNisip0) + galbenG * tNisip0,
-                    verdeB * (1.0f - tNisip0) + galbenB * tNisip0);
+                glColor3f(Lerp(verdeR, galbenR, t0),
+                    Lerp(verdeG, galbenG, t0),
+                    Lerp(verdeB, galbenB, t0));
                 glVertex3f(x, y0, h0);
 
-                // v1
-                NormalaInsula(x, y1, nx, ny, nz);
-                glNormal3f(nx, ny, nz);
-
-                glColor3f(verdeR * (1.0f - tNisip1) + galbenR * tNisip1,
-                    verdeG * (1.0f - tNisip1) + galbenG * tNisip1,
-                    verdeB * (1.0f - tNisip1) + galbenB * tNisip1);
+                glColor3f(Lerp(verdeR, galbenR, t1),
+                    Lerp(verdeG, galbenG, t1),
+                    Lerp(verdeB, galbenB, t1));
                 glVertex3f(x, y1, h1);
             }
             else if (deschis) {
@@ -363,9 +310,7 @@ void DeseneazaInsulaCuloriSafe()
     glColor4f(1, 1, 1, 1);
 }
 
-// ============================================================
-// Ocean simplu
-// ============================================================
+// Ocean
 void DeseneazaOcean()
 {
     glDisable(GL_CULL_FACE);
@@ -384,61 +329,7 @@ void DeseneazaOcean()
     glEnable(GL_CULL_FACE);
 }
 
-// ============================================================
-// Spuma la tarm (blending)
-// ============================================================
-void DeseneazaSpumaTarm()
-{
-    const int K = 240;
-
-    glDisable(GL_LIGHTING);
-    glDisable(GL_CULL_FACE);
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-    glColor4f(1.0f, 1.0f, 1.0f, 0.18f);
-    glNormal3f(0, 0, 1);
-
-    glBegin(GL_TRIANGLE_STRIP);
-    for (int i = 0; i <= K; i++) {
-        float a = (2.0f * 3.1415926f) * (i / (float)K);
-        float ca = std::cos(a), sa = std::sin(a);
-
-        float rTarm = RazaInsula(a);
-        float rNisip = RazaNisip(a);
-
-        float minR = rNisip + 0.25f;
-        float maxR = rTarm - 0.22f;
-
-        float dorit = 1.10f;
-        float maxBand = maxR - minR;
-        float band = Limiteaza(dorit, 0.25f, maxBand * 0.90f);
-
-        float zgomot = 0.18f * std::sinf(5.0f * a + 0.6f) + 0.10f * std::cosf(9.0f * a - 1.1f);
-        float r0 = (rTarm - 0.95f) + zgomot;
-        r0 = Limiteaza(r0, minR, maxR - band);
-        float r1 = r0 + band;
-
-        float x0 = r0 * ca, y0 = r0 * sa;
-        float x1 = r1 * ca, y1 = r1 * sa;
-
-        float z0 = InaltimeInsula(x0, y0) + 0.03f;
-        float z1 = InaltimeInsula(x1, y1) + 0.03f;
-
-        glVertex3f(x0, y0, z0);
-        glVertex3f(x1, y1, z1);
-    }
-    glEnd();
-
-    glDisable(GL_BLEND);
-    glEnable(GL_CULL_FACE);
-    glEnable(GL_LIGHTING);
-    glColor4f(1, 1, 1, 1);
-}
-
-// ============================================================
-// Soare (obiect vizual)
-// ============================================================
+// Soare
 void DeseneazaSoare()
 {
     glDisable(GL_LIGHTING);
@@ -453,9 +344,7 @@ void DeseneazaSoare()
     glColor4f(1, 1, 1, 1);
 }
 
-// ============================================================
-// Palmieri (parametri generati o singura data)
-// ============================================================
+// Palmieri ( generati )
 struct ParamFrunza
 {
     float unghiDeg;
@@ -472,9 +361,6 @@ struct ParamPalmier
     float inclinX, inclinY, rotZ;
     float fazaVant, ampVant, vitezaVant;
     float scala;
-
-    float razaPata;
-    float alfaPata;
 
     ParamFrunza frunze[7];
 };
@@ -494,31 +380,23 @@ void DeseneazaPalmier(const ParamPalmier& p)
     glRotatef(p.inclinX, 1, 0, 0);
     glRotatef(p.inclinY, 0, 1, 0);
 
-    // Trunchi
     SeteazaMaterial(0.55f, 0.38f, 0.20f, 1.0f);
     GLUquadric* q = gluNewQuadric();
     gluCylinder(q, p.razaTrunchi * 1.05f, p.razaTrunchi * 0.75f, p.inaltimeTrunchi, 10, 4);
     glTranslatef(0.0f, 0.0f, p.inaltimeTrunchi);
 
-    // Vant global
-    float w1 = std::sinf(timpSec * p.vitezaVant + p.fazaVant);
-    float w2 = std::sinf(timpSec * (p.vitezaVant * 0.63f) + p.fazaVant * 1.7f);
-    float vant = 0.65f * w1 + 0.35f * w2;
+    float vant = std::sinf(timpSec * p.vitezaVant + p.fazaVant);
     float vantDeg = p.ampVant * vant;
 
-    // Frunze
     SeteazaMaterial(0.10f, 0.55f, 0.18f, 1.0f);
 
     for (int i = 0; i < 7; i++) {
         const ParamFrunza& f = p.frunze[i];
-
-        float twist = 2.0f * std::sinf(timpSec * (p.vitezaVant * 1.2f) + f.faza);
-        float vantFrunza = f.amp * std::sinf(timpSec * (p.vitezaVant * 1.35f) + f.faza);
+        float vantFrunza = f.amp * std::sinf(timpSec * (p.vitezaVant * 1.1f) + f.faza);
 
         glPushMatrix();
         glRotatef(f.unghiDeg, 0, 0, 1);
         glRotatef(f.pitchSus + vantDeg + vantFrunza, 1, 0, 0);
-        glRotatef(twist, 0, 0, 1);
 
         glBegin(GL_TRIANGLES);
         glNormal3f(0.0f, 0.3f, 0.95f);
@@ -545,56 +423,59 @@ void DeseneazaPalmieri()
         DeseneazaPalmier(palmieri[i]);
 }
 
-// Pata de contact (umbra fake) sub palmieri
-void DeseneazaPataContact(float x, float y, float raza, float alfaCentru)
+void GenereazaPalmieri()
 {
-    float z = InaltimeInsula(x, y) + 0.04f;
-
-    glBegin(GL_TRIANGLE_FAN);
-    glColor4f(0, 0, 0, alfaCentru);
-    glVertex3f(x, y, z);
-
-    const int K = 26;
-    for (int i = 0; i <= K; i++) {
-        float a = (2.0f * 3.1415926f) * (i / (float)K);
-        float px = x + raza * std::cos(a);
-        float py = y + raza * std::sin(a);
-        float pz = InaltimeInsula(px, py) + 0.04f;
-
-        glColor4f(0, 0, 0, 0);
-        glVertex3f(px, py, pz);
-    }
-    glEnd();
-}
-
-void DeseneazaContactPalmieri()
-{
-    glDisable(GL_LIGHTING);
-    glDisable(GL_CULL_FACE);
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    glNormal3f(0, 0, 1);
-
     for (int i = 0; i < NR_PALMIERI; i++) {
-        const ParamPalmier& p = palmieri[i];
-        DeseneazaPataContact(p.x, p.y, p.razaPata * 1.15f, p.alfaPata * 0.70f);
-        DeseneazaPataContact(p.x, p.y, p.razaPata * 0.75f, p.alfaPata);
-    }
+        ParamPalmier& p = palmieri[i];
 
-    glDisable(GL_BLEND);
-    glEnable(GL_CULL_FACE);
-    glEnable(GL_LIGHTING);
-    glColor4f(1, 1, 1, 1);
+        float ang = 2.0f * 3.1415926f * Random01();
+        float ca = std::cos(ang), sa = std::sin(ang);
+
+        float rTarm = RazaInsula(ang);
+        float rNisip = RazaNisip(ang);
+
+        float rMin = rNisip - 1.5f;
+        float rMax = rTarm - 3.0f;
+        if (rMax < rMin + 0.5f) rMax = rMin + 0.5f;
+
+        float rr = rMin + (rMax - rMin) * Random01();
+        p.x = rr * ca;
+        p.y = rr * sa;
+
+        float r, th; InPolare(p.x, p.y, r, th);
+        float t = Limiteaza((r - (rTarm - 2.0f)) / 1.4f, 0.0f, 1.0f);
+        p.scala = Lerp(1.0f, 0.70f, t);
+
+        p.inaltimeTrunchi = 1.4f + 0.6f * Random01();
+        p.razaTrunchi = 0.10f + 0.04f * Random01();
+        p.inclinX = -10.0f + 20.0f * Random01();
+        p.inclinY = -10.0f + 20.0f * Random01();
+        p.rotZ = 360.0f * Random01();
+
+        p.fazaVant = 6.2831853f * Random01();
+        p.ampVant = 6.0f + 6.0f * Random01();
+        p.vitezaVant = 0.8f + 0.4f * Random01();
+
+        for (int k = 0; k < 7; k++) {
+            ParamFrunza& f = p.frunze[k];
+            f.unghiDeg = (360.0f / 7.0f) * k + 10.0f * Random01();
+            f.faza = 6.2831853f * Random01();
+            f.amp = 3.0f + 3.0f * Random01();
+            f.pitchSus = 18.0f + 10.0f * Random01();
+            f.L = 1.2f + 0.6f * Random01();
+            f.W = 0.25f + 0.12f * Random01();
+            f.cazatura = 0.55f + 0.25f * Random01();
+        }
+    }
 }
 
-// ============================================================
 // Barca de pescuit
-// ============================================================
 void DeseneazaBarcaPescuit()
 {
     float a = -0.65f;
     float rTarm = RazaInsula(a);
     float r = rTarm + 4.0f;
+
     float x = r * std::cos(a);
     float y = r * std::sin(a);
     float z = Z_OCEAN + 0.02f;
@@ -664,15 +545,13 @@ void DeseneazaBarcaPescuit()
     glPopMatrix();
 }
 
-// ============================================================
-// Ruine varf
-// ============================================================
+// Ruine de piatra (varf)
 void DeseneazaRuineVarf()
 {
     float cx = 0.0f, cy = 0.0f;
 
     struct P { float x, y; };
-    P pts[] = { {0,0},{0.9f,-0.2f},{-0.6f,0.7f},{0.2f,1.1f},{-1.0f,-0.6f} };
+    P pts[] = { {0,0}, {0.9f,-0.2f}, {-0.6f,0.7f}, {0.2f,1.1f}, {-1.0f,-0.6f} };
 
     auto Piatra = [&](float k = 1.0f) {
         SeteazaMaterial(0.55f * k, 0.56f * k, 0.58f * k, 1.0f);
@@ -753,9 +632,7 @@ void DeseneazaRuineVarf()
     gluDeleteQuadric(q);
 }
 
-// ============================================================
 // Cabana pescuit
-// ============================================================
 void DeseneazaCabanaPescuit()
 {
     float x = 10.0f;
@@ -764,6 +641,7 @@ void DeseneazaCabanaPescuit()
     float r, th; InPolare(x, y, r, th);
     float rTarm = RazaInsula(th);
     float rNisip = RazaNisip(th);
+
     float maxR = rTarm - 0.9f;
     float minR = rNisip + 0.6f;
 
@@ -783,9 +661,9 @@ void DeseneazaCabanaPescuit()
     const float zSusPereti = zPereti + 0.5f * hPereti;
     const float zAcoperis = zSusPereti + 0.02f;
 
-    SeteazaMaterial(0.45f, 0.30f, 0.18f, 1.0f);
     GLUquadric* q = gluNewQuadric();
 
+    SeteazaMaterial(0.45f, 0.30f, 0.18f, 1.0f);
     auto Stalp = [&](float px, float py) {
         glPushMatrix();
         glTranslatef(px, py, -0.10f);
@@ -892,61 +770,7 @@ void DeseneazaCabanaPescuit()
     glPopMatrix();
 }
 
-// ============================================================
-// Generare palmieri (o singura data)
-// ============================================================
-void GenereazaPalmieri()
-{
-    for (int i = 0; i < NR_PALMIERI; i++) {
-        ParamPalmier& p = palmieri[i];
-
-        float ang = 2.0f * 3.1415926f * Random01();
-        float ca = std::cos(ang), sa = std::sin(ang);
-
-        float rTarm = RazaInsula(ang);
-        float rNisip = RazaNisip(ang);
-
-        float rMin = rNisip - 1.8f;
-        float rMax = rTarm - 2.8f;
-        if (rMax < rMin + 0.5f) rMax = rMin + 0.5f;
-
-        float rr = rMin + (rMax - rMin) * Random01();
-        p.x = rr * ca;
-        p.y = rr * sa;
-
-        float r, th; InPolare(p.x, p.y, r, th);
-        float aproapeTarm = SmoothStep(rTarm - 2.0f, rTarm - 0.6f, r);
-        p.scala = 1.0f - 0.35f * aproapeTarm;
-
-        p.inaltimeTrunchi = 1.4f + 0.6f * Random01();
-        p.razaTrunchi = 0.10f + 0.04f * Random01();
-        p.inclinX = -10.0f + 20.0f * Random01();
-        p.inclinY = -10.0f + 20.0f * Random01();
-        p.rotZ = 360.0f * Random01();
-
-        p.fazaVant = 6.2831853f * Random01();
-        p.ampVant = 6.0f + 6.0f * Random01();
-        p.vitezaVant = 0.7f + 0.5f * Random01();
-
-        p.razaPata = 0.55f + 0.25f * Random01();
-        p.alfaPata = 0.18f + 0.08f * Random01();
-
-        for (int k = 0; k < 7; k++) {
-            ParamFrunza& f = p.frunze[k];
-            f.unghiDeg = (360.0f / 7.0f) * k + 12.0f * Random01();
-            f.faza = 6.2831853f * Random01();
-            f.amp = 4.0f + 3.0f * Random01();
-            f.pitchSus = 18.0f + 10.0f * Random01();
-            f.L = 1.2f + 0.6f * Random01();
-            f.W = 0.25f + 0.12f * Random01();
-            f.cazatura = 0.55f + 0.25f * Random01();
-        }
-    }
-}
-
-// ============================================================
 // Init / Display
-// ============================================================
 void init()
 {
     srand(1234567);
@@ -956,9 +780,6 @@ void init()
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_NORMALIZE);
     glEnable(GL_CULL_FACE);
-
-    glDisable(GL_COLOR_MATERIAL);
-    glColor4f(1, 1, 1, 1);
 
     AplicaCeata();
 }
@@ -979,9 +800,6 @@ void display()
     glLoadIdentity();
     gluLookAt(camX, camY, camZ, tintaX, tintaY, tintaZ, 0, 0, 1);
 
-    glDisable(GL_COLOR_MATERIAL);
-    glColor4f(1, 1, 1, 1);
-
     AplicaIluminareFaraPozitie();
     glLightfv(GL_LIGHT0, GL_POSITION, pozSoare);
 
@@ -993,33 +811,26 @@ void display()
     DeseneazaInsulaCuloriSafe();
 
     glEnable(GL_LIGHTING);
-
     DeseneazaRuineVarf();
-    DeseneazaSpumaTarm();
     DeseneazaBarcaPescuit();
     DeseneazaCabanaPescuit();
-
-    DeseneazaContactPalmieri();
     DeseneazaPalmieri();
-
     DeseneazaSoare();
 
-    // Text in stanga sus (peste scena)
     DeseneazaOverlayText();
 
     glutSwapBuffers();
     glFlush();
 }
 
-// ============================================================
 // Input
-// ============================================================
 void processSpecialKeys(int key, int, int)
 {
     if (key == GLUT_KEY_LEFT)  betaCamera -= 0.05f;
     if (key == GLUT_KEY_RIGHT) betaCamera += 0.05f;
     if (key == GLUT_KEY_UP)    alfaCamera = Limiteaza(alfaCamera + 0.05f, -1.55f, 1.55f);
     if (key == GLUT_KEY_DOWN)  alfaCamera = Limiteaza(alfaCamera - 0.05f, -1.55f, 1.55f);
+
     glutPostRedisplay();
 }
 
@@ -1028,18 +839,17 @@ void processNormalKeys(unsigned char key, int, int)
     if (key == '+' || key == '=') distCamera = Limiteaza(distCamera - 1.0f, 6.0f, 120.0f);
     if (key == '-')               distCamera = Limiteaza(distCamera + 1.0f, 6.0f, 120.0f);
     if (key == 27) exit(0);
+
     glutPostRedisplay();
 }
 
-// ============================================================
 // Main
-// ============================================================
 int main(int argc, char** argv)
 {
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
 
-    glutInitWindowSize(900, 650);
+    glutInitWindowSize(latimeFereastra, inaltimeFereastra);
     glutInitWindowPosition(120, 80);
     glutCreateWindow("Scena 3D dinamica: Insula tropicala");
 
