@@ -1,0 +1,7 @@
+sudo apt-get update
+sudp apt-get install npm nodejs
+
+npm init -y
+npm install express ejs sqlite3
+npm install -D nodemon
+

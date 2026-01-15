@@ -1,0 +1,130 @@
+<%- include("header") %>
+
+<div class="card shadow-sm mb-3">
+  <div class="card-body">
+    <h5 class="mb-2">Ingrediente pe care le ai</h5>
+
+    <form method="POST" action="/cauta">
+      <label class="form-label">
+        Scrie ingrediente separate prin virgulă sau Enter:
+      </label>
+
+      <textarea
+        class="form-control"
+        name="ingrediente"
+        rows="3"
+        placeholder="ex: egg, milk, pasta"
+      ><%= ingredienteCamara.join(", ") %></textarea>
+
+      <div class="d-flex gap-2 mt-2">
+        <button class="btn btn-primary">Caută</button>
+      </div>
+
+      <div class="form-text mt-2">
+        Tip: API-ul are rezultate mai bune dacă ingredientele sunt în engleză
+        (ex: <em>egg</em>, <em>chicken</em>, <em>rice</em>).
+      </div>
+    </form>
+
+    <% if (mesaj) { %>
+      <div class="alert alert-info mt-3 mb-0">
+        <%= mesaj %>
+      </div>
+    <% } %>
+  </div>
+</div>
+
+<% if (ingredienteCamara.length) { %>
+  <div class="text-muted mb-2">
+    Găsite <strong><%= sugestii.length %></strong> rețete (top).
+  </div>
+
+  <div class="row g-3">
+    <% sugestii.forEach(r => { %>
+      <div class="col-md-6 col-lg-4">
+        <div class="card h-100 shadow-sm">
+
+          <% if (r.imagine) { %>
+            <img src="<%= r.imagine %>" class="card-img-top" alt="Imagine rețetă">
+          <% } %>
+
+          <div class="card-body">
+            <div class="d-flex justify-content-between align-items-start gap-2">
+              <h6 class="card-title mb-0"><%= r.titlu %></h6>
+              <span class="badge text-bg-success">Scor: <%= r.scor %></span>
+            </div>
+
+            <button
+              class="btn btn-sm btn-outline-primary mt-2"
+              onclick="toggleLipsuri('<%= r.idMeal %>', this)"
+            >
+              Arată ingrediente lipsă
+            </button>
+
+            <div class="zona-lipsuri mt-3"></div>
+          </div>
+        </div>
+      </div>
+    <% }) %>
+  </div>
+<% } %>
+
+<script>
+  async function toggleLipsuri(idMeal, buton) {
+    const card = buton.closest(".card");
+    const zona = card.querySelector(".zona-lipsuri");
+
+    if (zona.dataset.afisat === "1") {
+      zona.innerHTML = "";
+      zona.dataset.afisat = "0";
+      buton.textContent = "Arată ingrediente lipsă";
+      return;
+    }
+
+    buton.disabled = true;
+    buton.textContent = "Se caută...";
+
+    try {
+      const r = await fetch(`/api/lipsuri/${encodeURIComponent(idMeal)}`);
+      const data = await r.json();
+
+      if (!data.ok) {
+        zona.innerHTML =
+          `<div class="text-danger small">Eroare la încărcare.</div>`;
+      } else if (!data.lipsuri.length) {
+        zona.innerHTML =
+          `<div class="alert alert-success py-2 mb-0">
+            Nu îți lipsește nimic ✅
+           </div>`;
+      } else {
+        zona.innerHTML = `
+          <div class="small mb-1"><strong>Îți lipsesc:</strong></div>
+          <ul class="mb-0">
+            ${data.lipsuri.map(x => `<li class="lipsa">${escapeHtml(x)}</li>`).join("")}
+          </ul>
+        `;
+      }
+
+      zona.dataset.afisat = "1";
+      buton.textContent = "Ascunde ingrediente lipsă";
+    } catch {
+      zona.innerHTML =
+        `<div class="text-danger small">Eroare la cerere.</div>`;
+      zona.dataset.afisat = "1";
+      buton.textContent = "Ascunde ingrediente lipsă";
+    } finally {
+      buton.disabled = false;
+    }
+  }
+
+  function escapeHtml(str) {
+    return String(str)
+      .replaceAll("&","&amp;")
+      .replaceAll("<","&lt;")
+      .replaceAll(">","&gt;")
+      .replaceAll('"',"&quot;")
+      .replaceAll("'","&#039;");
+  }
+</script>
+
+<%- include("footer") %>

@@ -1,0 +1,9 @@
+.lipsa {
+  color: #dc3545; /* roșu */
+  font-weight: 600;
+}
+
+.card-img-top {
+  object-fit: cover;
+  height: 180px;
+}
