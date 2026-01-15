@@ -3,3 +3,4 @@ private.txt
 spinnaker-operator
 test
 *venv*
+node_modules
