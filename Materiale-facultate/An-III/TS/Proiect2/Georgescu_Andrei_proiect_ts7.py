@@ -1,14 +1,15 @@
 import math
 import random
 
+# 7.
+# Generare variabila Gama(0,4,6) folosind infasuratoare exponentiala / Generare variabila hipergeometrica
 # -------------------------
 # 1) Gamma standard Gama(0,1,nu) cu infasuratoare exponentiala (nu > 1)
-# -------------------------
 def gamma_std_exp_envelope(nu: float) -> float:
     """
     Genereaza X ~ Gama(0,1,nu) pentru nu > 1
-    folosind infasuratoare exponentiala h(x) = (1/nu) * exp(-x/nu).
-    (curs 5, sectiunea pentru nu>1)
+    folosind infasuratoare exponentiala h(x) = (1/nu) * exp(-x/nu)
+    densitate / infasuratoare / constanta alpha
     """
     if nu <= 1:
         raise ValueError("Algoritmul cu infasuratoare exponentiala cere nu > 1.")
@@ -45,13 +46,10 @@ def gamma_0_4_6() -> float:
     return gamma(alpha=0.0, lam=4.0, nu=6.0)
 
 
-# -------------------------
 # 2) Hipergeometrica (A albe, B negre, n extrageri fara intoarcere)
-# -------------------------
 def hypergeometric(A: int, B: int, n: int) -> int:
     """
     Genereaza X = nr bile albe extrase, la n extrageri fara intoarcere.
-    Algoritm direct din curs 7.
     """
     if A < 0 or B < 0:
         raise ValueError("A si B trebuie sa fie >= 0.")
@@ -75,10 +73,7 @@ def hypergeometric(A: int, B: int, n: int) -> int:
 
     return x
 
-
-# -------------------------
 # 3) Validare: medie si dispersie de selectie
-# -------------------------
 def sample_mean_var(samples):
     n = len(samples)
     mean = sum(samples) / n
@@ -103,7 +98,7 @@ def validate_gamma_0_4_6(num_samples=10000):
     print(f"Dispersia teoretica:  {var_th}")
     print(f"Dispersia de selectie:{var_emp}")
 
-
+# probabilitatea de a extrage bile
 def validate_hypergeometric(A, B, n, num_samples=10000):
     samples = [hypergeometric(A, B, n) for _ in range(num_samples)]
 
@@ -127,5 +122,5 @@ if __name__ == "__main__":
     # Ruleaza validarile:
     validate_gamma_0_4_6(num_samples=20000)
 
-    # Exemplu pentru hipergeometrica (poti schimba):
+    # Exemplu pentru hipergeometrica:
     validate_hypergeometric(A=20, B=30, n=10, num_samples=20000)
