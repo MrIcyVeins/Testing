@@ -1,0 +1,140 @@
+// L1 ( 4 exercitii )
+
+    1. Notiuni generale
+
+A - 3
+B - 1
+C - 5
+D - 2
+E - 4 
+
+
+    3. Sisteme de numeratie
+
+
+        3.1  Ziua 21 + 10 = 31
+
+            31 ÷ 2 = 15 rest 1
+            15 ÷ 2 =  7 rest 1
+            7 ÷ 2 =  3 rest 1
+            3 ÷ 2 =  1 rest 1
+            1 ÷ 2 =  0 rest 1
+            31₁₀ = 11111₂ (citești resturile de jos în sus)
+
+            Invers: 1×2⁴ + 1×2³ + 1×2² + 1×2¹ + 1×2⁰ = 16+8+4+2+1 = 31
+
+        3.2 — Exemplu cu hex doar din cifre: 1234
+
+            1  =  0001
+            2  =  0010
+            3  =  0011
+            4  =  0100
+            1234₁₆ = 0001 0010 0011 0100₂
+
+            Invers: grupezi câte 4 biți → 0001 | 0010 | 0011 | 0100 = 1234₁₆
+
+https://www.rapidtables.com/convert/number/hex-to-binary.html?x=1234
+
+    4. Codul ASCII
+
+      - ANDREI in ASCII
+
+      A - 65
+      N - 78
+      D - 68
+      R - 82
+      E - 69
+      I - 73
+
+      - ASCII 66 82 65 86 79
+
+      66 - B
+      82 - R
+      65 - A
+      86 - V
+      79 - O
+
+Regula: A = 65 ; B = 65 + 1 ; C = 65 + 2 ...
+
+
+    5. Base64
+
+    - GEORGESCU in Base64
+
+    echo -n GEORGESCU | base64 -w0
+    R0VPUkdFU0NV
+
+    - U3VudCBzdHVkZW50IGxhIEZNSS4=
+
+    echo -n U3VudCBzdHVkZW50IGxhIEZNSS4= | base64 -d
+    Sunt student la FMI.
+
+
+6-7 ( TO DO )
+
+
+// L2
+
+
+    1. Notiuni generale
+
+A - 4
+B - 2 
+C - 5
+D - 1
+E - 6
+
+    2. CIA - (C) Confidențialitate, (I) Integritate, (A) Disponibilitate:
+
+    Pentru fiecare dintre afirmațiile de mai jos, indicați proprietatea (proprietățile) CIA la
+care se face referire:
+
+1. Salariile angajaților nu trebuie făcute publice. - C
+2. Biroul casierie trebuie să aibă acces la salariile angajaților (pentru a realiza plățile). - A 
+3. Un angajat nu își poate modifica singur suma primită ca salariu pe luna în curs. - I
+4. Un angajat nu ar trebui să afle cât câștiga un coleg fără acordul acestuia (ex. să îi spună
+direct). - C
+5. Biroul casierie trebuie să aibă certitudinea că suma pe care o înmânează angajatului de
+plată este cea corectă. - I 
+
+
+
+// L3
+
+    1.
+
+
+    2.
+
+
+    3.
+
+
+    4. Atac prin forță brută/căutare exhaustivă
+
+Se consideră un sistem criptografic cu o cheie de 256 biți.
+
+- Câte chei posibile distincte există?
+Fiecare bit poate fi 0 sau 1, deci numărul total de chei este:
+
+2^256 ≈ 1.16 × 10^77
+
+- Cât timp durează atacul (cazul cel mai nefavorabil)?
+Cazul cel mai nefavorabil = adversarul testează toate cheile posibile.
+
+Calculatorul testează 2^30 chei/secundă, deci:
+
+
+Timp = 2^256 / 2^30 = 2^226 secunde
+2^226 ≈ 1.36 × 10^68 secunde
+
+Pentru context:
+
+Vârsta universului ≈ 4.3 × 10^17 secunde
+Deci 2^226 secunde este de ~3 × 10^50 ori mai mare decât vârsta universului
+
+
+- Este un atac eficient?
+Nu. Este complet ineficient (infezabil în practică). Chiar și cu un calculator extrem de rapid (2^30 ≈ 1 miliard de chei/secundă), timpul necesar depășește cu multe ordine de mărime vârsta universului.
+
+Aceasta este tocmai garanția de securitate a cheilor lungi — forța brută devine imposibilă computațional odată ce lungimea cheii depășește ~128 biți.
